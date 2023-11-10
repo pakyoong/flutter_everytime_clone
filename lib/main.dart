@@ -32,6 +32,7 @@ class _HomePageState extends State<HomePage> {
   final NavigationBloc _navigationBloc = NavigationBloc();
   final List<Widget> _pages = [
     const MainPage(),
+    const BoardPage(),
     const TimeTablePage(),
     const CampusPickPage(),
     const AlarmPage(),
