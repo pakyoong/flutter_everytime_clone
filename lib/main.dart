@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'bloc/navigation_bloc.dart';
-import 'ui/pages/alarm_page.dart';
-import 'ui/pages/board_page.dart';
-import 'ui/pages/campus_page.dart';
-import 'ui/pages/main_page.dart';
-import 'ui/pages/my_info_page.dart';
-import 'ui/pages/time_table_page.dart';
+import 'bloc/NavigationBloc.dart';
+import 'ui/pages/Alarm.dart';
+import 'ui/pages/Board.dart';
+import 'ui/pages/Campus.dart';
+import 'ui/pages/Main.dart';
+import 'ui/pages/MyInfo.dart';
+import 'ui/pages/time_table.dart';
 
 void main() => runApp(MyApp());
 
@@ -30,14 +30,21 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final NavigationBloc _navigationBloc = NavigationBloc();
-  final List<Widget> _pages = [
-    const MainPage(),
-    const BoardPage(),
-    const TimeTablePage(),
-    const CampusPickPage(),
-    const AlarmPage(),
-    const MyInfoPage(),
-  ];
+  late final ScrollController _timeTableScrollController = ScrollController();
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      const MainPage(),
+      TimeTable(scrollController: _timeTableScrollController), // 수정된 부분
+      const Board(),
+      const CampusPick(),
+      const Alarm(),
+      const MyInfo(),
+    ];
+  }
 
   final List<IconData> _bottomNavIcons = const [
     Icons.home_outlined,
@@ -72,6 +79,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
+    _timeTableScrollController.dispose(); // ScrollController를 정리
     _navigationBloc.dispose();
     super.dispose();
   }

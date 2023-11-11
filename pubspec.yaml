@@ -39,6 +39,7 @@ dependencies:
   firebase_auth: ^4.12.1
   fluttertoast: ^8.2.2
   rxdart: ^0.27.5
+  scrolls_to_top: ^2.1.1
 
 dev_dependencies:
   flutter_test:
