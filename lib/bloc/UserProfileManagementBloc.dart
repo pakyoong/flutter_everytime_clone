@@ -6,28 +6,16 @@ import '../model/TimeTableDataModels.dart';
 import 'package:rxdart/subjects.dart';
 
 class EverytimeUserBloc {
-  //****************************************************************************************************
-  // 유저 관련
-  //****************************************************************************************************
 
-  /// 유저 이름
   final _name = BehaviorSubject<String>();
 
-  /// 유저 학교
   final _univ = BehaviorSubject<String>();
 
-  /// 유저 닉네임
   final _nickName = BehaviorSubject<String>();
 
-  /// 유저 아이디
   final _id = BehaviorSubject<String>();
 
-  /// 유저가 입학한 년도
   final _year = BehaviorSubject<int>();
-
-  /// 유저의 친구
-  /// TODO:  시간표 완성하고 이 구문도 수정
-  // final _userFriends = BehaviorSubject<List<EveryTimeFriend>>();
 
   Stream<String> get name => _name.stream;
   Stream<String> get univ => _univ.stream;
@@ -41,54 +29,47 @@ class EverytimeUserBloc {
   Function(String) get updateId => _id.sink.add;
   Function(int) get updateYear => _year.sink.add;
 
-  //****************************************************************************************************
-  // 시간표 관련
-  // TODO: 서버 추가할 때 여기 데이터들도 올리기
-  //****************************************************************************************************
+  final _ScheduleList = BehaviorSubject<List<Schedule>>.seeded([]);
 
-  /// 시간표 리스트
-  final _timeTableList = BehaviorSubject<List<TimeTable>>.seeded([]);
+  final _selectedSchedule = BehaviorSubject<Schedule?>.seeded(null);
 
-  /// 현재 선택된 시간표
-  final _selectedTimeTable = BehaviorSubject<TimeTable?>.seeded(null);
+  Stream<List<Schedule>> get scheduleList => _ScheduleList.stream;
+  Stream<Schedule?> get selectedSchedule => _selectedSchedule.stream;
 
-  Stream<List<TimeTable>> get timeTableList => _timeTableList.stream;
-  Stream<TimeTable?> get selectedTimeTable => _selectedTimeTable.stream;
+  Function(List<Schedule>) get _updateSchedule => _ScheduleList.sink.add;
+  Function(Schedule?) get updateSelectedSchedule =>
+      _selectedSchedule.sink.add;
 
-  Function(List<TimeTable>) get _updateTimeTableList => _timeTableList.sink.add;
-  Function(TimeTable?) get updateSelectedTimeTable =>
-      _selectedTimeTable.sink.add;
+  List<Schedule> get currentScheduleList => _ScheduleList.value;
+  Schedule? get currentSelectedSchedule => _selectedSchedule.value;
 
-  List<TimeTable> get currentTimeTableList => _timeTableList.value;
-  TimeTable? get currentSelectedTimeTable => _selectedTimeTable.value;
+  Schedule? findScheduleAtSpecificTerm(String term) {
+    List<Schedule> scheduleList = currentScheduleList;
+    Schedule? secondSchedule;
 
-  TimeTable? findTimeTableAtSpecificTerm(String termString) {
-    List<TimeTable> timeTableList = currentTimeTableList;
-    TimeTable? secondTimeTable;
-
-    for (TimeTable timeTable in timeTableList) {
-      if (timeTable.termString == termString) {
-        if (timeTable.currentIsDefault) {
-          return timeTable;
+    for (Schedule schedule in scheduleList) {
+      if (schedule.term == term) {
+        if (schedule.isPrimarySchedule) {
+          return schedule;
         }
 
-        if (secondTimeTable == null) {
-          secondTimeTable = timeTable;
-          secondTimeTable.updateIsDefault(true);
+        if (secondSchedule == null) {
+          secondSchedule = schedule;
+          secondSchedule.updateIsPrimary(true);
 
           break;
         }
       }
     }
 
-    return secondTimeTable;
+    return secondSchedule;
   }
 
-  void removeTimeTableDataAt(
+  void removeScheduleDataAt(
       int currentIndex,
-      List<TimeTableData> timeTableData,
+      List<ClassSchedule> classSchedule,
       ) {
-    int tempDayOfWeekIndex = defaultDayOfWeekListLast;
+    int tempWeekdayIndex = defaultDayOfWeekListLast;
     int tempStartHour = defaultTimeListFirst;
     int tempEndHour = defaultTimeListLast;
 
@@ -96,44 +77,44 @@ class EverytimeUserBloc {
     int removeStartHour = defaultTimeListFirst;
     int removeEndHour = defaultTimeListLast;
 
-    for (int i = 0; i < timeTableData.length; i++) {
-      for (TimeNPlaceData dates in timeTableData[i].dates) {
+    for (int i = 0; i < classSchedule.length; i++) {
+      for (ClassTimeAndLocation times in classSchedule[i].times) {
         if (i == currentIndex) {
           if (removeDayOfWeekIndex <
-              DayOfWeek.getByDayOfWeek(dates.dayOfWeek)) {
-            removeDayOfWeekIndex = DayOfWeek.getByDayOfWeek(dates.dayOfWeek);
+              Weekday.indexOfWeekday(times.weekday)) {
+            removeDayOfWeekIndex = Weekday.indexOfWeekday(times.weekday);
           }
 
-          if (removeStartHour > dates.startHour) {
-            removeStartHour = dates.startHour;
+          if (removeStartHour > times.startHour) {
+            removeStartHour = times.startHour;
           }
 
-          if (removeEndHour < dates.endHour) {
-            removeEndHour = dates.endHour;
+          if (removeEndHour < times.endHour) {
+            removeEndHour = times.endHour;
           }
         } else {
-          if (tempDayOfWeekIndex < DayOfWeek.getByDayOfWeek(dates.dayOfWeek)) {
-            tempDayOfWeekIndex = DayOfWeek.getByDayOfWeek(dates.dayOfWeek);
+          if (tempWeekdayIndex < Weekday.indexOfWeekday(times.weekday)) {
+            tempWeekdayIndex = Weekday.indexOfWeekday(times.weekday);
           }
 
-          if (tempStartHour > dates.startHour) {
-            tempStartHour = dates.startHour;
+          if (tempStartHour > times.startHour) {
+            tempStartHour = times.startHour;
           }
 
-          if (tempEndHour < dates.endHour) {
-            tempEndHour = dates.endHour;
+          if (tempEndHour < times.endHour) {
+            tempEndHour = times.endHour;
           }
         }
       }
     }
 
-    currentSelectedTimeTable!.removeTimeTableData(currentIndex);
+    currentSelectedSchedule!.removeClass(currentIndex);
 
     removeDayOfWeek(
       removeDayOfWeekIndex,
       [
-        TimeNPlaceData(
-          dayOfWeek: DayOfWeek.getByIndex(tempDayOfWeekIndex),
+        ClassTimeAndLocation(
+          weekday: Weekday.weekdayAtIndex(tempWeekdayIndex),
           startHour: tempStartHour,
           endHour: tempEndHour,
         ),
@@ -143,36 +124,28 @@ class EverytimeUserBloc {
       removeStartHour,
       removeEndHour,
       [
-        TimeNPlaceData(
-          dayOfWeek: DayOfWeek.getByIndex(tempDayOfWeekIndex),
+        ClassTimeAndLocation(
+          weekday: Weekday.weekdayAtIndex(tempWeekdayIndex),
           startHour: tempStartHour,
           endHour: tempEndHour,
         ),
       ],
     );
   }
-
-  /// 시간표를 추가할 때 현재 선택된 시간표의 내용과 겹치는게 있는지 판별
-  ///
-  /// inputs
-  /// * [data] : 비교를 수행할 데이터
-  ///
-  /// returns
-  /// * [String] : [null]일 경우 통과, 그 외의 경우 겹치는 항목이 있음.
-  String? checkTimeTableCrash(TimeTableData data) {
+  String? checkTimeTableCrash(ClassSchedule data) {
     String? result;
 
     // 입력한 값들과 비교
-    for (int oldIndex = 0; oldIndex < data.dates.length; oldIndex++) {
-      TimeNPlaceData oldData = data.dates[oldIndex];
-      for (int newIndex = 0; newIndex < data.dates.length; newIndex++) {
+    for (int oldIndex = 0; oldIndex < data.times.length; oldIndex++) {
+      ClassTimeAndLocation oldData = data.times[oldIndex];
+      for (int newIndex = 0; newIndex < data.times.length; newIndex++) {
         if (oldIndex == newIndex) {
           continue;
         }
 
-        TimeNPlaceData newData = data.dates[newIndex];
+        ClassTimeAndLocation newData = data.times[newIndex];
 
-        if (oldData.dayOfWeek == newData.dayOfWeek) {
+        if (oldData.weekday == newData.weekday) {
           DateTime newStartTime =
           DateTime(1970, 1, 1, newData.startHour, newData.startMinute);
           DateTime newEndTime =
@@ -202,11 +175,11 @@ class EverytimeUserBloc {
     }
 
     // 전체 시간표와 비교
-    for (TimeTableData timeTableData
-    in currentSelectedTimeTable!.currentTimeTableData) {
-      for (TimeNPlaceData oldData in timeTableData.dates) {
-        for (TimeNPlaceData newData in data.dates) {
-          if (oldData.dayOfWeek == newData.dayOfWeek) {
+    for (ClassSchedule timeTableData
+    in currentSelectedSchedule!.currentScheduleData) {
+      for (ClassTimeAndLocation oldData in timeTableData.times) {
+        for (ClassTimeAndLocation newData in data.times) {
+          if (oldData.weekday == newData.weekday) {
             DateTime newStartTime =
             DateTime(1970, 1, 1, newData.startHour, newData.startMinute);
             DateTime newEndTime =
@@ -225,7 +198,7 @@ class EverytimeUserBloc {
                 oldPlayTime) {
               /* do nothing */
             } else {
-              result = timeTableData.subjectName;
+              result = timeTableData.className;
               break;
             }
           }
@@ -240,49 +213,27 @@ class EverytimeUserBloc {
     return result;
   }
 
-  /// 입력받은 [termString]과 [name]을 가진 시간표를 삭제
-  ///
-  /// inputs
-  /// * [termString] : 학기 이름 ex) 2022년 1학기
-  /// * [name] : 시간표의 이름
   void removeTimeTableList(String termString, String name) {
     Map<String, dynamic> result = findTimeTable(termString, name);
 
     if (result['timeTable'] == null || result['index'] == null) return;
 
-    List<TimeTable> tempTimeTableList = currentTimeTableList;
+    List<Schedule> tempTimeTableList = currentScheduleList;
     tempTimeTableList.removeAt(result['index']);
-    _updateTimeTableList(tempTimeTableList);
+    _updateSchedule(tempTimeTableList);
   }
 
-  /// 입력받은 시간표를 시간표 리스트에 추가
-  ///
-  /// inputs
-  /// * [newTimeTable] : 원래의 시간표 리스트에 추가할 새로운 시간표
-  void addTimeTableList(TimeTable newTimeTable) {
-    List<TimeTable> tempList = currentTimeTableList;
+  void addTimeTableList(Schedule newTimeTable) {
+    List<Schedule> tempList = currentScheduleList;
     tempList.add(newTimeTable);
-    _timeTableList.add(tempList);
+    _ScheduleList.add(tempList);
   }
 
-  /// 입력받은 [termString]과 [name]으로 그 시간표를 찾아서
-  /// 옵션으로 입력받는 변수들을 이용해서 데이터를 갱신
-  ///
-  /// inputs
-  /// * [terString] : 학기 이름 ex) 2022년 1학기
-  /// * [name] : 시간표 이름
-  ///
-  /// inputs(option)
-  /// * [newName] : 시간표의 이름
-  /// * [timeTableData] : 시간표 정보
-  /// * [privacyBounds] : 공개 범위
-  /// * [isDefault] : 이 시간표가 기본 시간표인지
   void updateTimeTableList(
       String termString,
       String name, {
         String? newName,
-        List<TimeTableData>? timeTableData,
-        PrivacyBounds? privacyBounds,
+        List<ClassSchedule>? timeTableData,
         bool? isDefault,
       }) {
     Map<String, dynamic> result = findTimeTable(termString, name);
@@ -293,41 +244,28 @@ class EverytimeUserBloc {
     if (timeTableData != null) {
       result['timeTable'].updateTimeTableData(timeTableData);
     }
-    if (privacyBounds != null) {
-      result['timeTable'].updatePrivacyBounds(privacyBounds);
-    }
     if (isDefault != null) result['timeTable'].updateIsDefault(isDefault);
 
     if (newName != null ||
         timeTableData != null ||
-        privacyBounds != null ||
         isDefault != null) {
-      List<TimeTable> tempTimeTableList = currentTimeTableList;
+      List<Schedule> tempTimeTableList = currentScheduleList;
       tempTimeTableList.replaceRange(
         result['index'],
         result['index'] + 1,
         [result['timeTable']],
       );
-      _updateTimeTableList(tempTimeTableList);
+      _updateSchedule(tempTimeTableList);
     }
   }
 
-  /// 입력받은 [termString]과 [name]을 이용해서 시간표를 찾아서 반환해주는 함수
-  ///
-  /// inputs
-  /// * [termString] : 학기 이름 ex) 2022년 1학기
-  /// * [name] : 시간표 이름
-  ///
-  /// returns
-  /// * ['timeTable'] : [_timeTableList]에서 찾은 시간표
-  /// * ['index'] : 찾은 시간표의 [_timeTableList]에서 인덱스값
-  Map<String, dynamic> findTimeTable(String termString, String name) {
-    TimeTable? tempTimeTable;
+  Map<String, dynamic> findTimeTable(String term, String name) {
+    Schedule? tempTimeTable;
     int? tempIndex;
-    for (int i = 0; i < currentTimeTableList.length; i++) {
-      if (currentTimeTableList[i].currentName == name &&
-          currentTimeTableList[i].termString == termString) {
-        tempTimeTable = currentTimeTableList[i];
+    for (int i = 0; i < currentScheduleList.length; i++) {
+      if (currentScheduleList[i].currentTitle == name &&
+          currentScheduleList[i].term == term) {
+        tempTimeTable = currentScheduleList[i];
         tempIndex = i;
       }
     }
@@ -335,63 +273,45 @@ class EverytimeUserBloc {
     return {'timeTable': tempTimeTable, 'index': tempIndex};
   }
 
-  /// [_timeList]의 기본 길이 값
-  ///
   // ignore: constant_identifier_names
   static const DEFAULT_TIME_LIST_LENGTH = 7;
   int get defaultTimeListLength => DEFAULT_TIME_LIST_LENGTH;
 
-  /// [_timeList]의 [0]의 기본 값
-  ///
   // ignore: constant_identifier_names
   static const DEFAULT_TIME_LIST_FIRST = 9;
   int get defaultTimeListFirst => DEFAULT_TIME_LIST_FIRST;
 
-  /// [_timeList]의 [last]의 기본 값
-  ///
   // ignore: constant_identifier_names
   static const DEFAULT_TIME_LIST_LAST = 15;
   int get defaultTimeListLast => DEFAULT_TIME_LIST_LAST;
 
-  /// [_dayOfWeekList]의 [last]의 기본 값
-  ///
   // ignore: constant_identifier_names
   static const DEFAULT_DAY_OF_WEEK_LIST_LAST = 4;
   int get defaultDayOfWeekListLast => DEFAULT_DAY_OF_WEEK_LIST_LAST;
 
-  /// 시간표의 시간 부분을 저장할 변수
   final _timeList =
   BehaviorSubject<List<int>>.seeded([9, 10, 11, 12, 13, 14, 15]);
 
   /// 시간표의 요일 부분을 저장할 변수
-  final _dayOfWeekList = BehaviorSubject<List<DayOfWeek>>.seeded([
-    DayOfWeek.mon,
-    DayOfWeek.tue,
-    DayOfWeek.wed,
-    DayOfWeek.thu,
-    DayOfWeek.fri
+  final _dayOfWeekList = BehaviorSubject<List<Weekday>>.seeded([
+    Weekday.Monday,
+    Weekday.Tuesday,
+    Weekday.Wednesday,
+    Weekday.Thursday,
+    Weekday.Friday,
   ]);
 
   Stream<List<int>> get timeList => _timeList.stream;
-  Stream<List<DayOfWeek>> get dayOfWeek => _dayOfWeekList.stream;
+  Stream<List<Weekday>> get dayOfWeek => _dayOfWeekList.stream;
 
   Function(List<int>) get updateTimeList => _timeList.sink.add;
-  Function(List<DayOfWeek>) get updateDayOfWeekList => _dayOfWeekList.sink.add;
+  Function(List<Weekday>) get updateDayOfWeekList => _dayOfWeekList.sink.add;
 
   List<int> get currentTimeList => _timeList.value;
-  List<DayOfWeek> get currentDayOfWeek => _dayOfWeekList.value;
+  List<Weekday> get currentDayOfWeek => _dayOfWeekList.value;
 
-  /// 입력받은 지우려는 값의 [startHour]와 [endHour]을 이용해서 [timeNPlaceData]에서
-  /// 값을 판별해서 일정 만큼 [_timeList]에서 시간 값들을 지우는 함수
-  ///
-  /// inputs
-  /// * [startHour] : 시작 시간
-  /// * [endHour] : 끝나는 시간
-  /// * [timeNPlaceData] : 비교를 수행할 데이터
-  ///
-  /// TODO: 주석을 좀 더 명확하게 써야할 듯
   void removeTimeList(
-      int startHour, int endHour, List<TimeNPlaceData> timeNPlaceData) {
+      int startHour, int endHour, List<ClassTimeAndLocation> classTimeAndLocation) {
     int minHour = min(startHour, endHour);
     int maxHour = max(startHour, endHour);
     bool minCheck = false;
@@ -410,26 +330,26 @@ class EverytimeUserBloc {
     int largestHour = DEFAULT_TIME_LIST_LAST;
     int smallestHour = DEFAULT_TIME_LIST_FIRST;
 
-    for (int i = 0; i < timeNPlaceData.length; i++) {
-      if (min(timeNPlaceData[i].startHour, timeNPlaceData[i].endHour) <=
+    for (int i = 0; i < classTimeAndLocation.length; i++) {
+      if (min(classTimeAndLocation[i].startHour, classTimeAndLocation[i].endHour) <=
           minHour) {
         isSmallExist = true;
       } else {
         if (smallestHour >=
-            min(timeNPlaceData[i].startHour, timeNPlaceData[i].endHour)) {
+            min(classTimeAndLocation[i].startHour, classTimeAndLocation[i].endHour)) {
           smallestHour =
-              min(timeNPlaceData[i].startHour, timeNPlaceData[i].endHour);
+              min(classTimeAndLocation[i].startHour, classTimeAndLocation[i].endHour);
         }
       }
 
-      if (max(timeNPlaceData[i].startHour, timeNPlaceData[i].endHour) >=
+      if (max(classTimeAndLocation[i].startHour, classTimeAndLocation[i].endHour) >=
           maxHour) {
         isLargeExist = true;
       } else {
         if (largestHour <=
-            max(timeNPlaceData[i].startHour, timeNPlaceData[i].endHour)) {
+            max(classTimeAndLocation[i].startHour, classTimeAndLocation[i].endHour)) {
           largestHour =
-              max(timeNPlaceData[i].startHour, timeNPlaceData[i].endHour);
+              max(classTimeAndLocation[i].startHour, classTimeAndLocation[i].endHour);
         }
       }
     }
@@ -458,13 +378,6 @@ class EverytimeUserBloc {
     updateTimeList(currentList);
   }
 
-  /// [startHour], [endHour]를 현재의 [_timeList]와 비교해서
-  /// 최대값 또는 최소값이 [startHour], [endHour] 중에 존재 할 경우
-  /// 그 시간만큼을 [_timeList]에 추가하는 함수
-  ///
-  /// inputs
-  /// * [startHour] : 시간 시간
-  /// * [endHour] : 끝나는 시간
   void addTimeList(int startHour, int endHour) {
     int maxHour = max(startHour, endHour);
     int minHour = min(startHour, endHour);
@@ -489,14 +402,8 @@ class EverytimeUserBloc {
     updateTimeList(currentList);
   }
 
-  /// 입력받은 [dayOfWeekIndex]를 [timeNPlaceData]와 비교해서 적절한 만큼의
-  /// 요일을 [_dayOfWeekList]에서 제거하는 함수
-  ///
-  /// inputs
-  /// * [dayOfWeekIndex] : 제거 할 요일의 인덱스, [DayOfWeek.getByDayOfWeek] 사용 권장
-  /// * [timeNPlaceData] : 비교룰 수행할 데이터
   void removeDayOfWeek(
-      int dayOfWeekIndex, List<TimeNPlaceData> timeNPlaceData) {
+      int dayOfWeekIndex, List<ClassTimeAndLocation> classTimeAndLocation) {
     if (dayOfWeekIndex <= DEFAULT_DAY_OF_WEEK_LIST_LAST) {
       return;
     }
@@ -504,16 +411,16 @@ class EverytimeUserBloc {
     bool isExist = false;
     int largestIndex = DEFAULT_DAY_OF_WEEK_LIST_LAST;
 
-    for (int i = 0; i < timeNPlaceData.length; i++) {
-      if (timeNPlaceData[i].dayOfWeek.index >=
-          DayOfWeek.getByIndex(dayOfWeekIndex).index) {
+    for (int i = 0; i < classTimeAndLocation.length; i++) {
+      if (classTimeAndLocation[i].weekday.index >=
+          Weekday.weekdayAtIndex(dayOfWeekIndex).index) {
         isExist = true;
       } else {
-        largestIndex = DayOfWeek.getByDayOfWeek(timeNPlaceData[i].dayOfWeek);
+        largestIndex = Weekday.indexOfWeekday(classTimeAndLocation[i].weekday);
       }
     }
 
-    List<DayOfWeek> currentList = currentDayOfWeek;
+    List<Weekday> currentList = currentDayOfWeek;
     if (!isExist) {
       largestIndex = (largestIndex <= DEFAULT_DAY_OF_WEEK_LIST_LAST)
           ? DEFAULT_DAY_OF_WEEK_LIST_LAST
@@ -526,49 +433,33 @@ class EverytimeUserBloc {
     updateDayOfWeekList(currentList);
   }
 
-  /// 입력받은 [dayOfWeekIndex]가 현재의 [_dayOfWeekList]에 있는지 판단해서
-  /// 없다면 그 차이만큼 요일을 추가하는 함수
-  ///
-  /// inputs
-  /// * [dayOfWeekIndex] : 요일의 인덱스, [DayOfWeek.getByDayOfWeek] 사용 권장
   void addDayOfWeek(int dayOfWeekIndex) {
     if (dayOfWeekIndex > currentDayOfWeek.length - 1) {
-      List<DayOfWeek> currentList = currentDayOfWeek;
+      List<Weekday> currentList = currentDayOfWeek;
       int currentLength = currentList.length;
 
       for (int i = 1; i <= dayOfWeekIndex - (currentLength - 1); i++) {
-        currentList.add(DayOfWeek.getByIndex(currentLength - 1 + i));
+        currentList.add(Weekday.weekdayAtIndex(currentLength - 1 + i));
       }
 
       updateDayOfWeekList(currentList);
     }
   }
 
-  //****************************************************************************************************
-  // 성적 관련
-  // TODO: 서버 추가할 때 여기 데이터들도 올리기
-  //****************************************************************************************************
-
-  /// 전체 평점
   final _totalGradeAve = BehaviorSubject<double>.seeded(0.0);
 
-  /// 전공 평점
   final _majorGradeAve = BehaviorSubject<double>.seeded(0.0);
 
-  /// 평점의 최댓값. 혹시나 해서 만들어뒀다.
   final _maxAve = BehaviorSubject<double>.seeded(4.5);
 
-  /// 현재 획득한 학점
   final _currentCredit = BehaviorSubject<int>.seeded(0);
 
-  /// 채워야 하는 학점, 목표 학점
   final _targetCredit = BehaviorSubject<int>.seeded(0);
 
-  /// 점 그래프 데이터
-  final _aveData = BehaviorSubject<List<PointChartData>>.seeded([]);
+  final _aveData = BehaviorSubject<List<TermGradePointData>>.seeded([]);
 
   /// 바 그래프 데이터
-  final _percentData = BehaviorSubject<List<BarChartData>>.seeded([]);
+  final _percentData = BehaviorSubject<List<GradeDistributionData>>.seeded([]);
 
   Stream<double> get totalGradeAve => _totalGradeAve.stream;
   Function(double) get _updateTotalGradeAve => _totalGradeAve.sink.add;
@@ -583,82 +474,69 @@ class EverytimeUserBloc {
   Function(int) get updateTargetCredit => _targetCredit.sink.add;
 
   /// 학기의 성적 정보
-  final List<GradeOfTerm> _gradeOfTerms = [
-    GradeOfTerm(
-      term: '1학년 1학기',
+  final List<TermGrades> _gradeOfTerms = [
+    TermGrades(
+      termName: '1학년 1학기',
     ),
-    GradeOfTerm(
-      term: '1학년 2학기',
+    TermGrades(
+      termName: '1학년 2학기',
     ),
-    GradeOfTerm(
-      term: '2학년 1학기',
+    TermGrades(
+      termName: '2학년 1학기',
     ),
-    GradeOfTerm(
-      term: '2학년 2학기',
+    TermGrades(
+      termName: '2학년 2학기',
     ),
-    GradeOfTerm(
-      term: '3학년 1학기',
+    TermGrades(
+      termName: '3학년 1학기',
     ),
-    GradeOfTerm(
-      term: '3학년 2학기',
+    TermGrades(
+      termName: '3학년 2학기',
     ),
-    GradeOfTerm(
-      term: '4학년 1학기',
+    TermGrades(
+      termName: '4학년 1학기',
     ),
-    GradeOfTerm(
-      term: '4학년 2학기',
+    TermGrades(
+      termName: '4학년 2학기',
     ),
-    GradeOfTerm(
-      term: '5학년 1학기',
+    TermGrades(
+      termName: '5학년 1학기',
     ),
-    GradeOfTerm(
-      term: '5학년 2학기',
+    TermGrades(
+      termName: '5학년 2학기',
     ),
-    GradeOfTerm(
-      term: '6학년 1학기',
+    TermGrades(
+      termName: '6학년 1학기',
     ),
-    GradeOfTerm(
-      term: '6학년 2학기',
+    TermGrades(
+      termName: '6학년 2학기',
     ),
-    GradeOfTerm(
-      term: '기타 학기',
+    TermGrades(
+      termName: '기타 학기',
     ),
   ];
 
-  /// 임시로 각 성적의 총합들을 저장할 공간. 자주 용하는거 같아서 전역 변수로 선언해줌.
-  ///
   // ignore: prefer_for_elements_to_map_fromiterable, prefer_final_fields
-  Map<GradeType, int> _tempGradesAmount = Map<GradeType, int>.fromIterable(
-      GradeType.getGrades(),
+  Map<Grade, int> _tempGradesAmount = Map<Grade, int>.fromIterable(
+      Grade.allGrades(),
       key: (element) => element,
       value: (element) => 0);
 
   int get getTermsLength => _gradeOfTerms.length;
-  GradeOfTerm getTerm(int index) => _gradeOfTerms[index];
+  TermGrades getTerm(int index) => _gradeOfTerms[index];
   Stream<double> getTotalGradeAve(int index) =>
       _gradeOfTerms[index].totalGradeAve;
   Stream<double> getMajorGradeAve(int index) =>
       _gradeOfTerms[index].majorGradeAve;
   Stream<int> getCreditAmount(int index) => _gradeOfTerms[index].creditAmount;
 
-  /// 각 변수들을 최신 상태로 업데이트 하는 함수
-  ///
-  /// target
-  /// * [totalGrade]
-  /// * [totalCredit]
-  /// * [majorGrade]
-  /// * [majorCredit]
-  /// * [pCredit]
-  /// * [totalGradeAve]
-  /// * [majorGradeAve]
-  /// * [currentCredit]
   void updateData() {
     double tempTotalGrade = 0.0;
     int tempTotalCredit = 0;
     double tempMajorGrade = 0.0;
     int tempMajorCredit = 0;
     int tempPCredit = 0;
-    List<PointChartData> tempPointChartDataList = [];
+    List<TermGradePointData> tempPointChartDataList = [];
     _tempGradesAmount.forEach(
           (key, value) => _tempGradesAmount[key] = 0,
     );
@@ -669,8 +547,8 @@ class EverytimeUserBloc {
       tempMajorGrade += getTerm(i).currentMajorGrade;
       tempMajorCredit += getTerm(i).currentMajorCredit;
       tempPCredit += getTerm(i).currentPCredit;
-      for (int j = 0; j < GradeType.getGrades().length; j++) {
-        _tempGradesAmount.update(GradeType.getByIndex(j),
+      for (int j = 0; j < Grade.allGrades().length; j++) {
+        _tempGradesAmount.update(Grade.getByIndex(j),
                 (value) => value += getTerm(i).currentGradeAmountsElementAt(j));
       }
     }
@@ -688,12 +566,12 @@ class EverytimeUserBloc {
           getTerm(i).currentMajorGradeAve == 0.0) {
         continue;
       }
-      tempPointChartDataList.add(PointChartData(
-        term: getTerm(i).term,
-        totalGrade: (getTerm(i).currentTotalGradeAve == 0.0)
+      tempPointChartDataList.add(TermGradePointData(
+        term: getTerm(i).termName,
+        overallGPA: (getTerm(i).currentTotalGradeAve == 0.0)
             ? null
             : getTerm(i).currentTotalGradeAve,
-        majorGrade: (getTerm(i).currentMajorGradeAve == 0.0)
+        majorGPA: (getTerm(i).currentMajorGradeAve == 0.0)
             ? null
             : getTerm(i).currentMajorGradeAve,
       ));
@@ -702,18 +580,17 @@ class EverytimeUserBloc {
     _updatePercentData();
   }
 
-  Stream<List<PointChartData>> get aveData => _aveData.stream;
-  Function(List<PointChartData>) get _updateAveData => _aveData.sink.add;
+  Stream<List<TermGradePointData>> get aveData => _aveData.stream;
+  Function(List<TermGradePointData>) get _updateAveData => _aveData.sink.add;
 
-  Stream<List<BarChartData>> get percentData => _percentData.stream;
+  Stream<List<GradeDistributionData>> get percentData => _percentData.stream;
 
-  /// [_percentData]를 [_tempGradesAmount]에 있는 데이터를 바탕으로 업데이트하는 함수
   void _updatePercentData() {
-    Map<GradeType, int> sortByValue = Map.fromEntries(
+    Map<Grade, int> sortByValue = Map.fromEntries(
         _tempGradesAmount.entries.toList()
           ..sort((e1, e2) => e2.value.compareTo(e1.value)));
 
-    List<BarChartData> tempList = [];
+    List<GradeDistributionData> tempList = [];
 
     for (int i = 0; i < 5; i++) {
       if (sortByValue.values.elementAt(i) == 0) {
@@ -721,83 +598,71 @@ class EverytimeUserBloc {
       }
 
       tempList.add(
-        BarChartData(
-          percent:
+        GradeDistributionData(
+          percentage:
           (sortByValue.values.elementAt(i) / _currentCredit.value * 100)
               .round(),
-          grade: (sortByValue.keys.elementAt(i).data),
+          gradeLabel: (sortByValue.keys.elementAt(i).label),
         ),
       );
     }
 
     _percentData.sink.add(tempList);
   }
-
-  /// 테스트용 데이터
-  ///
-  /// TODO: 나중에 지우기
   void initGradeCalTest() {
     updateTargetCredit(140);
 
     getTerm(0).updateSubject(
       0,
-      credit: 9,
-      gradeType: GradeType.ap,
+      courseCredits: 9,
+      courseGrade: Grade.AP,
     );
     getTerm(0).updateSubject(
       1,
-      credit: 5,
-      gradeType: GradeType.az,
+      courseCredits: 5,
+      courseGrade: Grade.A,
     );
     getTerm(0).updateSubject(
       2,
-      credit: 5,
-      gradeType: GradeType.ap,
-      isMajor: true,
+      courseCredits: 5,
+      courseGrade: Grade.AP,
+      isMajorCourse: true,
     );
     getTerm(0).updateSubject(
       3,
-      credit: 2,
-      gradeType: GradeType.bp,
+      courseCredits: 2,
+      courseGrade: Grade.BP,
     );
 
     getTerm(1).updateSubject(
       0,
-      credit: 4,
-      gradeType: GradeType.ap,
+      courseCredits: 4,
+      courseGrade: Grade.BP,
     );
     getTerm(1).updateSubject(
       1,
-      credit: 6,
-      gradeType: GradeType.az,
+      courseCredits: 6,
+      courseGrade: Grade.A,
     );
     getTerm(1).updateSubject(
       2,
-      credit: 6,
-      gradeType: GradeType.ap,
-      isMajor: true,
+      courseCredits: 6,
+      courseGrade: Grade.AP,
+      isMajorCourse: true,
     );
     getTerm(1).updateSubject(
       3,
-      credit: 4,
-      gradeType: GradeType.bz,
+      courseCredits: 4,
+      courseGrade: Grade.B,
     );
 
     updateData();
   }
 
-  //****************************************************************************************************
-  // 시스템 관련 변수들
-  // TODO: 서버 추가할 때 이 데이터들은 제외
-  //****************************************************************************************************
-
-  /// 현재 다크모드인지 나타내는 변수
   final _isDark = BehaviorSubject<bool>.seeded(false);
 
-  /// 현재 키보드가 보여지고 있는지 나타내는 변수
   final _isShowingKeyboard = BehaviorSubject<bool>.seeded(false);
 
-  /// 현재 학기를 나타낼 문자열 ex) 2022년 2학기
   final _termString = BehaviorSubject<String>();
 
   Stream<bool> get isDark => _isDark.stream;
@@ -810,7 +675,6 @@ class EverytimeUserBloc {
 
   Stream<String> get termString => _termString.stream;
 
-  /// 현재 시간을 기반으로 [_termString]을 갱신
   void updateTermString() {
     DateTime now = DateTime.now();
     String term;
@@ -830,7 +694,7 @@ class EverytimeUserBloc {
 
   String get currentTermString => _termString.value;
 
-  //****************************************************************************************************
+
   void dispose() {
     _name.close();
     _univ.close();
@@ -838,17 +702,15 @@ class EverytimeUserBloc {
     _id.close();
     _year.close();
 
-    //****************************************************************************************************
-    for (int i = 0; i < _timeTableList.value.length; i++) {
-      _timeTableList.value[i].dispose();
+
+    for (int i = 0; i < _ScheduleList.value.length; i++) {
+      _ScheduleList.value[i].dispose();
     }
-    _timeTableList.close();
-    _selectedTimeTable.close();
+    _ScheduleList.close();
+    _selectedSchedule.close();
 
     _timeList.close();
     _dayOfWeekList.close();
-
-    //****************************************************************************************************
 
     _totalGradeAve.close();
     _majorGradeAve.close();
@@ -864,7 +726,6 @@ class EverytimeUserBloc {
     _aveData.close();
     _percentData.close();
 
-    //****************************************************************************************************
     _isDark.close();
     _isShowingKeyboard.close();
     _termString.close();
