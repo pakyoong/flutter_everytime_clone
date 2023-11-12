@@ -25,14 +25,12 @@ class DynamicAppBar extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween, // 자식들을 양 끝으로 분산 배치
         crossAxisAlignment: CrossAxisAlignment.start, // 자식들을 상단에 정렬
         children: [
-          Container(
-            child: Text(
-              title, // 제목 텍스트
-              style: const TextStyle(
-                color: Colors.black, // 텍스트 색상
-                fontSize: 27, // 텍스트 크기
-                fontWeight: FontWeight.bold, // 글꼴 두께
-              ),
+          Text(
+            title, // 제목 텍스트
+            style: const TextStyle(
+              color: Colors.black, // 텍스트 색상
+              fontSize: 27, // 텍스트 크기
+              fontWeight: FontWeight.bold, // 글꼴 두께
             ),
           ),
           Row(mainAxisAlignment: MainAxisAlignment.center, children: actions), // 액션 버튼들을 중앙 정렬로 표시

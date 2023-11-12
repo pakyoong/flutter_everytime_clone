@@ -1,9 +1,9 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:rxdart/subjects.dart';
-import '../../component/DynamicAppBar.dart';
-import '../../component/ScrollResponsiveAppBar.dart';
-import '../../component/AppBarButton.dart';
+import '../../component/dynamic_app_bar.dart';
+import '../../component/scroll_responsive_app_bar.dart';
+import '../../component/app_bar_button.dart';
 import '../../screen_dimensions.dart'; // screen_dimensions.dart 파일의 경로를 확인하세요.
 
 class TimeTable extends StatefulWidget {

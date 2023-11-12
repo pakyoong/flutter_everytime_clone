@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'bloc/NavigationBloc.dart';
+import 'bloc/navigation_bloc.dart';
 import 'ui/pages/Alarm.dart';
 import 'ui/pages/Board.dart';
 import 'ui/pages/Campus.dart';
