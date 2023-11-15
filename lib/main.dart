@@ -49,9 +49,9 @@ class _HomePageState extends State<HomePage> {
   final List<IconData> _bottomNavIcons = const [
     Icons.home_outlined,
     Icons.table_chart_outlined,
-    Icons.dashboard_outlined,
+    Icons.article_outlined,
     Icons.notifications_active_outlined,
-    Icons.alternate_email_outlined,
+    Icons.person_outline,
   ];
 
   @override
