@@ -100,13 +100,10 @@ class TimeTableListManagerBloc {
         orElse: () => TermClassTimetable(termName: classTimetable.term),
       );
 
-      if (found != null) {
-        found.classTimetable.add(classTimetable);
-      } else {
-        tempSortedClassTimetable.add(
-          TermClassTimetable(termName: classTimetable.term)..classTimetable.add(classTimetable),
-        );
+      if (found.classTimetable.isEmpty) {
+        tempSortedClassTimetable.add(found);
       }
+      found.classTimetable.add(classTimetable);
     }
 
     updateSortedClassTimetable(tempSortedClassTimetable);

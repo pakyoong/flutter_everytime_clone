@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'bloc/navigation_bloc.dart';
-import 'ui/pages/Alarm.dart';
-import 'ui/pages/Board.dart';
-import 'ui/pages/Campus.dart';
-import 'ui/pages/Main.dart';
-import 'ui/pages/MyInfo.dart';
+import 'ui/pages/alarm.dart';
+import 'ui/pages/board.dart';
+import 'ui/pages/campus.dart';
+import 'ui/pages/main_page.dart';
+import 'ui/pages/myInfo.dart';
 import 'ui/pages/time_table.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -18,12 +20,14 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HomePage(),
+      home: const HomePage(),
     );
   }
 }
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
   _HomePageState createState() => _HomePageState();
 }
