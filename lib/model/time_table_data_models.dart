@@ -119,12 +119,3 @@ class CourseInfo {
   bool isPassFail = false; // Pass/Fail 여부
   bool isMajorCourse = false; // 전공 과목 여부
 }
-
-// SortedTimeTable: 정렬된 시간표 데이터를 관리하는 클래스
-class SortedTimeTable {
-  final String termString; // 학기 문자열
-
-  final List<ClassTimetable> timeTables = []; // 시간표 목록
-
-  SortedTimeTable({required this.termString});
-}

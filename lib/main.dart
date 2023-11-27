@@ -6,6 +6,7 @@ import 'ui/pages/campus.dart';
 import 'ui/pages/main_page.dart';
 import 'ui/pages/myInfo.dart';
 import 'ui/pages/time_table.dart';
+import 'bloc/user_profile_management_bloc.dart';
 
 void main() => runApp(const MyApp());
 
@@ -37,12 +38,14 @@ class _HomePageState extends State<HomePage> {
   late final ScrollController _timeTableScrollController = ScrollController();
   late final List<Widget> _pages;
 
+  final _userBloc = EverytimeUserBloc();
+
   @override
   void initState() {
     super.initState();
     _pages = [
       const MainPage(),
-      TimeTable(scrollController: _timeTableScrollController), // 수정된 부분
+      TimeTablePage(scrollController: _timeTableScrollController, userBloc: _userBloc, isOnScreen: false,), // 수정된 부분
       const Board(),
       const CampusPick(),
       const Alarm(),

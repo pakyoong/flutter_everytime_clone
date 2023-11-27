@@ -65,10 +65,18 @@ class DirectAdditionBloc {
   }
 
   // 클래스 시간을 추가하거나 제거하는 메서드들
-  void addClassTime(ClassTimeAndLocation timeAndLocation) {
-    var temp = List<ClassTimeAndLocation>.from(_classTimes.value);
-    temp.add(timeAndLocation);
-    updateClassTimes(temp);
+  void addClassTime({
+    String? location,
+    int? startHour,
+    int? startMinute,
+    int? endHour,
+    int? endMinute,
+    Weekday? weekday,
+}) {
+    updateClassTimes([
+      ..._classTimes.value,
+      ClassTimeAndLocation(),
+    ]);
   }
 
   void removeClassTime(int index) {
@@ -115,6 +123,12 @@ class TimeTableListManagerBloc {
   // 학기 선택기와 선택된 학기 인덱스에 대한 스트림을 제공합니다.
   Stream<int> get selectedTermIndex => _selectedTermIndex.stream;
   Stream<List<String>> get termPickerList => _termPickerList.stream;
+
+  // 현재 학기 목록을 반환하는 getter
+  List<String> get currentTermPickerList => _termPickerList.value;
+
+  // 현재 선택된 학기 인덱스를 반환하는 getter
+  int get currentSelectedTermIndex => _selectedTermIndex.value;
 
   // 학기 선택기 목록을 생성하고 업데이트하는 메서드들입니다.
   void updateTermPickerList(List<String> terms) => _termPickerList.sink.add(terms);
