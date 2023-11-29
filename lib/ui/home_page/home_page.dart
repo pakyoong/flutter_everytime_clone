@@ -3,7 +3,7 @@ import 'package:everytime/component/custom_appbar.dart';
 import 'package:everytime/component/custom_appbar_animation.dart';
 import 'package:everytime/component/custom_appbar_button.dart';
 import 'package:everytime/global_variable.dart';
-import 'package:everytime/ui/home_page/my_info_page/my_info_page.dart';
+import 'package:everytime/ui/my_info_page.dart';
 import 'package:everytime/ui/home_page/search_page/search_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';

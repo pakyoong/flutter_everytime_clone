@@ -20,6 +20,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(
           textScaleFactor: 0.8235294117647058,
@@ -160,7 +161,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
                 ),
                 BoardPage(),
                 AlarmPage(),
-                CampusPickPage(),
+                MyInfoPage(userBloc: _userBloc),
               ],
             );
           }
