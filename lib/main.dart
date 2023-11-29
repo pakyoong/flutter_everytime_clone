@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:everytime/ui/alarm_page.dart';
 import 'package:everytime/ui/board_page.dart';
-import 'package:everytime/ui/campus_pick_page.dart';
+import 'package:everytime/ui/my_info_page.dart';
 import 'package:everytime/ui/home_page/home_page.dart';
 import 'package:everytime/ui/time_table_page/time_table_page.dart';
 
@@ -75,9 +75,9 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
   final List<IconData> _bottomNavIcons = const [
     Icons.home_outlined,
     Icons.table_chart_outlined,
-    Icons.dashboard_outlined,
+    Icons.article_outlined,
     Icons.notifications_active_outlined,
-    Icons.alternate_email_outlined,
+    Icons.person_outline,
   ];
 
   final _mainBloc = MainBloc();
