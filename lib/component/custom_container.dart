@@ -1,4 +1,4 @@
-import 'package:everytime/screen_dimensions.dart';
+import 'package:everytime/global_variable.dart';
 import 'package:flutter/material.dart';
 
 class CustomContainer extends StatelessWidget {
@@ -22,14 +22,14 @@ class CustomContainer extends StatelessWidget {
     return Container(
       height: height,
       margin: EdgeInsets.only(
-        right: availableWidth * 0.02,
-        left: availableWidth * 0.02,
-        bottom: availableWidth * 0.02,
+        right: appWidth * 0.02,
+        left: appWidth * 0.02,
+        bottom: appWidth * 0.02,
       ),
       padding: usePadding
           ? EdgeInsets.only(
-              top: availableHeight * 0.03,
-              bottom: availableHeight * 0.03,
+              top: appHeight * 0.03,
+              bottom: appHeight * 0.03,
             )
           : null,
       decoration: BoxDecoration(

@@ -1,4 +1,4 @@
-import 'package:everytime/screen_dimensions.dart';
+import 'package:everytime/global_variable.dart';
 import 'package:flutter/material.dart';
 
 class CustomButtonModalBottomSheet extends StatelessWidget {
@@ -12,7 +12,7 @@ class CustomButtonModalBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: availableHeight * 0.085 + (availableHeight * 0.06 * buttonList.length),
+      height: appHeight * 0.085 + (appHeight * 0.06 * buttonList.length),
       color: Theme.of(context).backgroundColor,
       child: SafeArea(
         child: Column(
@@ -20,9 +20,9 @@ class CustomButtonModalBottomSheet extends StatelessWidget {
             buttonList.length,
             (index) {
               return Container(
-                height: availableHeight * 0.04,
+                height: appHeight * 0.04,
                 margin: EdgeInsets.only(
-                  top: availableHeight * 0.02,
+                  top: appHeight * 0.02,
                 ),
                 child: MaterialButton(
                   padding: EdgeInsets.zero,
@@ -32,8 +32,8 @@ class CustomButtonModalBottomSheet extends StatelessWidget {
                     children: [
                       Container(
                         padding: EdgeInsets.only(
-                          left: availableWidth * 0.065,
-                          right: availableWidth * 0.065,
+                          left: appWidth * 0.065,
+                          right: appWidth * 0.065,
                         ),
                         child: Icon(
                           buttonList.elementAt(index).icon,

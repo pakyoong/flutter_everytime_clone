@@ -1,4 +1,4 @@
-import 'package:everytime/screen_dimensions.dart';
+import 'package:everytime/global_variable.dart';
 import 'package:flutter/material.dart';
 
 class CustomContainerTitle extends StatelessWidget {
@@ -18,16 +18,16 @@ class CustomContainerTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: availableHeight * 0.03,
+      height: appHeight * 0.03,
       margin: EdgeInsets.only(
-        bottom: availableHeight * 0.03,
+        bottom: appHeight * 0.03,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Container(
             padding: EdgeInsets.only(
-              left: availableWidth * 0.05,
+              left: appWidth * 0.05,
             ),
             child: Text(
               title,
@@ -42,14 +42,14 @@ class CustomContainerTitle extends StatelessWidget {
               ? const SizedBox.shrink()
               : Container(
                   width: (type == CustomContainerTitleType.button)
-                      ? availableWidth * 0.11
-                      : availableWidth * 0.19,
+                      ? appWidth * 0.11
+                      : appWidth * 0.19,
                   alignment: Alignment.centerRight,
                   child: MaterialButton(
                     highlightColor: Colors.transparent,
                     splashColor: Colors.transparent,
                     padding: EdgeInsets.only(
-                      right: availableWidth * 0.05,
+                      right: appWidth * 0.05,
                     ),
                     child: (type == CustomContainerTitleType.button)
                         ? Icon(

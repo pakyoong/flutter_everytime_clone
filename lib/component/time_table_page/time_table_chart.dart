@@ -1,29 +1,31 @@
-import '../../bloc/user_profile_management_bloc.dart';
+import 'package:everytime/bloc/everytime_user_bloc.dart';
 import 'package:everytime/component/custom_button_modal_bottom_sheet.dart';
 import 'package:everytime/component/custom_cupertino_alert_dialog.dart';
-import 'package:everytime/screen_dimensions.dart';
-import '../../model/time_table_data_models.dart';
-import '../../model/academic_enums.dart';
+import 'package:everytime/global_variable.dart';
+import 'package:everytime/model/enums.dart';
+import 'package:everytime/model/time_table_page/time_n_place_data.dart';
+import 'package:everytime/model/time_table_page/time_table_data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class TimeTableChart extends StatelessWidget {
+  // 생성자에서 필요한 속성들을 초기화
   const TimeTableChart({
-    super.key,
-    required this.userBloc,
-    this.isActivateButton = true,
-    this.shadowDataList,
-    required this.classTimetable,
-    required this.startHour,
-    required this.timeList,
-    required this.dayOfWeekList,
-    this.scrollController,
-  });
+    Key? key,
+    required this.userBloc, // 사용자 블록
+    this.isActivateButton = true, // 버튼 활성화 여부
+    this.shadowDataList, // 그림자 데이터 리스트
+    required this.timeTableData, // 시간표 데이터
+    required this.startHour, // 시작 시간
+    required this.timeList, // 시간 목록
+    required this.dayOfWeekList, // 요일 목록
+    this.scrollController, // 스크롤 컨트롤러
+  }) : super(key: key);
 
   final List<int> timeList;
-  final List<Weekday> dayOfWeekList;
-  final List<ClassTimeTable> classTimetable;
-  final List<ClassTimeAndLocation>? shadowDataList;
+  final List<DayOfWeek> dayOfWeekList;
+  final List<TimeTableData> timeTableData;
+  final List<TimeNPlaceData>? shadowDataList;
   final EverytimeUserBloc userBloc;
   final bool isActivateButton;
   final ScrollController? scrollController;
@@ -33,7 +35,7 @@ class TimeTableChart extends StatelessWidget {
   List<Widget> _buildShadows(BuildContext context) {
     List<Widget> result = [];
 
-    for (ClassTimeAndLocation data in shadowDataList ?? []) {
+    for (TimeNPlaceData data in shadowDataList ?? []) {
       result.add(
         StreamBuilder(
           stream: userBloc.isDark,
@@ -62,30 +64,30 @@ class TimeTableChart extends StatelessWidget {
   }
 
   double _getContainerWidth() {
-    return availableWidth * 0.8995 / dayOfWeekList.length;
+    return appWidth * 0.8995 / dayOfWeekList.length;
   }
 
-  double _getContainerHeight(ClassTimeAndLocation data) {
+  double _getContainerHeight(TimeNPlaceData data) {
     DateTime startTime = DateTime(1970, 1, 1, data.endHour, data.endMinute);
     DateTime endTime = DateTime(1970, 1, 1, data.startHour, data.startMinute);
     int diff = startTime.difference(endTime).inMinutes;
 
-    return (availableHeight * diff / 5 * 0.00483);
+    return (appHeight * diff / 5 * 0.00483);
   }
 
-  double _getPositionLeft(ClassTimeAndLocation data) {
-    double pos = availableWidth *
+  double _getPositionLeft(TimeNPlaceData data) {
+    double pos = appWidth *
         (0.8995 / dayOfWeekList.length) *
-        (Weekday.indexOfWeekday(data.weekday));
-    return (availableWidth * 0.055) + pos;
+        (DayOfWeek.getByDayOfWeek(data.dayOfWeek));
+    return (appWidth * 0.055) + pos;
   }
 
-  double _getPositionTop(ClassTimeAndLocation data) {
+  double _getPositionTop(TimeNPlaceData data) {
     DateTime startTime = DateTime(1970, 1, 1, data.startHour, data.startMinute);
     DateTime endTime = DateTime(1970, 1, 1, timeList[0], 0);
     int diff = startTime.difference(endTime).inMinutes;
 
-    return ((availableHeight * 0.022) + (availableHeight * diff / 5 * 0.00483));
+    return ((appHeight * 0.022) + (appHeight * diff / 5 * 0.00483));
   }
 
   void _buildRemoveDialog(BuildContext context, int currentIndex) {
@@ -109,9 +111,9 @@ class TimeTableChart extends StatelessWidget {
               onPressed: () {
                 // TODO: 전체 시간표 목록 갱신해야함.
 
-                userBloc.removeClassTimetableDataAt(
+                userBloc.removeTimeTableDataAt(
                   currentIndex,
-                  classTimetable,
+                  timeTableData,
                 );
 
                 Navigator.pop(dialogContext);
@@ -125,14 +127,14 @@ class TimeTableChart extends StatelessWidget {
 
   List<Widget> _buildButtons(BuildContext context) {
     List<Widget> result = [];
-    for (int i = 0; i < classTimetable.length; i++) {
-      for (ClassTimeAndLocation time in classTimetable[i].times) {
+    for (int i = 0; i < timeTableData.length; i++) {
+      for (TimeNPlaceData data in timeTableData[i].dates) {
         result.add(
           Positioned(
-            top: _getPositionTop(time),
-            left: _getPositionLeft(time),
+            top: _getPositionTop(data),
+            left: _getPositionLeft(data),
             child: Container(
-              height: _getContainerHeight(time),
+              height: _getContainerHeight(data),
               width: _getContainerWidth(),
               color: Colors.green,
               child: MaterialButton(
@@ -145,10 +147,10 @@ class TimeTableChart extends StatelessWidget {
                           context: context,
                           builder: (bottomSheetContext) {
                             return SizedBox(
-                              height: availableHeight * 0.085 +
-                                  (availableHeight * 0.06 * 5) +
-                                  bottomPadding +
-                                  availableHeight * 0.095,
+                              height: appHeight * 0.085 +
+                                  (appHeight * 0.06 * 5) +
+                                  paddingBottom +
+                                  appHeight * 0.095,
                               child: Column(
                                 children: [
                                   _buildSubjectInfo(context, i),
@@ -195,7 +197,7 @@ class TimeTableChart extends StatelessWidget {
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
                       Text(
-                        classTimetable[i].className,
+                        timeTableData[i].subjectName,
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -203,7 +205,7 @@ class TimeTableChart extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        time.location,
+                        data.place,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -228,15 +230,15 @@ class TimeTableChart extends StatelessWidget {
         alignment: Alignment.topLeft,
         color: Theme.of(context).backgroundColor,
         padding: EdgeInsets.only(
-          top: availableWidth * 0.035,
-          left: availableWidth * 0.065,
-          right: availableWidth * 0.065,
+          top: appHeight * 0.035,
+          left: appWidth * 0.065,
+          right: appWidth * 0.065,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              classTimetable[index].className,
+              timeTableData[index].subjectName,
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -244,7 +246,7 @@ class TimeTableChart extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              classTimetable[index].professor,
+              timeTableData[index].prof,
               style: const TextStyle(
                 fontSize: 17,
               ),
@@ -301,8 +303,8 @@ class TimeTableChart extends StatelessWidget {
         (currentColIndex) {
           return Container(
             height: (currentColIndex == 0)
-                ? availableHeight * 0.022
-                : availableHeight * 0.0579125,
+                ? appHeight * 0.022
+                : appHeight * 0.0579125,
             decoration: (currentColIndex + 1 == timeList.length + 1)
                 ? null
                 : BoxDecoration(
@@ -333,8 +335,8 @@ class TimeTableChart extends StatelessWidget {
             (rowIndex) {
               return Container(
                 width: (rowIndex == 0)
-                    ? availableWidth * 0.055
-                    : availableWidth * 0.8995 / dayOfWeekList.length,
+                    ? appWidth * 0.055
+                    : appWidth * 0.8995 / dayOfWeekList.length,
                 decoration: (rowIndex + 1 == dayOfWeekList.length + 1)
                     ? null
                     : BoxDecoration(

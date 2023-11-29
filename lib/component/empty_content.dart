@@ -1,4 +1,4 @@
-import 'package:everytime/screen_dimensions.dart';
+import 'package:everytime/global_variable.dart';
 import 'package:flutter/material.dart';
 
 class EmptyContent extends StatelessWidget {
@@ -37,7 +37,7 @@ class EmptyContent extends StatelessWidget {
             ),
           ),
           SizedBox(
-            height: availableHeight * 0.005,
+            height: appHeight * 0.005,
           ),
           (contentIsString)
               ? Text(

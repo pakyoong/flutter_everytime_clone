@@ -1,4 +1,4 @@
-import 'package:everytime/screen_dimensions.dart';
+import 'package:everytime/global_variable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -16,7 +16,7 @@ class CustomPickerModalBottomSheet extends StatelessWidget {
   final Function? onPressedSave;
   final Widget picker;
 
-  final _selectGradeSheetHeight = availableHeight * 0.4;
+  final _selectGradeSheetHeight = appHeight * 0.4;
 
   //TODO: 이거 좀 바꿔야할듯?
   static double get sheetHeight => 768 * 0.4;

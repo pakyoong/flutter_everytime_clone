@@ -1,4 +1,4 @@
-import 'package:everytime/screen_dimensions.dart';
+import 'package:everytime/global_variable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -45,7 +45,7 @@ class CustomCupertinoAlertDialog extends StatelessWidget {
               content: hasTextField
                   ? Container(
                       margin: EdgeInsets.only(
-                        top: availableHeight * 0.025,
+                        top: appHeight * 0.025,
                       ),
                       child: CupertinoTextField(
                         controller: textEditingController,
