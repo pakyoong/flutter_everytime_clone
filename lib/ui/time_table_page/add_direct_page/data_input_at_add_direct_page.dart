@@ -1,11 +1,11 @@
-import 'package:everytime/bloc/time_table_page/add_direct_bloc.dart';
+import 'package:everytime/bloc/time_table_page/lecture_schedule_bloc.dart';
 import 'package:everytime/bloc/everytime_user_bloc.dart';
 import 'package:everytime/component/custom_cupertino_alert_dialog.dart';
 import 'package:everytime/component/custom_picker_modal_bottom_sheet.dart';
 import 'package:everytime/component/time_table_page/custom_text_field.dart';
 import 'package:everytime/global_variable.dart';
 import 'package:everytime/model/enums.dart';
-import 'package:everytime/model/time_table_page/time_n_place_data.dart';
+import 'package:everytime/model/time_table_page/lecture_time_and_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -23,7 +23,7 @@ class DataInputAtAddDirectPage extends StatelessWidget {
   }) : super(key: key);
 
   final EverytimeUserBloc userBloc;
-  final AddDirectBloc addDirectBloc;
+  final LectureScheduleBloc addDirectBloc;
   final TextEditingController subjectNameController;
   final TextEditingController profNameController;
   final ScrollController timeTableScrollController;
@@ -36,7 +36,7 @@ class DataInputAtAddDirectPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: StreamBuilder(
-        stream: addDirectBloc.timeNPlaceData,
+        stream: addDirectBloc.lectureSchedule,
         builder: (_, timeNPlaceDataSnapshot) {
           if (timeNPlaceDataSnapshot.hasData) {
             return ListView(
@@ -140,13 +140,13 @@ class DataInputAtAddDirectPage extends StatelessWidget {
           if (timeTableScrollController.hasClients) {
             timeTableScrollController.animateTo(
               _getScrollOffsetY(
-                TimeNPlaceData(),
+                LectureTimeAndLocation(),
               ),
               duration: const Duration(milliseconds: 200),
               curve: Curves.linear,
             );
           }
-          addDirectBloc.addTimeNPlaceData();
+          addDirectBloc.addLectureScheduleEntry();
         },
       ),
     );
@@ -169,7 +169,7 @@ class DataInputAtAddDirectPage extends StatelessWidget {
             splashColor: Colors.transparent,
             highlightColor: Colors.transparent,
             child: StreamBuilder(
-              stream: addDirectBloc.timeNPlaceData,
+              stream: addDirectBloc.lectureSchedule,
               builder: (_, timeNPlaceDataSnapshot) {
                 if (timeNPlaceDataSnapshot.hasData) {
                   return Row(
@@ -239,9 +239,9 @@ class DataInputAtAddDirectPage extends StatelessWidget {
                     userBloc.updateIsShowingKeyboard(true);
                   },
                   onChanged: (value) {
-                    addDirectBloc.updateTimeNPlaceData(
+                    addDirectBloc.updateLectureScheduleEntry(
                       index - 1,
-                      place: value,
+                      location: value,
                     );
                   },
                   onSubmitted: (value) {
@@ -279,7 +279,7 @@ class DataInputAtAddDirectPage extends StatelessWidget {
     );
   }
 
-  double _getScrollOffsetY(TimeNPlaceData data) {
+  double _getScrollOffsetY(LectureTimeAndLocation data) {
     DateTime startTime = DateTime(1970, 1, 1, data.endHour, data.endMinute);
     DateTime endTime = DateTime(1970, 1, 1, userBloc.currentTimeList[0], 0);
     int diff = startTime.difference(endTime).inMinutes;
@@ -312,20 +312,20 @@ class DataInputAtAddDirectPage extends StatelessWidget {
       context: context,
       builder: (bottomSheetContext) {
         int dayOfWeekIndex = DayOfWeek.getByDayOfWeek(
-            addDirectBloc.currentTimeNPlaceData[currentIndex - 1].dayOfWeek);
+            addDirectBloc.currentLectureScheduleData[currentIndex - 1].dayOfWeek);
         DateTime startTime = DateTime(
           DateTime.now().year,
           DateTime.now().month,
           DateTime.now().day,
-          addDirectBloc.currentTimeNPlaceData[currentIndex - 1].startHour,
-          addDirectBloc.currentTimeNPlaceData[currentIndex - 1].startMinute,
+          addDirectBloc.currentLectureScheduleData[currentIndex - 1].startHour,
+          addDirectBloc.currentLectureScheduleData[currentIndex - 1].startMinute,
         );
         DateTime endTime = DateTime(
           DateTime.now().year,
           DateTime.now().month,
           DateTime.now().day,
-          addDirectBloc.currentTimeNPlaceData[currentIndex - 1].endHour,
-          addDirectBloc.currentTimeNPlaceData[currentIndex - 1].endMinute,
+          addDirectBloc.currentLectureScheduleData[currentIndex - 1].endHour,
+          addDirectBloc.currentLectureScheduleData[currentIndex - 1].endMinute,
         );
 
         return CustomPickerModalBottomSheet(
@@ -363,7 +363,7 @@ class DataInputAtAddDirectPage extends StatelessWidget {
                     itemExtent: 32,
                     scrollController: FixedExtentScrollController(
                       initialItem: DayOfWeek.getByDayOfWeek(addDirectBloc
-                          .currentTimeNPlaceData[currentIndex - 1].dayOfWeek),
+                          .currentLectureScheduleData[currentIndex - 1].dayOfWeek),
                     ),
                     children: List.generate(
                       DayOfWeek.getDayOfWeeks().length,
@@ -393,9 +393,9 @@ class DataInputAtAddDirectPage extends StatelessWidget {
                       DateTime.now().month,
                       DateTime.now().day,
                       addDirectBloc
-                          .currentTimeNPlaceData[currentIndex - 1].startHour,
+                          .currentLectureScheduleData[currentIndex - 1].startHour,
                       addDirectBloc
-                          .currentTimeNPlaceData[currentIndex - 1].startMinute,
+                          .currentLectureScheduleData[currentIndex - 1].startMinute,
                     ),
                     minuteInterval: 5,
                     use24hFormat: true,
@@ -414,9 +414,9 @@ class DataInputAtAddDirectPage extends StatelessWidget {
                       DateTime.now().month,
                       DateTime.now().day,
                       addDirectBloc
-                          .currentTimeNPlaceData[currentIndex - 1].endHour,
+                          .currentLectureScheduleData[currentIndex - 1].endHour,
                       addDirectBloc
-                          .currentTimeNPlaceData[currentIndex - 1].endMinute,
+                          .currentLectureScheduleData[currentIndex - 1].endMinute,
                     ),
                     minuteInterval: 5,
                     use24hFormat: true,
@@ -466,7 +466,7 @@ class DataInputAtAddDirectPage extends StatelessWidget {
     userBloc.addDayOfWeek(dayOfWeekIndex);
     userBloc.addTimeList(startTime.hour, endTime.hour);
 
-    addDirectBloc.updateTimeNPlaceData(
+    addDirectBloc.updateLectureScheduleEntry(
       currentIndex - 1,
       dayOfWeek: DayOfWeek.getByIndex(dayOfWeekIndex),
       startHour: startTime.hour,
@@ -478,7 +478,7 @@ class DataInputAtAddDirectPage extends StatelessWidget {
     if (timeTableScrollController.hasClients) {
       timeTableScrollController.animateTo(
         _getScrollOffsetY(
-          TimeNPlaceData(
+          LectureTimeAndLocation(
             startHour: startTime.hour,
             startMinute: startTime.minute,
             endHour: endTime.hour,
@@ -516,18 +516,18 @@ class DataInputAtAddDirectPage extends StatelessWidget {
                 Navigator.pop(dialogContext);
 
                 int tempDayOfWeek = DayOfWeek.getByDayOfWeek(addDirectBloc
-                    .currentTimeNPlaceData[currentIndex - 1].dayOfWeek);
+                    .currentLectureScheduleData[currentIndex - 1].dayOfWeek);
                 int tempStartHour = addDirectBloc
-                    .currentTimeNPlaceData[currentIndex - 1].startHour;
+                    .currentLectureScheduleData[currentIndex - 1].startHour;
                 int tempEndHour = addDirectBloc
-                    .currentTimeNPlaceData[currentIndex - 1].endHour;
+                    .currentLectureScheduleData[currentIndex - 1].endHour;
 
-                addDirectBloc.removeTimeNPlaceData(currentIndex - 1);
+                addDirectBloc.removeLectureScheduleEntry(currentIndex - 1);
                 userBloc.removeDayOfWeek(
                   tempDayOfWeek,
                   [
-                    ...addDirectBloc.currentTimeNPlaceData,
-                    TimeNPlaceData(
+                    ...addDirectBloc.currentLectureScheduleData,
+                    LectureTimeAndLocation(
                       startHour: lastStartHour,
                       endHour: lastEndHour,
                       dayOfWeek: DayOfWeek.getByIndex(lastDayOfWeekIndex),
@@ -538,8 +538,8 @@ class DataInputAtAddDirectPage extends StatelessWidget {
                   tempStartHour,
                   tempEndHour,
                   [
-                    ...addDirectBloc.currentTimeNPlaceData,
-                    TimeNPlaceData(
+                    ...addDirectBloc.currentLectureScheduleData,
+                    LectureTimeAndLocation(
                       startHour: lastStartHour,
                       endHour: lastEndHour,
                       dayOfWeek: DayOfWeek.getByIndex(lastDayOfWeekIndex),

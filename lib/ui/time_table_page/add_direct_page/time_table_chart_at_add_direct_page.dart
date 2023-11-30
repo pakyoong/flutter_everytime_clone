@@ -1,4 +1,4 @@
-import 'package:everytime/bloc/time_table_page/add_direct_bloc.dart';
+import 'package:everytime/bloc/time_table_page/lecture_schedule_bloc.dart';
 import 'package:everytime/bloc/everytime_user_bloc.dart';
 import 'package:everytime/component/custom_container.dart';
 import 'package:everytime/component/time_table_page/time_table_chart.dart';
@@ -14,7 +14,7 @@ class TimeTableChartAtAddDirectPage extends StatelessWidget {
   }) : super(key: key);
 
   final EverytimeUserBloc userBloc;
-  final AddDirectBloc addDirectBloc;
+  final LectureScheduleBloc addDirectBloc;
   final ScrollController timeTableScrollController;
 
   @override
@@ -48,7 +48,7 @@ class TimeTableChartAtAddDirectPage extends StatelessWidget {
       physics: const ClampingScrollPhysics(),
       children: [
         StreamBuilder(
-          stream: addDirectBloc.timeNPlaceData,
+          stream: addDirectBloc.lectureSchedule,
           builder: (_, timeNPlaceDataSnapshot) {
             if (timeNPlaceDataSnapshot.hasData) {
               return StreamBuilder(

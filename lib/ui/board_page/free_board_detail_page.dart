@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'freeBoard.dart';
+import 'free_board_page.dart';
 
 bool isRecomment = false;
 
@@ -34,18 +34,19 @@ List<bool> reComment = [
   true,
 ];
 
-class freeBoardDetail extends StatefulWidget {
-  const freeBoardDetail({super.key});
+class FreeBoardDetail extends StatefulWidget {
+  const FreeBoardDetail({super.key});
 
   @override
-  State<freeBoardDetail> createState() => _freeBoardDetail();
+  State<FreeBoardDetail> createState() => _FreeBoardDetailState();
 }
 
-class _freeBoardDetail extends State<freeBoardDetail> {
+class _FreeBoardDetailState extends State<FreeBoardDetail> {
   bool isAnonym = false;
   bool isAlarm = false;
   @override
   Widget build(BuildContext context) {
+    //추천 기능
     void checkPosvote() {
       showDialog(
           context: context,
@@ -88,6 +89,7 @@ class _freeBoardDetail extends State<freeBoardDetail> {
           });
     }
 
+    //신고 기능
     void checkReport() {
       showDialog(
           context: context,
@@ -104,8 +106,8 @@ class _freeBoardDetail extends State<freeBoardDetail> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  InkWell(
-                    onTap: () {
+                  TextButton(
+                    onPressed: () {
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -117,8 +119,8 @@ class _freeBoardDetail extends State<freeBoardDetail> {
                           style: TextStyle(fontSize: 18),
                         )),
                   ),
-                  InkWell(
-                    onTap: () {
+                  TextButton(
+                    onPressed: () {
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -130,8 +132,8 @@ class _freeBoardDetail extends State<freeBoardDetail> {
                           style: TextStyle(fontSize: 18),
                         )),
                   ),
-                  InkWell(
-                    onTap: () {
+                  TextButton(
+                    onPressed: () {
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -143,8 +145,8 @@ class _freeBoardDetail extends State<freeBoardDetail> {
                           style: TextStyle(fontSize: 18),
                         )),
                   ),
-                  InkWell(
-                    onTap: () {
+                  TextButton(
+                    onPressed: () {
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -156,8 +158,8 @@ class _freeBoardDetail extends State<freeBoardDetail> {
                           style: TextStyle(fontSize: 18),
                         )),
                   ),
-                  InkWell(
-                    onTap: () {
+                  TextButton(
+                    onPressed: () {
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -169,8 +171,8 @@ class _freeBoardDetail extends State<freeBoardDetail> {
                           style: TextStyle(fontSize: 18),
                         )),
                   ),
-                  InkWell(
-                    onTap: () {
+                  TextButton(
+                    onPressed: () {
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -182,8 +184,8 @@ class _freeBoardDetail extends State<freeBoardDetail> {
                           style: TextStyle(fontSize: 18),
                         )),
                   ),
-                  InkWell(
-                    onTap: () {
+                  TextButton(
+                    onPressed: () {
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -201,6 +203,7 @@ class _freeBoardDetail extends State<freeBoardDetail> {
           });
     }
 
+    //스크랩
     void checkScrap() {
       showDialog(
           context: context,
@@ -264,6 +267,13 @@ class _freeBoardDetail extends State<freeBoardDetail> {
                       fontWeight: FontWeight.w100,
                       color: Color.fromARGB(255, 142, 141, 141)))
             ]),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          color: Colors.black,
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         actions: [
           isAlarm
               ? IconButton(
@@ -352,7 +362,7 @@ class _freeBoardDetail extends State<freeBoardDetail> {
                               ),
                             ),
                             Text(
-                              "01/04 19:24",
+                              "날짜 시간",
                               style:
                                   TextStyle(fontSize: 13, color: Colors.grey),
                             ),
@@ -638,6 +648,7 @@ class _CommentState extends State<Comment> {
                   ),
                   onPressed: () {
                     Navigator.pop(context);
+                    //postSet[index].like++;
                   },
                 ),
               ],
@@ -995,7 +1006,7 @@ class _CommentState extends State<Comment> {
                         ),
                         Row(
                           children: [
-                            Text(date[index],
+                            Text(postSet[index].time,
                                 style: const TextStyle(
                                   fontSize: 13,
                                   color: Colors.grey,

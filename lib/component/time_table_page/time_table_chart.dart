@@ -3,7 +3,7 @@ import 'package:everytime/component/custom_button_modal_bottom_sheet.dart';
 import 'package:everytime/component/custom_cupertino_alert_dialog.dart';
 import 'package:everytime/global_variable.dart';
 import 'package:everytime/model/enums.dart';
-import 'package:everytime/model/time_table_page/time_n_place_data.dart';
+import 'package:everytime/model/time_table_page/lecture_time_and_location.dart';
 import 'package:everytime/model/time_table_page/time_table_data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +25,7 @@ class TimeTableChart extends StatelessWidget {
   final List<int> timeList;
   final List<DayOfWeek> dayOfWeekList;
   final List<TimeTableData> timeTableData;
-  final List<TimeNPlaceData>? shadowDataList;
+  final List<LectureTimeAndLocation>? shadowDataList;
   final EverytimeUserBloc userBloc;
   final bool isActivateButton;
   final ScrollController? scrollController;
@@ -35,7 +35,7 @@ class TimeTableChart extends StatelessWidget {
   List<Widget> _buildShadows(BuildContext context) {
     List<Widget> result = [];
 
-    for (TimeNPlaceData data in shadowDataList ?? []) {
+    for (LectureTimeAndLocation data in shadowDataList ?? []) {
       result.add(
         StreamBuilder(
           stream: userBloc.isDark,
@@ -67,7 +67,7 @@ class TimeTableChart extends StatelessWidget {
     return appWidth * 0.8995 / dayOfWeekList.length;
   }
 
-  double _getContainerHeight(TimeNPlaceData data) {
+  double _getContainerHeight(LectureTimeAndLocation data) {
     DateTime startTime = DateTime(1970, 1, 1, data.endHour, data.endMinute);
     DateTime endTime = DateTime(1970, 1, 1, data.startHour, data.startMinute);
     int diff = startTime.difference(endTime).inMinutes;
@@ -75,14 +75,14 @@ class TimeTableChart extends StatelessWidget {
     return (appHeight * diff / 5 * 0.00483);
   }
 
-  double _getPositionLeft(TimeNPlaceData data) {
+  double _getPositionLeft(LectureTimeAndLocation data) {
     double pos = appWidth *
         (0.8995 / dayOfWeekList.length) *
         (DayOfWeek.getByDayOfWeek(data.dayOfWeek));
     return (appWidth * 0.055) + pos;
   }
 
-  double _getPositionTop(TimeNPlaceData data) {
+  double _getPositionTop(LectureTimeAndLocation data) {
     DateTime startTime = DateTime(1970, 1, 1, data.startHour, data.startMinute);
     DateTime endTime = DateTime(1970, 1, 1, timeList[0], 0);
     int diff = startTime.difference(endTime).inMinutes;
@@ -128,7 +128,7 @@ class TimeTableChart extends StatelessWidget {
   List<Widget> _buildButtons(BuildContext context) {
     List<Widget> result = [];
     for (int i = 0; i < timeTableData.length; i++) {
-      for (TimeNPlaceData data in timeTableData[i].dates) {
+      for (LectureTimeAndLocation data in timeTableData[i].dates) {
         result.add(
           Positioned(
             top: _getPositionTop(data),
@@ -205,7 +205,7 @@ class TimeTableChart extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        data.place,
+                        data.location,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,

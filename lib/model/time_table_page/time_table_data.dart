@@ -1,5 +1,5 @@
 import 'package:everytime/model/enums.dart';
-import 'package:everytime/model/time_table_page/time_n_place_data.dart';
+import 'package:everytime/model/time_table_page/lecture_time_and_location.dart';
 
 class TimeTableData {
   /// 대학
@@ -9,7 +9,7 @@ class TimeTableData {
   final String prof;
 
   /// 요일, 장소, 시간 리스트
-  final List<TimeNPlaceData> dates;
+  final List<LectureTimeAndLocation> dates;
 
   /// 전공
   final String? major;

@@ -1,6 +1,6 @@
 import 'package:everytime/model/enums.dart';
 
-class TimeNPlaceData {
+class LectureTimeAndLocation {
   /// 요일
   DayOfWeek dayOfWeek;
 
@@ -17,14 +17,14 @@ class TimeNPlaceData {
   int endMinute;
 
   /// 장소
-  String place;
+  String location;
 
-  TimeNPlaceData({
+  LectureTimeAndLocation({
     this.dayOfWeek = DayOfWeek.mon,
     this.startHour = 9,
     this.startMinute = 0,
     this.endHour = 10,
     this.endMinute = 0,
-    this.place = '',
+    this.location = '',
   });
 }

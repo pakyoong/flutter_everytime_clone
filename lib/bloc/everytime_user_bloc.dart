@@ -4,7 +4,7 @@ import 'package:everytime/model/enums.dart';
 import 'package:everytime/model/time_table_page/grade_calculator_page/bar_chart_data.dart';
 import 'package:everytime/model/time_table_page/grade_calculator_page/grade_of_term.dart';
 import 'package:everytime/model/time_table_page/grade_calculator_page/point_chart_data.dart';
-import 'package:everytime/model/time_table_page/time_n_place_data.dart';
+import 'package:everytime/model/time_table_page/lecture_time_and_location.dart';
 import 'package:everytime/model/time_table_page/time_table.dart';
 import 'package:everytime/model/time_table_page/time_table_data.dart';
 import 'package:rxdart/subjects.dart';
@@ -87,7 +87,7 @@ class EverytimeUserBloc {
     int removeEndHour = defaultTimeListLast; // 제거할 종료 시간
 
     for (int i = 0; i < timeTableData.length; i++) {
-      for (TimeNPlaceData dates in timeTableData[i].dates) {
+      for (LectureTimeAndLocation dates in timeTableData[i].dates) {
         if (i == currentIndex) {
           // 현재 인덱스의 데이터를 체크하여 제거할 값 설정
           if (removeDayOfWeekIndex < DayOfWeek.getByDayOfWeek(dates.dayOfWeek)) {
@@ -124,7 +124,7 @@ class EverytimeUserBloc {
     removeDayOfWeek(
       removeDayOfWeekIndex,
       [
-        TimeNPlaceData(
+        LectureTimeAndLocation(
           dayOfWeek: DayOfWeek.getByIndex(tempDayOfWeekIndex),
           startHour: tempStartHour,
           endHour: tempEndHour,
@@ -135,7 +135,7 @@ class EverytimeUserBloc {
       removeStartHour,
       removeEndHour,
       [
-        TimeNPlaceData(
+        LectureTimeAndLocation(
           dayOfWeek: DayOfWeek.getByIndex(tempDayOfWeekIndex),
           startHour: tempStartHour,
           endHour: tempEndHour,
@@ -150,13 +150,13 @@ class EverytimeUserBloc {
 
     // 입력된 데이터와 기존 데이터를 비교하여 시간 충돌 여부 확인
     for (int oldIndex = 0; oldIndex < data.dates.length; oldIndex++) {
-      TimeNPlaceData oldData = data.dates[oldIndex];
+      LectureTimeAndLocation oldData = data.dates[oldIndex];
       for (int newIndex = 0; newIndex < data.dates.length; newIndex++) {
         if (oldIndex == newIndex) {
           continue; // 같은 인덱스는 비교하지 않음
         }
 
-        TimeNPlaceData newData = data.dates[newIndex];
+        LectureTimeAndLocation newData = data.dates[newIndex];
 
         if (oldData.dayOfWeek == newData.dayOfWeek) {
           // 요일이 같은 경우 시간 충돌 검사
@@ -185,8 +185,8 @@ class EverytimeUserBloc {
 
     // 선택된 시간표와 전체 시간표를 비교하여 충돌 검사
     for (TimeTableData timeTableData in currentSelectedTimeTable!.currentTimeTableData) {
-      for (TimeNPlaceData oldData in timeTableData.dates) {
-        for (TimeNPlaceData newData in data.dates) {
+      for (LectureTimeAndLocation oldData in timeTableData.dates) {
+        for (LectureTimeAndLocation newData in data.dates) {
           if (oldData.dayOfWeek == newData.dayOfWeek) {
             // 요일이 같은 경우 시간 충돌 검사
             DateTime newStartTime = DateTime(1970, 1, 1, newData.startHour, newData.startMinute);
@@ -321,7 +321,7 @@ class EverytimeUserBloc {
   List<DayOfWeek> get currentDayOfWeek => _dayOfWeekList.value;
 
   // 시간표에서 특정 시간 범위를 제거하는 함수
-  void removeTimeList(int startHour, int endHour, List<TimeNPlaceData> timeNPlaceData) {
+  void removeTimeList(int startHour, int endHour, List<LectureTimeAndLocation> timeNPlaceData) {
     int minHour = min(startHour, endHour); // 최소 시간
     int maxHour = max(startHour, endHour); // 최대 시간
     bool minCheck = false; // 최소 시간이 기본값 내에 있는지 확인
@@ -419,7 +419,7 @@ class EverytimeUserBloc {
   }
 
   // 요일 목록에서 특정 요일을 제거하는 함수
-  void removeDayOfWeek(int dayOfWeekIndex, List<TimeNPlaceData> timeNPlaceData) {
+  void removeDayOfWeek(int dayOfWeekIndex, List<LectureTimeAndLocation> timeNPlaceData) {
     if (dayOfWeekIndex <= DEFAULT_DAY_OF_WEEK_LIST_LAST) {
       return; // 제거할 요일 인덱스가 기본값 이하인 경우 함수 종료
     }

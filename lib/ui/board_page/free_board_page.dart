@@ -1,153 +1,7 @@
 import 'package:everytime/ui//board_page/free_board_detail_page.dart';
 import 'package:everytime/ui/board_page/free_board_write_page.dart';
 import 'package:flutter/material.dart';
-//import 'package:everytime/model/Post.dart';
-
-//db로 대체해야함.
-const title = [
-  "기이",
-  "속보2",
-  "기이",
-  "기이",
-  "속보1",
-  "속보2",
-  "속보3",
-  "속보",
-  "어ㅏ",
-  "속보2",
-  "이인",
-  "보기",
-  "속보1",
-  "속보2",
-  "속보3",
-  "속보",
-];
-const text = [
-  "유익한 정보1",
-  "유익한 정보2",
-  "유익한 정보3",
-  "기이이인 정보",
-  "유익한 정보1",
-  "유익한 정보2",
-  "유익한 정보3",
-  "기이이인 정보",
-  "유익한 정보1",
-  "유익한 정보2",
-  "유익한 정보3",
-  "기이이인 정보",
-  "유익한 정보1",
-  "유익한 정보2",
-  "유익한 정보3",
-  "기이이인 정보",
-];
-const date = [
-  "01/02",
-  "01/02",
-  "01/02",
-  "01/02",
-  "01/02",
-  "01/02",
-  "01/02",
-  "01/02",
-  "01/02",
-  "01/02",
-  "01/02",
-  "01/02",
-  "01/02",
-  "01/02",
-  "01/02",
-  "01/02",
-];
-const name = [
-  "익명",
-  "익명",
-  "익명",
-  "익명",
-  "익명",
-  "익명",
-  "익명",
-  "익명",
-  "익명",
-  "익명",
-  "익명",
-  "익명",
-  "익명",
-  "익명",
-  "익명",
-  "익명",
-];
-const picture = [
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-  null,
-];
-const comment = [
-  "4",
-  "2",
-  "1",
-  "2",
-  "4",
-  "2",
-  "1",
-  "2",
-  "4",
-  "2",
-  "1",
-  "2",
-  "4",
-  "2",
-  "1",
-  "2",
-];
-const good = [
-  "3",
-  "2",
-  "1",
-  "4",
-  "3",
-  "2",
-  "1",
-  "4",
-  "3",
-  "2",
-  "1",
-  "4",
-  "3",
-  "2",
-  "1",
-  "4",
-];
-const image_index = [
-  "1",
-  "0",
-  "1",
-  "0",
-  "1",
-  "0",
-  "1",
-  "0",
-  "1",
-  "0",
-  "1",
-  "0",
-  "1",
-  "0",
-  "1",
-  "0",
-];
+import 'package:everytime/model/board_page/post.dart';
 
 class FreeBoard extends StatefulWidget {
   const FreeBoard({Key? key});
@@ -158,31 +12,7 @@ class FreeBoard extends StatefulWidget {
 
 class _FreeBoardState extends State<FreeBoard> {
   @override
-   Widget build(BuildContext context) {
-  //   Post post1 = Post("제목", "내용", "시간", "닉네임", "null", 2, 1, 1);
-  //   Post post2 = Post.clone(post1);
-  //   Post post3 = Post.clone(post1);
-  //   Post post4 = Post.clone(post1);
-  //   Post post5 = Post.clone(post1);
-  //   Post post6 = Post.clone(post1);
-  //   Post post7 = Post.clone(post1);
-  //   Post post8 = Post.clone(post1);
-  //   Post post9 = Post.clone(post1);
-  //   Post post10 = Post.clone(post1);
-
-  //   List<Post> postSet = [
-  //     post1,
-  //     post2,
-  //     post3,
-  //     post4,
-  //     post5,
-  //     post6,
-  //     post7,
-  //     post8,
-  //     post9,
-  //     post10,
-  //   ];
-
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -214,7 +44,8 @@ class _FreeBoardState extends State<FreeBoard> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const FreeBoard()),//검색 기능 일단 없음
+                MaterialPageRoute(
+                    builder: (context) => const FreeBoard()), //검색 기능 일단 없음
               );
             },
           ),
@@ -293,17 +124,42 @@ class _FreeBoardState extends State<FreeBoard> {
   }
 }
 
+Post post1 = Post("제목", "내용", "닉네임", "11/30", 2, 1, true);
+Post post2 = Post("제목2", "내용2", "닉네임2", "11/30", 5, 0, false);
+Post post3 = Post.clone(post1);
+Post post4 = Post.clone(post1);
+Post post5 = Post.clone(post1);
+Post post6 = Post.clone(post1);
+Post post7 = Post.clone(post1);
+Post post8 = Post.clone(post1);
+Post post9 = Post.clone(post1);
+Post post10 = Post.clone(post1);
+
+List<Post> postSet = [
+  post1,
+  post2,
+  post3,
+  post4,
+  post5,
+  post6,
+  post7,
+  post8,
+  post9,
+  post10,
+];
+
 class Detail extends StatelessWidget {
   const Detail({Key? key});
-
   @override
   Widget build(BuildContext context) {
+    int count = 0;
     return ListView.builder(
       itemExtent: 80,
-      itemCount: title.length,
+      itemCount: postSet.length,
       itemBuilder: (BuildContext context, index) {
-        return InkWell(
-          onTap: () {
+        if (postSet[index].isanonymous == true) { count++; }
+        return TextButton(
+          onPressed: () {
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -325,7 +181,7 @@ class Detail extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          title[index],
+                          postSet[index].title,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 16,
@@ -336,7 +192,7 @@ class Detail extends StatelessWidget {
                           height: 5,
                         ),
                         Text(
-                          text[index],
+                          postSet[index].contents,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 12,
@@ -353,7 +209,7 @@ class Detail extends StatelessWidget {
                             Row(
                               children: [
                                 Text(
-                                  date[index],
+                                  postSet[index].time,
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey,
@@ -367,12 +223,14 @@ class Detail extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  name[index],
+                                  postSet[index].isanonymous == true
+                                      ? "익명$count" 
+                                      : postSet[index].writer,
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey,
                                   ),
-                                ),
+                                )
                               ],
                             ),
                             Row(
@@ -391,7 +249,7 @@ class Detail extends StatelessWidget {
                                   style: TextStyle(fontSize: 12),
                                 ),
                                 Text(
-                                  good[index].toString(),
+                                  postSet[index].like.toString(),
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: Colors.red,
@@ -411,7 +269,7 @@ class Detail extends StatelessWidget {
                                   style: TextStyle(fontSize: 12),
                                 ),
                                 Text(
-                                  comment[index].toString(),
+                                  postSet[index].comment.toString(),
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: Colors.cyan,

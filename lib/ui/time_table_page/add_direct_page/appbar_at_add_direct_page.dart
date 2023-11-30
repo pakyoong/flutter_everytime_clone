@@ -1,10 +1,10 @@
-import 'package:everytime/bloc/time_table_page/add_direct_bloc.dart';
+import 'package:everytime/bloc/time_table_page/lecture_schedule_bloc.dart';
 import 'package:everytime/bloc/everytime_user_bloc.dart';
 import 'package:everytime/component/custom_cupertino_alert_dialog.dart';
 import 'package:everytime/component/time_table_page/round_button.dart';
 import 'package:everytime/global_variable.dart';
 import 'package:everytime/model/enums.dart';
-import 'package:everytime/model/time_table_page/time_n_place_data.dart';
+import 'package:everytime/model/time_table_page/lecture_time_and_location.dart';
 import 'package:everytime/model/time_table_page/time_table_data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +22,7 @@ class AppBarAtAddDirectPage extends StatelessWidget {
   }) : super(key: key);
 
   final EverytimeUserBloc userBloc;
-  final AddDirectBloc addDirectBloc;
+  final LectureScheduleBloc addDirectBloc;
   final TextEditingController subjectNameController;
   final TextEditingController profNameController;
 
@@ -78,7 +78,7 @@ class AppBarAtAddDirectPage extends StatelessWidget {
     int tempStartHour = userBloc.defaultTimeListFirst;
     int tempEndHour = userBloc.defaultTimeListLast;
 
-    for (TimeNPlaceData dates in addDirectBloc.currentTimeNPlaceData) {
+    for (LectureTimeAndLocation dates in addDirectBloc.currentLectureScheduleData) {
       if (DayOfWeek.getByDayOfWeek(dates.dayOfWeek) > tempDayOfWeekIndex) {
         tempDayOfWeekIndex = DayOfWeek.getByDayOfWeek(dates.dayOfWeek);
       }
@@ -92,11 +92,11 @@ class AppBarAtAddDirectPage extends StatelessWidget {
       }
     }
 
-    addDirectBloc.resetTimeNPlaceData();
+    addDirectBloc.resetLectureSchedule();
     userBloc.removeDayOfWeek(
       tempDayOfWeekIndex,
       [
-        TimeNPlaceData(
+        LectureTimeAndLocation(
           dayOfWeek: DayOfWeek.getByIndex(lastDayOfWeekIndex),
           startHour: lastStartHour,
           endHour: lastEndHour,
@@ -107,7 +107,7 @@ class AppBarAtAddDirectPage extends StatelessWidget {
       tempStartHour,
       tempEndHour,
       [
-        TimeNPlaceData(
+        LectureTimeAndLocation(
           dayOfWeek: DayOfWeek.getByIndex(lastDayOfWeekIndex),
           startHour: lastStartHour,
           endHour: lastEndHour,
@@ -125,7 +125,7 @@ class AppBarAtAddDirectPage extends StatelessWidget {
       userBloc.updateIsShowingKeyboard(false);
     }
 
-    if (addDirectBloc.currentTimeNPlaceData.isEmpty) {
+    if (addDirectBloc.currentLectureScheduleData.isEmpty) {
       showCupertinoDialog(
         context: context,
         builder: (dialogContext) {
@@ -149,7 +149,7 @@ class AppBarAtAddDirectPage extends StatelessWidget {
 
     TimeTableData tempData = TimeTableData(
       prof: profNameController.text,
-      dates: addDirectBloc.currentTimeNPlaceData,
+      dates: addDirectBloc.currentLectureScheduleData,
       subjectName: subjectNameController.text,
     );
     String? result = userBloc.checkTimeTableCrash(tempData);
@@ -203,7 +203,7 @@ class AppBarAtAddDirectPage extends StatelessWidget {
 
     profNameController.text = '';
     subjectNameController.text = '';
-    addDirectBloc.resetTimeNPlaceData();
+    addDirectBloc.resetLectureSchedule();
 
     Navigator.pop(context);
 

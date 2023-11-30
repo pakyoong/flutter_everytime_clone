@@ -1,4 +1,4 @@
-import 'package:everytime/bloc/time_table_page/add_direct_bloc.dart';
+import 'package:everytime/bloc/time_table_page/lecture_schedule_bloc.dart';
 import 'package:everytime/bloc/everytime_user_bloc.dart';
 import 'package:everytime/ui/time_table_page/add_direct_page/appbar_at_add_direct_page.dart';
 import 'package:everytime/ui/time_table_page/add_direct_page/data_input_at_add_direct_page.dart';
@@ -26,7 +26,7 @@ class _AddDirectPageState extends State<AddDirectPage> {
   late final int _lastStartHour;
   late final int _lastEndHour;
 
-  final _addDirectBloc = AddDirectBloc();
+  final _addDirectBloc = LectureScheduleBloc();
 
   @override
   void initState() {
