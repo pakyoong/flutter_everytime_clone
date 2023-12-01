@@ -1,37 +1,24 @@
 import 'package:flutter/material.dart';
 import 'free_board_page.dart';
+import 'package:everytime/model/board_page/comment.dart';
 
 bool isRecomment = false;
 
-const username = ["익명1", "익명2", "익명2", "익명1", "익명2", "익명2"];
+Comment comment1 = Comment("닉네임", "댓글입니다.1", "11/30 12:27", 2, true, false);
+Comment comment2 = Comment("닉네임2", "댓글입니다.2", "11/30 12:27", 2, false, false);
+Comment comment3 = Comment("닉네임3", "댓글입니다.3", "11/30 12:27", 2, true, true);
+Comment comment4 = Comment.clone(comment1);
+Comment comment5 = Comment.clone(comment2);
+Comment comment6 = Comment.clone(comment3);
 
-const checkAnonym = [
-  true,
-  true,
-  true,
-  true,
-  true,
-  true,
-];
 
-const commentText = [
-  "댓글 입니다.",
-  "댓글 입니다22.",
-  "대댓글입니다.",
-  "댓글 입니다.",
-  "댓글 입니다22.",
-  "대댓글입니다.",
-];
-
-const CommentPosvote = ['0', '0', '1', '0', '2', '0'];
-
-List<bool> reComment = [
-  false,
-  false,
-  true,
-  false,
-  false,
-  true,
+List<Comment> commentSet = [
+  comment1,
+  comment2,
+  comment3,
+  comment4,
+  comment5,
+  comment6,
 ];
 
 class FreeBoardDetail extends StatefulWidget {
@@ -277,31 +264,31 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
         actions: [
           isAlarm
               ? IconButton(
-                  constraints: const BoxConstraints(),
-                  iconSize: 50,
-                  icon: const Icon(
-                    Icons.alarm_on,
-                    size: 25,
-                    color: Colors.red,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isAlarm = !isAlarm;
-                    });
-                  })
+              constraints: const BoxConstraints(),
+              iconSize: 50,
+              icon: const Icon(
+                Icons.alarm_on,
+                size: 25,
+                color: Colors.red,
+              ),
+              onPressed: () {
+                setState(() {
+                  isAlarm = !isAlarm;
+                });
+              })
               : IconButton(
-                  constraints: const BoxConstraints(),
-                  iconSize: 50,
-                  icon: const Icon(
-                    Icons.alarm_off,
-                    size: 25,
-                    color: Colors.grey,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isAlarm = !isAlarm;
-                    });
-                  }),
+              constraints: const BoxConstraints(),
+              iconSize: 50,
+              icon: const Icon(
+                Icons.alarm_off,
+                size: 25,
+                color: Colors.grey,
+              ),
+              onPressed: () {
+                setState(() {
+                  isAlarm = !isAlarm;
+                });
+              }),
           PopupMenuButton(
             child: const Icon(Icons.more_vert, size: 20),
             onSelected: (int more) async {
@@ -316,10 +303,7 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
-              const PopupMenuItem<int>(
-                value: 1,
-                child: Text("새로고침"),
-              ),
+              const PopupMenuItem<int>(value: 1, child: Text("새로고침")),
               const PopupMenuItem<int>(value: 2, child: Text("신고")),
               const PopupMenuItem<int>(value: 3, child: Text("URL 공유")),
             ],
@@ -351,29 +335,31 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        const Column(
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "익명",
-                              style: TextStyle(
+                              postSet[0].isanonymous == true
+                                  ? "익명"
+                                  : postSet[0].writer,
+                              style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
                             Text(
-                              "날짜 시간",
+                              postSet[0].time,
                               style:
-                                  TextStyle(fontSize: 13, color: Colors.grey),
+                              const TextStyle(fontSize: 13, color: Colors.grey),
                             ),
                           ],
                         ),
                       ],
                     ),
                     const SizedBox(height: 15),
-                    const Text(
-                      '제목임',
-                      style: TextStyle(
+                    Text(
+                      postSet[0].title,
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                       ),
@@ -381,9 +367,9 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                     const SizedBox(
                       height: 15,
                     ),
-                    const Text(
-                      "내용임",
-                      style: TextStyle(
+                    Text(
+                      postSet[0].contents,
+                      style: const TextStyle(
                         fontSize: 15,
                       ),
                     ),
@@ -455,7 +441,7 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                         ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor:
-                                  const Color.fromARGB(255, 242, 242, 242),
+                              const Color.fromARGB(255, 242, 242, 242),
                               elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
@@ -507,7 +493,7 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                     const SizedBox(
                       height: 5,
                     ),
-                    const Comment(),
+                    const CommentDetail(),
                     const SizedBox(
                       height: 80,
                     )
@@ -532,33 +518,33 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                   children: <Widget>[
                     isAnonym
                         ? Transform.scale(
-                            scale: 1.0,
-                            child: IconButton(
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                iconSize: 50,
-                                icon: const Icon(Icons.check_box_outlined,
-                                    size: 25, color: Colors.red),
-                                onPressed: () {
-                                  setState(() {
-                                    isAnonym = !isAnonym;
-                                  });
-                                }),
-                          )
+                      scale: 1.0,
+                      child: IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          iconSize: 50,
+                          icon: const Icon(Icons.check_box_outlined,
+                              size: 25, color: Colors.red),
+                          onPressed: () {
+                            setState(() {
+                              isAnonym = !isAnonym;
+                            });
+                          }),
+                    )
                         : Transform.scale(
-                            scale: 1.0,
-                            child: IconButton(
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                iconSize: 50,
-                                icon: const Icon(Icons.check_box_outline_blank,
-                                    size: 25, color: Colors.grey),
-                                onPressed: () {
-                                  setState(() {
-                                    isAnonym = !isAnonym;
-                                  });
-                                }),
-                          ),
+                      scale: 1.0,
+                      child: IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          iconSize: 50,
+                          icon: const Icon(Icons.check_box_outline_blank,
+                              size: 25, color: Colors.grey),
+                          onPressed: () {
+                            setState(() {
+                              isAnonym = !isAnonym;
+                            });
+                          }),
+                    ),
                     Text(
                       '익명',
                       style: TextStyle(
@@ -603,14 +589,14 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
   }
 }
 
-class Comment extends StatefulWidget {
-  const Comment({super.key});
+class CommentDetail extends StatefulWidget {
+  const CommentDetail({super.key});
 
   @override
-  State<Comment> createState() => _CommentState();
+  State<CommentDetail> createState() => _CommentDetailState();
 }
 
-class _CommentState extends State<Comment> {
+class _CommentDetailState extends State<CommentDetail> {
   @override
   Widget build(BuildContext context) {
     void commentPosvote() {
@@ -648,7 +634,7 @@ class _CommentState extends State<Comment> {
                   ),
                   onPressed: () {
                     Navigator.pop(context);
-                    //postSet[index].like++;
+                    //commentSet[0].commentlike++;
                   },
                 ),
               ],
@@ -672,8 +658,8 @@ class _CommentState extends State<Comment> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  InkWell(
-                    onTap: () {
+                  TextButton(
+                    onPressed: () {
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -685,8 +671,8 @@ class _CommentState extends State<Comment> {
                           style: TextStyle(fontSize: 18),
                         )),
                   ),
-                  InkWell(
-                    onTap: () {
+                  TextButton(
+                    onPressed: () {
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -698,8 +684,8 @@ class _CommentState extends State<Comment> {
                           style: TextStyle(fontSize: 18),
                         )),
                   ),
-                  InkWell(
-                    onTap: () {
+                  TextButton(
+                    onPressed: () {
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -711,8 +697,8 @@ class _CommentState extends State<Comment> {
                           style: TextStyle(fontSize: 18),
                         )),
                   ),
-                  InkWell(
-                    onTap: () {
+                  TextButton(
+                    onPressed: () {
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -724,8 +710,8 @@ class _CommentState extends State<Comment> {
                           style: TextStyle(fontSize: 18),
                         )),
                   ),
-                  InkWell(
-                    onTap: () {
+                  TextButton(
+                    onPressed: () {
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -737,8 +723,8 @@ class _CommentState extends State<Comment> {
                           style: TextStyle(fontSize: 18),
                         )),
                   ),
-                  InkWell(
-                    onTap: () {
+                  TextButton(
+                    onPressed: () {
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -750,8 +736,8 @@ class _CommentState extends State<Comment> {
                           style: TextStyle(fontSize: 18),
                         )),
                   ),
-                  InkWell(
-                    onTap: () {
+                  TextButton(
+                    onPressed: () {
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -858,23 +844,25 @@ class _CommentState extends State<Comment> {
           });
     }
 
+    int count = 0;
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: username.length,
+      itemCount: commentSet.length,
       itemBuilder: (BuildContext context, index) {
+        if (commentSet[index].isanonymous == true) { count++; }
         return Padding(
           padding: const EdgeInsets.all(2.0),
           child: Row(
             children: [
               Column(
                 children: [
-                  if (reComment[index] == true)
+                  if (commentSet[index].isrecomment == true)
                     const Icon(
                       Icons.subdirectory_arrow_right_rounded,
-                      color: Colors.white,
+                      color: Colors.black54,
                     ),
-                  if (reComment[index] == true)
+                  if (commentSet[index].isrecomment == true)
                     const SizedBox(
                       height: 50,
                     )
@@ -883,7 +871,7 @@ class _CommentState extends State<Comment> {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: reComment[index] ? Colors.grey : Colors.white,
+                    color: commentSet[index].isrecomment ? Colors.grey : Colors.white,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Padding(
@@ -891,7 +879,7 @@ class _CommentState extends State<Comment> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (reComment[index] == false)
+                        if (commentSet[index].isrecomment == false)
                           Container(
                             height: 1.0,
                             color: Colors.grey,
@@ -904,20 +892,22 @@ class _CommentState extends State<Comment> {
                           children: [
                             Row(
                               children: [
-                                if (checkAnonym[index] == true)
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    child: Image.asset(
-                                      'assets/anonymous.jpg',
-                                      width: 30,
-                                      height: 30,
-                                    ),
+                                //if (commentSet[index].isanonymous == true)
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                  child: Image.asset(
+                                    'assets/anonymous.jpg',
+                                    width: 30,
+                                    height: 30,
                                   ),
+                                ),
                                 const SizedBox(
                                   width: 5,
                                 ),
                                 Text(
-                                  username[index],
+                                  commentSet[index].isanonymous == true
+                                      ? "익명$count"
+                                      : commentSet[index].commentwriter,
                                   style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700),
@@ -933,7 +923,7 @@ class _CommentState extends State<Comment> {
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-                                    if (reComment[index] == false)
+                                    if (commentSet[index].isrecomment == false)
                                       IconButton(
                                         constraints: const BoxConstraints(),
                                         onPressed: () {
@@ -945,7 +935,7 @@ class _CommentState extends State<Comment> {
                                           color: Colors.grey,
                                         ),
                                       ),
-                                    if (reComment[index] == false)
+                                    if (commentSet[index].isrecomment == false)
                                       Padding(
                                         padding: const EdgeInsets.fromLTRB(
                                             0, 0, 0, 0),
@@ -968,7 +958,7 @@ class _CommentState extends State<Comment> {
                                     ),
                                     Padding(
                                       padding:
-                                          const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                                      const EdgeInsets.fromLTRB(0, 0, 0, 0),
                                       child: Container(
                                         height: 12.0,
                                         width: 1.0,
@@ -996,7 +986,7 @@ class _CommentState extends State<Comment> {
                           height: 5,
                         ),
                         Text(
-                          commentText[index],
+                          commentSet[index].commentcontents,
                           style: const TextStyle(
                             fontSize: 16,
                           ),
@@ -1016,7 +1006,7 @@ class _CommentState extends State<Comment> {
                                   fontSize: 13,
                                   color: Colors.grey,
                                 )),
-                            if (CommentPosvote[index] != '0')
+                            if (commentSet[index].commentlike != 0)
                               Row(
                                 children: [
                                   const SizedBox(width: 5),
@@ -1027,7 +1017,7 @@ class _CommentState extends State<Comment> {
                                     style: TextStyle(fontSize: 12),
                                   ),
                                   Text(
-                                    CommentPosvote[index],
+                                    commentSet[index].commentlike.toString(),
                                     style: const TextStyle(
                                         fontSize: 12, color: Colors.red),
                                   ),

@@ -3,7 +3,7 @@ import 'package:everytime/component/custom_container.dart';
 import 'package:everytime/component/custom_cupertino_alert_dialog.dart';
 import 'package:everytime/component/time_table_page/show_grade_large.dart';
 import 'package:everytime/global_variable.dart';
-import 'package:everytime/model/time_table_page/grade_calculator_page/bar_chart_data.dart';
+import 'package:everytime/model/time_table_page/grade_calculator_page/grade_distribution_data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
@@ -228,7 +228,7 @@ class InformationAtGradeCalculatorPage extends StatelessWidget {
                           xValueMapper: ((datum, index) =>
                               aveDataSnapshot.data![index].term),
                           yValueMapper: ((datum, index) =>
-                              aveDataSnapshot.data![index].majorGrade),
+                              aveDataSnapshot.data![index].majorGPA),
                         ),
                         StackedLineSeries(
                           color: Theme.of(context).focusColor,
@@ -240,7 +240,7 @@ class InformationAtGradeCalculatorPage extends StatelessWidget {
                           xValueMapper: ((datum, index) =>
                               aveDataSnapshot.data![index].term),
                           yValueMapper: ((datum, index) =>
-                              aveDataSnapshot.data![index].totalGrade),
+                              aveDataSnapshot.data![index].allGPA),
                         ),
                       ],
                     );
@@ -279,14 +279,14 @@ class InformationAtGradeCalculatorPage extends StatelessWidget {
                         isVisible: false,
                       ),
                       series: [
-                        BarSeries<BarChartData, String>(
+                        BarSeries<GradeDistributionData, String>(
                           width: 0.2,
                           dataLabelSettings: DataLabelSettings(
                             isVisible: true,
                             builder: (data, point, series, pointIndex,
                                     seriesIndex) =>
                                 Text(
-                              '${data.percent} %',
+                              '${data.percentage} %',
                               style: TextStyle(
                                 color: _barChartColorData[pointIndex],
                                 fontSize: 12,
@@ -295,9 +295,9 @@ class InformationAtGradeCalculatorPage extends StatelessWidget {
                           ),
                           dataSource: percentDataSnapshot.data!,
                           xValueMapper: (datum, index) =>
-                              percentDataSnapshot.data![index].grade,
+                              percentDataSnapshot.data![index].gradeLabel,
                           yValueMapper: (datum, index) =>
-                              percentDataSnapshot.data![index].percent,
+                              percentDataSnapshot.data![index].percentage,
                           pointColorMapper: (datum, index) =>
                               _barChartColorData[index],
                         ),

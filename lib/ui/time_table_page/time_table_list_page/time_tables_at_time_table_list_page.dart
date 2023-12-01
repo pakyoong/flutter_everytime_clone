@@ -3,7 +3,7 @@ import 'package:everytime/bloc/time_table_page/time_table_list_manager_bloc.dart
 import 'package:everytime/component/custom_container.dart';
 import 'package:everytime/component/custom_container_title.dart';
 import 'package:everytime/global_variable.dart';
-import 'package:everytime/model/time_table_page/time_tables_page/sorted_time_table.dart';
+import 'package:everytime/model/time_table_page/time_tables_page/term_time_table.dart';
 import 'package:flutter/material.dart';
 
 class TimeTablesAtTimeTableListPage extends StatelessWidget {
@@ -39,7 +39,7 @@ class TimeTablesAtTimeTableListPage extends StatelessWidget {
                       children: [
                         CustomContainerTitle(
                           title: sortedTimeTableSnapshot
-                              .data![sortedTimeTableIndex].termString,
+                              .data![sortedTimeTableIndex].termName,
                           type: CustomContainerTitleType.none,
                         ),
                         _buildContents(

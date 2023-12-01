@@ -1,5 +1,5 @@
 import 'package:everytime/model/time_table_page/time_table.dart';
-import 'package:everytime/model/time_table_page/time_tables_page/sorted_time_table.dart';
+import 'package:everytime/model/time_table_page/time_tables_page/term_time_table.dart';
 import 'package:rxdart/subjects.dart';
 
 class TimeTableListManagerBloc {
@@ -27,7 +27,7 @@ class TimeTableListManagerBloc {
 
       // 이미 정렬된 시간표 중에서 같은 학기의 시간표가 있는지 확인
       for (int i = 0; i < tempSortedClassTimetable.length; i++) {
-        if (tempSortedClassTimetable[i].termString == timeTable.term) {
+        if (tempSortedClassTimetable[i].termName == timeTable.term) {
           result = true;
           index = i;
           break;
@@ -39,7 +39,7 @@ class TimeTableListManagerBloc {
         tempSortedClassTimetable[index!].timeTables.add(timeTable);
       } else {
         TermTimetables newSortedTimeTable = TermTimetables(
-          termString: timeTable.term,
+          termName: timeTable.term,
         );
 
         if (classTimeTableList.length == 1) {

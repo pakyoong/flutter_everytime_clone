@@ -1,9 +1,9 @@
 import 'dart:math';
 
 import 'package:everytime/model/time_table_enums.dart';
-import 'package:everytime/model/time_table_page/grade_calculator_page/bar_chart_data.dart';
+import 'package:everytime/model/time_table_page/grade_calculator_page/grade_distribution_data.dart';
 import 'package:everytime/model/time_table_page/grade_calculator_page/grade_of_term.dart';
-import 'package:everytime/model/time_table_page/grade_calculator_page/point_chart_data.dart';
+import 'package:everytime/model/time_table_page/grade_calculator_page/term_grade_point_data.dart';
 import 'package:everytime/model/time_table_page/lecture_time_and_location.dart';
 import 'package:everytime/model/time_table_page/time_table.dart';
 import 'package:everytime/model/time_table_page/time_table_data.dart';
@@ -484,10 +484,10 @@ class UserProfileManagementBloc {
   final _targetCredit = BehaviorSubject<int>.seeded(0);
 
   // 평점에 대한 점 그래프 데이터를 관리하는 BehaviorSubject
-  final _aveData = BehaviorSubject<List<PointChartData>>.seeded([]);
+  final _aveData = BehaviorSubject<List<TermGradePointData>>.seeded([]);
 
   // 평점에 대한 바 그래프 데이터를 관리하는 BehaviorSubject
-  final _percentData = BehaviorSubject<List<BarChartData>>.seeded([]);
+  final _percentData = BehaviorSubject<List<GradeDistributionData>>.seeded([]);
 
   // 각 BehaviorSubject에 대한 스트림과 업데이트 함수
   Stream<double> get totalGradeAve => _totalGradeAve.stream;
@@ -552,7 +552,7 @@ class UserProfileManagementBloc {
     double tempMajorGrade = 0.0; // 임시 전공 평점
     int tempMajorCredit = 0; // 임시 전공 학점
     int tempPCredit = 0; // 임시 P학점
-    List<PointChartData> tempPointChartDataList = []; // 점 그래프 데이터 목록
+    List<TermGradePointData> tempPointChartDataList = []; // 점 그래프 데이터 목록
     _tempGradesAmount.forEach((key, value) => _tempGradesAmount[key] = 0); // 임시 성적 총합 초기화
 
     // 모든 학기에 대한 성적 계산
@@ -582,10 +582,10 @@ class UserProfileManagementBloc {
       if (getTerm(i).currentTotalGradeAve == 0.0 && getTerm(i).currentMajorGradeAve == 0.0) {
         continue; // 평점이 0인 경우 생략
       }
-      tempPointChartDataList.add(PointChartData(
+      tempPointChartDataList.add(TermGradePointData(
         term: getTerm(i).term,
-        totalGrade: (getTerm(i).currentTotalGradeAve == 0.0) ? null : getTerm(i).currentTotalGradeAve,
-        majorGrade: (getTerm(i).currentMajorGradeAve == 0.0) ? null : getTerm(i).currentMajorGradeAve,
+        allGPA: (getTerm(i).currentTotalGradeAve == 0.0) ? null : getTerm(i).currentTotalGradeAve,
+        majorGPA: (getTerm(i).currentMajorGradeAve == 0.0) ? null : getTerm(i).currentMajorGradeAve,
       ));
     }
     _updateAveData(tempPointChartDataList); // 점 그래프 데이터 업데이트
@@ -594,11 +594,11 @@ class UserProfileManagementBloc {
 
 
   // 평점에 대한 점 그래프 데이터 스트림
-  Stream<List<PointChartData>> get aveData => _aveData.stream;
-  Function(List<PointChartData>) get _updateAveData => _aveData.sink.add;
+  Stream<List<TermGradePointData>> get aveData => _aveData.stream;
+  Function(List<TermGradePointData>) get _updateAveData => _aveData.sink.add;
 
   // 평점에 대한 바 그래프 데이터 스트림
-  Stream<List<BarChartData>> get percentData => _percentData.stream;
+  Stream<List<GradeDistributionData>> get percentData => _percentData.stream;
 
   // 바 그래프 데이터를 업데이트하는 함수
   void _updatePercentData() {
@@ -607,7 +607,7 @@ class UserProfileManagementBloc {
         _tempGradesAmount.entries.toList()..sort((e1, e2) => e2.value.compareTo(e1.value))
     );
 
-    List<BarChartData> tempList = []; // 바 그래프 데이터 목록
+    List<GradeDistributionData> tempList = []; // 바 그래프 데이터 목록
 
     // 상위 5개 성적 유형에 대한 바 그래프 데이터 생성
     for (int i = 0; i < 5; i++) {
@@ -616,9 +616,9 @@ class UserProfileManagementBloc {
       }
 
       tempList.add(
-        BarChartData(
-          percent: (sortByValue.values.elementAt(i) / _currentCredit.value * 100).round(),
-          grade: (sortByValue.keys.elementAt(i).label),
+        GradeDistributionData(
+          percentage: (sortByValue.values.elementAt(i) / _currentCredit.value * 100).round(),
+          gradeLabel: (sortByValue.keys.elementAt(i).label),
         ),
       );
     }

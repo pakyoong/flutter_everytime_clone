@@ -1,5 +1,5 @@
 import 'package:everytime/model/time_table_enums.dart';
-import 'package:everytime/model/time_table_page/grade_calculator_page/subject_info.dart';
+import 'package:everytime/model/time_table_page/grade_calculator_page/class_info.dart';
 import 'package:rxdart/subjects.dart';
 
 class GradeOfTerm {
@@ -86,17 +86,17 @@ class GradeOfTerm {
 
   /// 과목 정보들
   // ignore: prefer_final_fields
-  final _subjects = BehaviorSubject<List<SubjectInfo>>.seeded([
-    SubjectInfo(),
-    SubjectInfo(),
-    SubjectInfo(),
-    SubjectInfo(),
-    SubjectInfo(),
-    SubjectInfo(),
-    SubjectInfo(),
-    SubjectInfo(),
-    SubjectInfo(),
-    SubjectInfo(),
+  final _subjects = BehaviorSubject<List<ClassInfo>>.seeded([
+    ClassInfo(),
+    ClassInfo(),
+    ClassInfo(),
+    ClassInfo(),
+    ClassInfo(),
+    ClassInfo(),
+    ClassInfo(),
+    ClassInfo(),
+    ClassInfo(),
+    ClassInfo(),
   ]);
 
   /// 임시로 각 성적의 총합을 저장할 공간. 자주 사용하는거 같아서 전역 변수로 선언해줌.
@@ -104,9 +104,9 @@ class GradeOfTerm {
   Map<Grade, int> _tempGrades = Map.fromIterable(Grade.allGrades(),
       key: (element) => element, value: (element) => 0);
 
-  Stream<List<SubjectInfo>> get subjects => _subjects.stream;
-  List<SubjectInfo> get currentSubjects => _subjects.value;
-  void _updateSubjects(List<SubjectInfo> newSubjects) {
+  Stream<List<ClassInfo>> get subjects => _subjects.stream;
+  List<ClassInfo> get currentSubjects => _subjects.value;
+  void _updateSubjects(List<ClassInfo> newSubjects) {
     _subjects.sink.add(newSubjects);
   }
 
@@ -116,30 +116,30 @@ class GradeOfTerm {
 
   /// 학점계산기 페이지에서 [더 입력하기] 버튼을 눌렀을 경우 실행될 함수.
   ///
-  /// 현재의 [_subjects]에 새로운 [SubjectInfo]를 추가한다.
+  /// 현재의 [_subjects]에 새로운 [ClassInfo]를 추가한다.
   void addSubject() {
-    List<SubjectInfo> tempList = currentSubjects;
-    tempList.add(SubjectInfo());
+    List<ClassInfo> tempList = currentSubjects;
+    tempList.add(ClassInfo());
     _updateSubjects(tempList);
   }
 
   /// 학점계산기 페이지에서 다른 학기를 눌렀을 때 실행될 함수
   ///
-  /// [더 입력하기] 버튼으로 추가된 새로운 [SubjectInfo]들 중에서 값을 입력
-  /// 받지 않은 [SubjectInfo]를 삭제하는 함수.
+  /// [더 입력하기] 버튼으로 추가된 새로운 [ClassInfo]들 중에서 값을 입력
+  /// 받지 않은 [ClassInfo]를 삭제하는 함수.
   void removeEmptySubjects() {
     if (currentSubjects.length == DEFAULT_SUBJECTS_LENGTH) return;
 
-    SubjectInfo targetSubject;
+    ClassInfo targetSubject;
     List<int> removeIndexes = [];
-    List<SubjectInfo> tempList = currentSubjects;
+    List<ClassInfo> tempList = currentSubjects;
 
     for (int i = 0; i < (tempList.length - DEFAULT_SUBJECTS_LENGTH); i++) {
       targetSubject = tempList[DEFAULT_SUBJECTS_LENGTH + i];
-      if (targetSubject.isMajor == false &&
-          targetSubject.credit == 0 &&
-          targetSubject.title.isEmpty &&
-          targetSubject.gradeType == Grade.aPlus) {
+      if (targetSubject.isMajorClass == false &&
+          targetSubject.classsCredits == 0 &&
+          targetSubject.className.isEmpty &&
+          targetSubject.classGrade == Grade.aPlus) {
         removeIndexes.add(DEFAULT_SUBJECTS_LENGTH + i);
       }
     }
@@ -156,10 +156,10 @@ class GradeOfTerm {
 
   /// 학점계산기 페이지에서 [초기화] 버튼을 눌렀을 때 실행될 함수
   ///
-  /// 모든 [더 입력하기] 버튼으로 생성된 [SubjectInfo]를 삭제하는 함수
+  /// 모든 [더 입력하기] 버튼으로 생성된 [ClassInfo]를 삭제하는 함수
   void removeAdditionalSubjects() {
     if (currentSubjects.length == DEFAULT_SUBJECTS_LENGTH) return;
-    List<SubjectInfo> tempList = currentSubjects;
+    List<ClassInfo> tempList = currentSubjects;
     for (int i = tempList.length - DEFAULT_SUBJECTS_LENGTH - 1; i >= 0; i--) {
       tempList.removeLast();
     }
@@ -183,10 +183,10 @@ class GradeOfTerm {
     bool isPNP = false;
 
     for (int i = 0; i < currentSubjects.length; i++) {
-      credit = currentSubjects[i].credit;
-      gradeType = currentSubjects[i].gradeType;
-      isMajor = currentSubjects[i].isMajor;
-      isPNP = currentSubjects[i].isPNP;
+      credit = currentSubjects[i].classsCredits;
+      gradeType = currentSubjects[i].classGrade;
+      isMajor = currentSubjects[i].isMajorClass;
+      isPNP = currentSubjects[i].isPassFail;
 
       if (credit != 0) {
         if (gradeType.point > 0) {
@@ -224,7 +224,7 @@ class GradeOfTerm {
   /// [_subjects]의 [index] 번째 과목을 갱신하는 함수
   ///
   /// inputs
-  /// * [index] : [_subjects]에서 갱신할 [SubjectInfo]가 있는 [index]
+  /// * [index] : [_subjects]에서 갱신할 [ClassInfo]가 있는 [index]
   ///
   /// inputs(option)
   /// * [title] : 과목 이름
@@ -243,11 +243,11 @@ class GradeOfTerm {
     bool? isPNP,
     bool? isMajor,
   }) {
-    if (title != null) currentSubjects[index].title = title;
-    if (credit != null) currentSubjects[index].credit = credit;
-    if (gradeType != null) currentSubjects[index].gradeType = gradeType;
-    if (isPNP != null) currentSubjects[index].isPNP = isPNP;
-    if (isMajor != null) currentSubjects[index].isMajor = isMajor;
+    if (title != null) currentSubjects[index].className = title;
+    if (credit != null) currentSubjects[index].classsCredits = credit;
+    if (gradeType != null) currentSubjects[index].classGrade = gradeType;
+    if (isPNP != null) currentSubjects[index].isPassFail = isPNP;
+    if (isMajor != null) currentSubjects[index].isMajorClass = isMajor;
 
     if (credit != null ||
         gradeType != null ||
@@ -257,13 +257,13 @@ class GradeOfTerm {
     }
   }
 
-  /// [_subjects]의 [index]에 있는 [SubjectInfo]를 초기값으로 되돌리는 함수.
+  /// [_subjects]의 [index]에 있는 [ClassInfo]를 초기값으로 되돌리는 함수.
   void setDefault(int index) {
-    currentSubjects[index].title = '';
-    currentSubjects[index].credit = 0;
-    currentSubjects[index].gradeType = Grade.aPlus;
-    currentSubjects[index].isMajor = false;
-    currentSubjects[index].isPNP = false;
+    currentSubjects[index].className = '';
+    currentSubjects[index].classsCredits = 0;
+    currentSubjects[index].classGrade = Grade.aPlus;
+    currentSubjects[index].isMajorClass = false;
+    currentSubjects[index].isPassFail = false;
     updateGrades();
   }
 

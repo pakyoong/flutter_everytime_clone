@@ -303,7 +303,7 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
                     ),
                     child: CupertinoTextField(
                       controller: TextEditingController(
-                        text: subjectsSnapshot.data![currentIndex - 1].title,
+                        text: subjectsSnapshot.data![currentIndex - 1].className,
                       ),
                       padding: EdgeInsets.zero,
                       cursorColor: Theme.of(context).highlightColor,
@@ -352,7 +352,7 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
                 if (subjectsSnapshot.hasData) {
                   return CupertinoTextField(
                     controller: TextEditingController(
-                      text: subjectsSnapshot.data![currentIndex - 1].credit
+                      text: subjectsSnapshot.data![currentIndex - 1].classsCredits
                           .toString(),
                     ),
                     textAlign: TextAlign.center,
@@ -410,7 +410,7 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
                           currentSelectingIndexSnapshot) {
                         return Text(
                           subjectsSnapshot
-                              .data![currentIndex - 1].gradeType.label,
+                              .data![currentIndex - 1].classGrade.label,
                           style: (currentSelectingIndexSnapshot.data != null)
                               ? (currentSelectingIndexSnapshot.data! ==
                                       currentIndex
@@ -441,7 +441,7 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
                       currentTermIndex: currentTermIndex,
                       currentIndex: currentIndex,
                       currentGradeType:
-                          subjectsSnapshot.data![currentIndex - 1].gradeType,
+                          subjectsSnapshot.data![currentIndex - 1].classGrade,
                       position: position,
                     );
                     gradeCalculatorBloc
@@ -462,7 +462,7 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
               builder: (_, subjectsSnapshot) {
                 if (subjectsSnapshot.hasData) {
                   return Checkbox(
-                    value: subjectsSnapshot.data![currentIndex - 1].isMajor,
+                    value: subjectsSnapshot.data![currentIndex - 1].isMajorClass,
                     activeColor: Theme.of(context).focusColor,
                     checkColor: Theme.of(context).scaffoldBackgroundColor,
                     shape: RoundedRectangleBorder(

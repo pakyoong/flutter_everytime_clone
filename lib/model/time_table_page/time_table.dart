@@ -3,16 +3,16 @@ import 'package:everytime/model/time_table_page/time_table_data.dart';
 import 'package:rxdart/subjects.dart';
 
 class TimeTable {
-  /// 시간표 이름
+  // 시간표 이름
   final _title = BehaviorSubject<String>.seeded('시간표');
 
-  /// 시간표의 년, 학기
+  // 학기 정보 (예: "2023 1학기")
   final String term;
 
-  /// 시간표 데이터
+  // 시간표 데이터
   final _timeTableData = BehaviorSubject<List<TimeTableData>>.seeded([]);
   
-  /// 이 시간표가 default 시간표인지
+  // 이 시간표가 주 시간표인지 여부
   final _isPrimary = BehaviorSubject<bool>.seeded(false);
 
   TimeTable({
@@ -32,10 +32,8 @@ class TimeTable {
   Function(bool) get updateIsPrimary => _isPrimary.sink.add;
   bool get currentIsPrimary => _isPrimary.value;
 
-  /// 입력받은 [index]의 위치에 있는 [TimeTableData]를 지우는 함수
-  ///
-  /// inputs
-  /// * [index] : 지우려는 [_timeTableData]의 [index]
+
+  // 강의 제거
   void removeClass(int index) {
     List<TimeTableData> tempList = currentTimeTableData;
     currentTimeTableData.removeAt(index);
@@ -43,10 +41,7 @@ class TimeTable {
     _updateTimeTableData(tempList);
   }
 
-  /// 입력받은 [data]를 [_timeTableData]에 추가하는 함수
-  ///
-  /// inputs
-  /// * [data] : 추가할 데이터
+  // 강의 추가
   void addClass(TimeTableData data) {
     List<TimeTableData> tempList = currentTimeTableData;
     currentTimeTableData.add(data);
