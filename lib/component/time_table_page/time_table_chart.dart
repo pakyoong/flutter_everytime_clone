@@ -2,7 +2,7 @@ import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:everytime/component/custom_button_modal_bottom_sheet.dart';
 import 'package:everytime/component/custom_cupertino_alert_dialog.dart';
 import 'package:everytime/global_variable.dart';
-import 'package:everytime/model/enums.dart';
+import 'package:everytime/model/time_table_enums.dart';
 import 'package:everytime/model/time_table_page/lecture_time_and_location.dart';
 import 'package:everytime/model/time_table_page/time_table_data.dart';
 import 'package:flutter/cupertino.dart';
@@ -23,7 +23,7 @@ class TimeTableChart extends StatelessWidget {
   }) : super(key: key);
 
   final List<int> timeList;
-  final List<DayOfWeek> dayOfWeekList;
+  final List<Weekday> dayOfWeekList;
   final List<TimeTableData> timeTableData;
   final List<LectureTimeAndLocation>? shadowDataList;
   final UserProfileManagementBloc userBloc;
@@ -78,7 +78,7 @@ class TimeTableChart extends StatelessWidget {
   double _getPositionLeft(LectureTimeAndLocation data) {
     double pos = appWidth *
         (0.8995 / dayOfWeekList.length) *
-        (DayOfWeek.getByDayOfWeek(data.dayOfWeek));
+        (Weekday.indexOfWeekday(data.weekday));
     return (appWidth * 0.055) + pos;
   }
 
@@ -128,7 +128,7 @@ class TimeTableChart extends StatelessWidget {
   List<Widget> _buildButtons(BuildContext context) {
     List<Widget> result = [];
     for (int i = 0; i < timeTableData.length; i++) {
-      for (LectureTimeAndLocation data in timeTableData[i].dates) {
+      for (LectureTimeAndLocation data in timeTableData[i].times) {
         result.add(
           Positioned(
             top: _getPositionTop(data),
@@ -197,7 +197,7 @@ class TimeTableChart extends StatelessWidget {
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
                       Text(
-                        timeTableData[i].subjectName,
+                        timeTableData[i].className,
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -238,7 +238,7 @@ class TimeTableChart extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              timeTableData[index].subjectName,
+              timeTableData[index].className,
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -246,7 +246,7 @@ class TimeTableChart extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              timeTableData[index].prof,
+              timeTableData[index].professor,
               style: const TextStyle(
                 fontSize: 17,
               ),

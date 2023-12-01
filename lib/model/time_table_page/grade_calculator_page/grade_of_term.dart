@@ -1,4 +1,4 @@
-import 'package:everytime/model/enums.dart';
+import 'package:everytime/model/time_table_enums.dart';
 import 'package:everytime/model/time_table_page/grade_calculator_page/subject_info.dart';
 import 'package:rxdart/subjects.dart';
 
@@ -36,7 +36,7 @@ class GradeOfTerm {
 
   /// 각종 성적 갯수? 학점?
   final List<BehaviorSubject<int>> _gradeAmounts = List.generate(
-      GradeType.getGrades().length, (index) => BehaviorSubject.seeded(0));
+      Grade.allGrades().length, (index) => BehaviorSubject.seeded(0));
 
   Stream<double> get totalGrade => _totalGrade.stream;
   Stream<int> get totalCredit => _totalCredit.stream;
@@ -101,7 +101,7 @@ class GradeOfTerm {
 
   /// 임시로 각 성적의 총합을 저장할 공간. 자주 사용하는거 같아서 전역 변수로 선언해줌.
   // ignore: prefer_for_elements_to_map_fromiterable, prefer_final_fields
-  Map<GradeType, int> _tempGrades = Map.fromIterable(GradeType.getGrades(),
+  Map<Grade, int> _tempGrades = Map.fromIterable(Grade.allGrades(),
       key: (element) => element, value: (element) => 0);
 
   Stream<List<SubjectInfo>> get subjects => _subjects.stream;
@@ -139,7 +139,7 @@ class GradeOfTerm {
       if (targetSubject.isMajor == false &&
           targetSubject.credit == 0 &&
           targetSubject.title.isEmpty &&
-          targetSubject.gradeType == GradeType.ap) {
+          targetSubject.gradeType == Grade.aPlus) {
         removeIndexes.add(DEFAULT_SUBJECTS_LENGTH + i);
       }
     }
@@ -178,7 +178,7 @@ class GradeOfTerm {
     );
 
     int credit = 0;
-    GradeType gradeType = GradeType.f;
+    Grade gradeType = Grade.F;
     bool isMajor = false;
     bool isPNP = false;
 
@@ -189,15 +189,15 @@ class GradeOfTerm {
       isPNP = currentSubjects[i].isPNP;
 
       if (credit != 0) {
-        if (gradeType.grade > 0) {
-          tempTotalGrade += gradeType.grade * credit;
+        if (gradeType.point > 0) {
+          tempTotalGrade += gradeType.point * credit;
           tempTotalCredit += credit;
 
           if (isMajor) {
-            tempMajorGrade += gradeType.grade * credit;
+            tempMajorGrade += gradeType.point * credit;
             tempMajorCredit += credit;
           }
-        } else if (gradeType == GradeType.p && isPNP) {
+        } else if (gradeType == Grade.P && isPNP) {
           tempPCredit += credit;
         }
 
@@ -207,7 +207,7 @@ class GradeOfTerm {
 
     _tempGrades.forEach(
       (key, value) =>
-          _updateGradeAmountsElementAt(GradeType.getIndex(key), value),
+          _updateGradeAmountsElementAt(Grade.indexOfGrade(key), value),
     );
 
     _updateTotalGrade(tempTotalGrade);
@@ -239,7 +239,7 @@ class GradeOfTerm {
     int index, {
     String? title,
     int? credit,
-    GradeType? gradeType,
+    Grade? gradeType,
     bool? isPNP,
     bool? isMajor,
   }) {
@@ -261,7 +261,7 @@ class GradeOfTerm {
   void setDefault(int index) {
     currentSubjects[index].title = '';
     currentSubjects[index].credit = 0;
-    currentSubjects[index].gradeType = GradeType.ap;
+    currentSubjects[index].gradeType = Grade.aPlus;
     currentSubjects[index].isMajor = false;
     currentSubjects[index].isPNP = false;
     updateGrades();

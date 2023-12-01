@@ -4,7 +4,7 @@ import 'package:everytime/component/custom_container.dart';
 import 'package:everytime/component/custom_cupertino_alert_dialog.dart';
 import 'package:everytime/component/custom_picker_modal_bottom_sheet.dart';
 import 'package:everytime/global_variable.dart';
-import 'package:everytime/model/enums.dart';
+import 'package:everytime/model/time_table_enums.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:positioned_tap_detector_2/positioned_tap_detector_2.dart';
@@ -410,7 +410,7 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
                           currentSelectingIndexSnapshot) {
                         return Text(
                           subjectsSnapshot
-                              .data![currentIndex - 1].gradeType.data,
+                              .data![currentIndex - 1].gradeType.label,
                           style: (currentSelectingIndexSnapshot.data != null)
                               ? (currentSelectingIndexSnapshot.data! ==
                                       currentIndex
@@ -501,7 +501,7 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
     required BuildContext context,
     required int currentTermIndex,
     required int currentIndex,
-    required GradeType currentGradeType,
+    required Grade currentGradeType,
     required TapPosition position,
   }) {
     gradeCalculatorBloc.updateShowingGradeSelector(true);
@@ -530,7 +530,7 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
       enableDrag: false,
       context: context,
       builder: (popupContext) {
-        int selected = GradeType.getIndex(currentGradeType);
+        int selected = Grade.indexOfGrade(currentGradeType);
         return CustomPickerModalBottomSheet(
           title: '성적을 선택해주세요',
           onPressedCancel: () {
@@ -539,8 +539,8 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
           onPressedSave: () {
             userBloc.getTerm(currentTermIndex).updateSubject(
                   currentIndex - 1,
-                  gradeType: GradeType.getByIndex(selected),
-                  isPNP: (GradeType.getByIndex(selected) == GradeType.p)
+                  gradeType: Grade.getByIndex(selected),
+                  isPNP: (Grade.getByIndex(selected) == Grade.P)
                       ? true
                       : null,
                 );
@@ -551,13 +551,13 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
           picker: CupertinoPicker(
             itemExtent: appHeight * 0.05,
             scrollController: FixedExtentScrollController(
-              initialItem: GradeType.getIndex(currentGradeType),
+              initialItem: Grade.indexOfGrade(currentGradeType),
             ),
             children: List.generate(
               11,
               (index) {
                 return Center(
-                  child: Text(GradeType.getGradeElementAt(index)),
+                  child: Text(Grade.gradeLabelAtIndex(index)),
                 );
               },
             ),

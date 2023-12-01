@@ -1,8 +1,8 @@
-import 'package:everytime/model/enums.dart';
+import 'package:everytime/model/time_table_enums.dart';
 
 class LectureTimeAndLocation {
   /// 요일
-  DayOfWeek dayOfWeek;
+  Weekday weekday;
 
   /// 시작 시간의 시간
   int startHour;
@@ -20,7 +20,7 @@ class LectureTimeAndLocation {
   String location;
 
   LectureTimeAndLocation({
-    this.dayOfWeek = DayOfWeek.mon,
+    this.weekday = Weekday.monday,
     this.startHour = 9,
     this.startMinute = 0,
     this.endHour = 10,

@@ -54,12 +54,12 @@ class AppBarAtAddTimeTablePage extends StatelessWidget {
                 _buildIncorrectTimeTableNameDialog();
               } else {
                 TimeTable timeTable = TimeTable(
-                  termString: timeTableListBloc
+                  term: timeTableListBloc
                       .currentTermList[timeTableListBloc.currentPickerIndex],
                 );
-                timeTable.updateName(timeTableNameController.text);
+                timeTable.updateTitle(timeTableNameController.text);
 
-                timeTableListBloc.sortClassTimeTable([timeTable]);
+                timeTableListBloc.sortTimeTables([timeTable]);
                 userBloc.addTimeTableList(timeTable);
 
                 Navigator.pop(pageContext);

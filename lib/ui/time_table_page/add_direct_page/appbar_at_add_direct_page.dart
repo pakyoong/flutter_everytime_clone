@@ -3,7 +3,7 @@ import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:everytime/component/custom_cupertino_alert_dialog.dart';
 import 'package:everytime/component/time_table_page/round_button.dart';
 import 'package:everytime/global_variable.dart';
-import 'package:everytime/model/enums.dart';
+import 'package:everytime/model/time_table_enums.dart';
 import 'package:everytime/model/time_table_page/lecture_time_and_location.dart';
 import 'package:everytime/model/time_table_page/time_table_data.dart';
 import 'package:flutter/cupertino.dart';
@@ -79,8 +79,8 @@ class AppBarAtAddDirectPage extends StatelessWidget {
     int tempEndHour = userBloc.defaultTimeListLast;
 
     for (LectureTimeAndLocation dates in addDirectBloc.currentLectureScheduleData) {
-      if (DayOfWeek.getByDayOfWeek(dates.dayOfWeek) > tempDayOfWeekIndex) {
-        tempDayOfWeekIndex = DayOfWeek.getByDayOfWeek(dates.dayOfWeek);
+      if (Weekday.indexOfWeekday(dates.weekday) > tempDayOfWeekIndex) {
+        tempDayOfWeekIndex = Weekday.indexOfWeekday(dates.weekday);
       }
 
       if (dates.startHour < tempStartHour) {
@@ -97,7 +97,7 @@ class AppBarAtAddDirectPage extends StatelessWidget {
       tempDayOfWeekIndex,
       [
         LectureTimeAndLocation(
-          dayOfWeek: DayOfWeek.getByIndex(lastDayOfWeekIndex),
+          weekday: Weekday.weekdayAtIndex(lastDayOfWeekIndex),
           startHour: lastStartHour,
           endHour: lastEndHour,
         ),
@@ -108,7 +108,7 @@ class AppBarAtAddDirectPage extends StatelessWidget {
       tempEndHour,
       [
         LectureTimeAndLocation(
-          dayOfWeek: DayOfWeek.getByIndex(lastDayOfWeekIndex),
+          weekday: Weekday.weekdayAtIndex(lastDayOfWeekIndex),
           startHour: lastStartHour,
           endHour: lastEndHour,
         ),
@@ -148,9 +148,9 @@ class AppBarAtAddDirectPage extends StatelessWidget {
     }
 
     TimeTableData tempData = TimeTableData(
-      prof: profNameController.text,
-      dates: addDirectBloc.currentLectureScheduleData,
-      subjectName: subjectNameController.text,
+      professor: profNameController.text,
+      times: addDirectBloc.currentLectureScheduleData,
+      className: subjectNameController.text,
     );
     String? result = userBloc.checkTimeTableCrash(tempData);
 
@@ -199,7 +199,7 @@ class AppBarAtAddDirectPage extends StatelessWidget {
     }
 
     //TODO: 전체 시간표 목록 갱신해야함.
-    userBloc.currentSelectedTimeTable!.addTimeTableData(tempData);
+    userBloc.currentSelectedTimeTable!.addClass(tempData);
 
     profNameController.text = '';
     subjectNameController.text = '';

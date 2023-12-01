@@ -25,7 +25,7 @@ class _TimeTableListPageState extends State<TimeTableListPage> {
   void initState() {
     super.initState();
 
-    _timeTableListBloc.sortClassTimeTable(widget.userBloc.currentTimeTableList);
+    _timeTableListBloc.sortTimeTables(widget.userBloc.currentTimeTableList);
   }
 
   @override

@@ -4,7 +4,7 @@ import 'package:everytime/component/custom_cupertino_alert_dialog.dart';
 import 'package:everytime/component/custom_picker_modal_bottom_sheet.dart';
 import 'package:everytime/component/time_table_page/custom_text_field.dart';
 import 'package:everytime/global_variable.dart';
-import 'package:everytime/model/enums.dart';
+import 'package:everytime/model/time_table_enums.dart';
 import 'package:everytime/model/time_table_page/lecture_time_and_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -179,7 +179,7 @@ class DataInputAtAddDirectPage extends StatelessWidget {
                           children: [
                             TextSpan(
                               text: timeNPlaceDataSnapshot
-                                  .data![index - 1].dayOfWeek.string,
+                                  .data![index - 1].weekday.string,
                             ),
                             TextSpan(
                               text: _buildTimeString(
@@ -311,8 +311,8 @@ class DataInputAtAddDirectPage extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       builder: (bottomSheetContext) {
-        int dayOfWeekIndex = DayOfWeek.getByDayOfWeek(
-            addDirectBloc.currentLectureScheduleData[currentIndex - 1].dayOfWeek);
+        int dayOfWeekIndex = Weekday.indexOfWeekday(
+            addDirectBloc.currentLectureScheduleData[currentIndex - 1].weekday);
         DateTime startTime = DateTime(
           DateTime.now().year,
           DateTime.now().month,
@@ -362,15 +362,15 @@ class DataInputAtAddDirectPage extends StatelessWidget {
                   child: CupertinoPicker(
                     itemExtent: 32,
                     scrollController: FixedExtentScrollController(
-                      initialItem: DayOfWeek.getByDayOfWeek(addDirectBloc
-                          .currentLectureScheduleData[currentIndex - 1].dayOfWeek),
+                      initialItem: Weekday.indexOfWeekday(addDirectBloc
+                          .currentLectureScheduleData[currentIndex - 1].weekday),
                     ),
                     children: List.generate(
-                      DayOfWeek.getDayOfWeeks().length,
+                      Weekday.allWeekdays().length,
                       (index) {
                         return Center(
                           child: Text(
-                            DayOfWeek.getDayOfWeeks()[index].string,
+                            Weekday.allWeekdays()[index].string,
                             style: const TextStyle(
                               fontSize: 25,
                             ),
@@ -468,7 +468,7 @@ class DataInputAtAddDirectPage extends StatelessWidget {
 
     addDirectBloc.updateLectureScheduleEntry(
       currentIndex - 1,
-      dayOfWeek: DayOfWeek.getByIndex(dayOfWeekIndex),
+      dayOfWeek: Weekday.weekdayAtIndex(dayOfWeekIndex),
       startHour: startTime.hour,
       startMinute: startTime.minute,
       endHour: endTime.hour,
@@ -515,8 +515,8 @@ class DataInputAtAddDirectPage extends StatelessWidget {
               onPressed: () {
                 Navigator.pop(dialogContext);
 
-                int tempDayOfWeek = DayOfWeek.getByDayOfWeek(addDirectBloc
-                    .currentLectureScheduleData[currentIndex - 1].dayOfWeek);
+                int tempDayOfWeek = Weekday.indexOfWeekday(addDirectBloc
+                    .currentLectureScheduleData[currentIndex - 1].weekday);
                 int tempStartHour = addDirectBloc
                     .currentLectureScheduleData[currentIndex - 1].startHour;
                 int tempEndHour = addDirectBloc
@@ -530,7 +530,7 @@ class DataInputAtAddDirectPage extends StatelessWidget {
                     LectureTimeAndLocation(
                       startHour: lastStartHour,
                       endHour: lastEndHour,
-                      dayOfWeek: DayOfWeek.getByIndex(lastDayOfWeekIndex),
+                      weekday: Weekday.weekdayAtIndex(lastDayOfWeekIndex),
                     ),
                   ],
                 );
@@ -542,7 +542,7 @@ class DataInputAtAddDirectPage extends StatelessWidget {
                     LectureTimeAndLocation(
                       startHour: lastStartHour,
                       endHour: lastEndHour,
-                      dayOfWeek: DayOfWeek.getByIndex(lastDayOfWeekIndex),
+                      weekday: Weekday.weekdayAtIndex(lastDayOfWeekIndex),
                     ),
                   ],
                 );

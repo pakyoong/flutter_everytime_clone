@@ -1,4 +1,4 @@
-import 'package:everytime/model/enums.dart';
+import 'package:everytime/model/time_table_enums.dart';
 import 'package:everytime/model/time_table_page/lecture_time_and_location.dart';
 import 'package:rxdart/subjects.dart';
 
@@ -30,7 +30,7 @@ class LectureScheduleBloc {
         int? startMinute,
         int? endHour,
         int? endMinute,
-        DayOfWeek? dayOfWeek,
+        Weekday? dayOfWeek,
       }) {
     if (location != null ||
         startHour != null ||
@@ -44,7 +44,7 @@ class LectureScheduleBloc {
       if (startMinute != null) temp[index].startMinute = startMinute;
       if (endHour != null) temp[index].endHour = endHour;
       if (endMinute != null) temp[index].endMinute = endMinute;
-      if (dayOfWeek != null) temp[index].dayOfWeek = dayOfWeek;
+      if (dayOfWeek != null) temp[index].weekday = dayOfWeek;
 
       _updateLectureScheduleList(temp);
     }
@@ -64,7 +64,7 @@ class LectureScheduleBloc {
     int? startMinute,
     int? endHour,
     int? endMinute,
-    DayOfWeek? dayOfWeek,
+    Weekday? dayOfWeek,
   }) {
     _updateLectureScheduleList([
       ...currentLectureScheduleData,

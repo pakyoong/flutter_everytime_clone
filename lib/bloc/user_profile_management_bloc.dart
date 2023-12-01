@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:everytime/model/enums.dart';
+import 'package:everytime/model/time_table_enums.dart';
 import 'package:everytime/model/time_table_page/grade_calculator_page/bar_chart_data.dart';
 import 'package:everytime/model/time_table_page/grade_calculator_page/grade_of_term.dart';
 import 'package:everytime/model/time_table_page/grade_calculator_page/point_chart_data.dart';
@@ -56,14 +56,14 @@ class UserProfileManagementBloc {
     TimeTable? secondTimeTable;
     // 특정 학기의 시간표를 찾는 함수
     for (TimeTable timeTable in timeTableList) {
-      if (timeTable.termString == termString) {
-        if (timeTable.currentIsDefault) {
+      if (timeTable.term == termString) {
+        if (timeTable.currentIsPrimary) {
           return timeTable; // 기본 시간표가 맞으면 해당 시간표 반환
         }
 
         if (secondTimeTable == null) {
           secondTimeTable = timeTable; // 기본 시간표가 아니면 임시 저장
-          secondTimeTable.updateIsDefault(true); // 기본 시간표로 설정
+          secondTimeTable.updateIsPrimary(true); // 기본 시간표로 설정
 
           break;
         }
@@ -87,11 +87,11 @@ class UserProfileManagementBloc {
     int removeEndHour = defaultTimeListLast; // 제거할 종료 시간
 
     for (int i = 0; i < timeTableData.length; i++) {
-      for (LectureTimeAndLocation dates in timeTableData[i].dates) {
+      for (LectureTimeAndLocation dates in timeTableData[i].times) {
         if (i == currentIndex) {
           // 현재 인덱스의 데이터를 체크하여 제거할 값 설정
-          if (removeDayOfWeekIndex < DayOfWeek.getByDayOfWeek(dates.dayOfWeek)) {
-            removeDayOfWeekIndex = DayOfWeek.getByDayOfWeek(dates.dayOfWeek);
+          if (removeDayOfWeekIndex < Weekday.indexOfWeekday(dates.weekday)) {
+            removeDayOfWeekIndex = Weekday.indexOfWeekday(dates.weekday);
           }
 
           if (removeStartHour > dates.startHour) {
@@ -103,8 +103,8 @@ class UserProfileManagementBloc {
           }
         } else {
           // 다른 인덱스의 데이터를 체크하여 기존 값 유지
-          if (tempDayOfWeekIndex < DayOfWeek.getByDayOfWeek(dates.dayOfWeek)) {
-            tempDayOfWeekIndex = DayOfWeek.getByDayOfWeek(dates.dayOfWeek);
+          if (tempDayOfWeekIndex < Weekday.indexOfWeekday(dates.weekday)) {
+            tempDayOfWeekIndex = Weekday.indexOfWeekday(dates.weekday);
           }
 
           if (tempStartHour > dates.startHour) {
@@ -118,14 +118,14 @@ class UserProfileManagementBloc {
       }
     }
 
-    currentSelectedTimeTable!.removeTimeTableData(currentIndex); // 시간표 데이터 제거
+    currentSelectedTimeTable!.removeClass(currentIndex); // 시간표 데이터 제거
 
     // 제거할 요일과 시간 범위를 사용하여 요일과 시간 리스트에서 해당 요일 및 시간을 제거
     removeDayOfWeek(
       removeDayOfWeekIndex,
       [
         LectureTimeAndLocation(
-          dayOfWeek: DayOfWeek.getByIndex(tempDayOfWeekIndex),
+          weekday: Weekday.weekdayAtIndex(tempDayOfWeekIndex),
           startHour: tempStartHour,
           endHour: tempEndHour,
         ),
@@ -136,7 +136,7 @@ class UserProfileManagementBloc {
       removeEndHour,
       [
         LectureTimeAndLocation(
-          dayOfWeek: DayOfWeek.getByIndex(tempDayOfWeekIndex),
+          weekday: Weekday.weekdayAtIndex(tempDayOfWeekIndex),
           startHour: tempStartHour,
           endHour: tempEndHour,
         ),
@@ -149,16 +149,16 @@ class UserProfileManagementBloc {
     String? result; // 결과를 저장할 변수
 
     // 입력된 데이터와 기존 데이터를 비교하여 시간 충돌 여부 확인
-    for (int oldIndex = 0; oldIndex < data.dates.length; oldIndex++) {
-      LectureTimeAndLocation oldData = data.dates[oldIndex];
-      for (int newIndex = 0; newIndex < data.dates.length; newIndex++) {
+    for (int oldIndex = 0; oldIndex < data.times.length; oldIndex++) {
+      LectureTimeAndLocation oldData = data.times[oldIndex];
+      for (int newIndex = 0; newIndex < data.times.length; newIndex++) {
         if (oldIndex == newIndex) {
           continue; // 같은 인덱스는 비교하지 않음
         }
 
-        LectureTimeAndLocation newData = data.dates[newIndex];
+        LectureTimeAndLocation newData = data.times[newIndex];
 
-        if (oldData.dayOfWeek == newData.dayOfWeek) {
+        if (oldData.weekday == newData.weekday) {
           // 요일이 같은 경우 시간 충돌 검사
           DateTime newStartTime = DateTime(1970, 1, 1, newData.startHour, newData.startMinute);
           DateTime newEndTime = DateTime(1970, 1, 1, newData.endHour, newData.endMinute);
@@ -185,9 +185,9 @@ class UserProfileManagementBloc {
 
     // 선택된 시간표와 전체 시간표를 비교하여 충돌 검사
     for (TimeTableData timeTableData in currentSelectedTimeTable!.currentTimeTableData) {
-      for (LectureTimeAndLocation oldData in timeTableData.dates) {
-        for (LectureTimeAndLocation newData in data.dates) {
-          if (oldData.dayOfWeek == newData.dayOfWeek) {
+      for (LectureTimeAndLocation oldData in timeTableData.times) {
+        for (LectureTimeAndLocation newData in data.times) {
+          if (oldData.weekday == newData.weekday) {
             // 요일이 같은 경우 시간 충돌 검사
             DateTime newStartTime = DateTime(1970, 1, 1, newData.startHour, newData.startMinute);
             DateTime newEndTime = DateTime(1970, 1, 1, newData.endHour, newData.endMinute);
@@ -201,7 +201,7 @@ class UserProfileManagementBloc {
             } else if (oldEndTime.difference(newEndTime).inMinutes >= oldPlayTime) {
               // 새로운 종료 시간이 기존 시간보다 앞이면 충돌 없음
             } else {
-              result = timeTableData.subjectName; // 충돌 발생 시 과목명 반환
+              result = timeTableData.className; // 충돌 발생 시 과목명 반환
               break;
             }
           }
@@ -246,11 +246,11 @@ class UserProfileManagementBloc {
 
     if (result['timeTable'] == null || result['index'] == null) return; // 시간표가 없으면 종료
 
-    if (newName != null) result['timeTable'].updateName(newName); // 새 이름으로 업데이트
+    if (newName != null) result['timeTable'].updateTitle(newName); // 새 이름으로 업데이트
     if (timeTableData != null) {
       result['timeTable'].updateTimeTableData(timeTableData); // 새 시간표 데이터로 업데이트
     }
-    if (isDefault != null) result['timeTable'].updateIsDefault(isDefault); // 기본 시간표 여부 업데이트
+    if (isDefault != null) result['timeTable'].updateIsPrimary(isDefault); // 기본 시간표 여부 업데이트
 
     if (newName != null || timeTableData != null || isDefault != null) {
       List<TimeTable> tempTimeTableList = currentTimeTableList; // 현재 시간표 리스트 복사
@@ -270,7 +270,7 @@ class UserProfileManagementBloc {
 
     // 시간표 리스트를 순회하면서 일치하는 시간표 찾기
     for (int i = 0; i < currentTimeTableList.length; i++) {
-      if (currentTimeTableList[i].currentName == name && currentTimeTableList[i].termString == termString) {
+      if (currentTimeTableList[i].currentTitle == name && currentTimeTableList[i].term == termString) {
         tempTimeTable = currentTimeTableList[i]; // 일치하는 시간표 저장
         tempIndex = i; // 일치하는 시간표의 인덱스 저장
       }
@@ -301,24 +301,24 @@ class UserProfileManagementBloc {
   final _timeList = BehaviorSubject<List<int>>.seeded([9, 10, 11, 12, 13, 14, 15]);
 
   // 시간표의 요일을 저장하는 BehaviorSubject
-  final _dayOfWeekList = BehaviorSubject<List<DayOfWeek>>.seeded([
-    DayOfWeek.mon,
-    DayOfWeek.tue,
-    DayOfWeek.wed,
-    DayOfWeek.thu,
-    DayOfWeek.fri
+  final _dayOfWeekList = BehaviorSubject<List<Weekday>>.seeded([
+    Weekday.monday,
+    Weekday.tuesday,
+    Weekday.wednesday,
+    Weekday.thursday,
+    Weekday.friday
   ]);
 
   // 시간표의 시간과 요일 목록에 대한 스트림과 업데이트 함수
   Stream<List<int>> get timeList => _timeList.stream;
-  Stream<List<DayOfWeek>> get dayOfWeek => _dayOfWeekList.stream;
+  Stream<List<Weekday>> get dayOfWeek => _dayOfWeekList.stream;
 
   Function(List<int>) get updateTimeList => _timeList.sink.add;
-  Function(List<DayOfWeek>) get updateDayOfWeekList => _dayOfWeekList.sink.add;
+  Function(List<Weekday>) get updateDayOfWeekList => _dayOfWeekList.sink.add;
 
   // 현재 시간표의 시간과 요일 목록을 가져오는 getter
   List<int> get currentTimeList => _timeList.value;
-  List<DayOfWeek> get currentDayOfWeek => _dayOfWeekList.value;
+  List<Weekday> get currentDayOfWeek => _dayOfWeekList.value;
 
   // 시간표에서 특정 시간 범위를 제거하는 함수
   void removeTimeList(int startHour, int endHour, List<LectureTimeAndLocation> timeNPlaceData) {
@@ -429,14 +429,14 @@ class UserProfileManagementBloc {
 
     // 제거할 요일을 찾고, 존재하는 경우 해당 요일보다 큰 요일 인덱스를 찾음
     for (int i = 0; i < timeNPlaceData.length; i++) {
-      if (timeNPlaceData[i].dayOfWeek.index >= DayOfWeek.getByIndex(dayOfWeekIndex).index) {
+      if (timeNPlaceData[i].weekday.index >= Weekday.weekdayAtIndex(dayOfWeekIndex).index) {
         isExist = true;
       } else {
-        largestIndex = DayOfWeek.getByDayOfWeek(timeNPlaceData[i].dayOfWeek);
+        largestIndex = Weekday.indexOfWeekday(timeNPlaceData[i].weekday);
       }
     }
 
-    List<DayOfWeek> currentList = currentDayOfWeek;
+    List<Weekday> currentList = currentDayOfWeek;
     if (!isExist) {
       largestIndex = (largestIndex <= DEFAULT_DAY_OF_WEEK_LIST_LAST)
           ? DEFAULT_DAY_OF_WEEK_LIST_LAST
@@ -454,12 +454,12 @@ class UserProfileManagementBloc {
   void addDayOfWeek(int dayOfWeekIndex) {
     // 현재 요일 목록의 길이보다 입력받은 인덱스가 큰 경우에만 처리
     if (dayOfWeekIndex > currentDayOfWeek.length - 1) {
-      List<DayOfWeek> currentList = currentDayOfWeek; // 현재 요일 목록 복사
+      List<Weekday> currentList = currentDayOfWeek; // 현재 요일 목록 복사
       int currentLength = currentList.length; // 현재 요일 목록의 길이
 
       // 입력받은 인덱스에 해당하는 요일까지 추가
       for (int i = 1; i <= dayOfWeekIndex - (currentLength - 1); i++) {
-        currentList.add(DayOfWeek.getByIndex(currentLength - 1 + i));
+        currentList.add(Weekday.weekdayAtIndex(currentLength - 1 + i));
       }
 
       updateDayOfWeekList(currentList); // 업데이트된 요일 목록 반영
@@ -523,8 +523,8 @@ class UserProfileManagementBloc {
   ];
 
   // 성적 유형별 총합을 임시 저장할 맵
-  Map<GradeType, int> _tempGradesAmount = Map<GradeType, int>.fromIterable(
-      GradeType.getGrades(),
+  Map<Grade, int> _tempGradesAmount = Map<Grade, int>.fromIterable(
+      Grade.allGrades(),
       key: (element) => element,
       value: (element) => 0
   );
@@ -564,8 +564,8 @@ class UserProfileManagementBloc {
       tempPCredit += getTerm(i).currentPCredit;
 
       // 성적 유형별 총합 업데이트
-      for (int j = 0; j < GradeType.getGrades().length; j++) {
-        _tempGradesAmount.update(GradeType.getByIndex(j),
+      for (int j = 0; j < Grade.allGrades().length; j++) {
+        _tempGradesAmount.update(Grade.getByIndex(j),
                 (value) => value += getTerm(i).currentGradeAmountsElementAt(j));
       }
     }
@@ -603,7 +603,7 @@ class UserProfileManagementBloc {
   // 바 그래프 데이터를 업데이트하는 함수
   void _updatePercentData() {
     // 성적 유형별 총합을 값에 따라 정렬
-    Map<GradeType, int> sortByValue = Map.fromEntries(
+    Map<Grade, int> sortByValue = Map.fromEntries(
         _tempGradesAmount.entries.toList()..sort((e1, e2) => e2.value.compareTo(e1.value))
     );
 
@@ -618,7 +618,7 @@ class UserProfileManagementBloc {
       tempList.add(
         BarChartData(
           percent: (sortByValue.values.elementAt(i) / _currentCredit.value * 100).round(),
-          grade: (sortByValue.keys.elementAt(i).data),
+          grade: (sortByValue.keys.elementAt(i).label),
         ),
       );
     }
@@ -631,16 +631,16 @@ class UserProfileManagementBloc {
     updateTargetCredit(140); // 목표 학점 설정
 
     // 첫 학기의 각 과목별 성적 정보 설정
-    getTerm(0).updateSubject(0, credit: 9, gradeType: GradeType.ap);
-    getTerm(0).updateSubject(1, credit: 5, gradeType: GradeType.az);
-    getTerm(0).updateSubject(2, credit: 5, gradeType: GradeType.ap, isMajor: true);
-    getTerm(0).updateSubject(3, credit: 2, gradeType: GradeType.bp);
+    getTerm(0).updateSubject(0, credit: 9, gradeType: Grade.aPlus);
+    getTerm(0).updateSubject(1, credit: 5, gradeType: Grade.A);
+    getTerm(0).updateSubject(2, credit: 5, gradeType: Grade.aPlus, isMajor: true);
+    getTerm(0).updateSubject(3, credit: 2, gradeType: Grade.bPlus);
 
     // 두 번째 학기의 각 과목별 성적 정보 설정
-    getTerm(1).updateSubject(0, credit: 4, gradeType: GradeType.ap);
-    getTerm(1).updateSubject(1, credit: 6, gradeType: GradeType.az);
-    getTerm(1).updateSubject(2, credit: 6, gradeType: GradeType.ap, isMajor: true);
-    getTerm(1).updateSubject(3, credit: 4, gradeType: GradeType.bz);
+    getTerm(1).updateSubject(0, credit: 4, gradeType: Grade.aPlus);
+    getTerm(1).updateSubject(1, credit: 6, gradeType: Grade.A);
+    getTerm(1).updateSubject(2, credit: 6, gradeType: Grade.aPlus, isMajor: true);
+    getTerm(1).updateSubject(3, credit: 4, gradeType: Grade.B);
 
     updateData(); // 성적 데이터 업데이트
   }

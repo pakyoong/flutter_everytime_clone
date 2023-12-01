@@ -1,4 +1,4 @@
-import 'package:everytime/model/enums.dart';
+import 'package:everytime/model/time_table_enums.dart';
 
 class SubjectInfo {
   /// 과목명
@@ -8,7 +8,7 @@ class SubjectInfo {
   int credit = 0;
 
   /// 성적
-  GradeType gradeType = GradeType.ap;
+  Grade gradeType = Grade.aPlus;
 
   /// p 또는 np 과목 여부
   bool isPNP = false;

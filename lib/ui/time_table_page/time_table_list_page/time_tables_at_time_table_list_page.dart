@@ -61,7 +61,7 @@ class TimeTablesAtTimeTableListPage extends StatelessWidget {
   }
 
   Widget _buildContents(
-    List<TermClassTimetable> sortedTimeTable,
+    List<TermTimetables> sortedTimeTable,
     int sortedTimeTableIndex,
   ) {
     return Container(
@@ -92,7 +92,7 @@ class TimeTablesAtTimeTableListPage extends StatelessWidget {
                     Text(
                       sortedTimeTable[sortedTimeTableIndex]
                           .timeTables[timeTableIndex]
-                          .currentName,
+                          .currentTitle,
                       style: const TextStyle(
                         fontSize: 19,
                       ),
@@ -103,7 +103,7 @@ class TimeTablesAtTimeTableListPage extends StatelessWidget {
                     Visibility(
                       visible: sortedTimeTable[sortedTimeTableIndex]
                           .timeTables[timeTableIndex]
-                          .currentIsDefault,
+                          .currentIsPrimary,
                       child: Text(
                         '기본',
                         style: TextStyle(

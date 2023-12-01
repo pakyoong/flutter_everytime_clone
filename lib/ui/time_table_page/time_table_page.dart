@@ -8,7 +8,7 @@ import 'package:everytime/model/time_table_page/time_table.dart';
 import 'package:everytime/ui/time_table_page/grade_calculator_at_time_table_page.dart';
 import 'package:everytime/ui/time_table_page/time_table_at_time_table_page.dart';
 import 'package:everytime/global_variable.dart';
-import 'package:everytime/model/enums.dart';
+import 'package:everytime/model/time_table_enums.dart';
 import 'package:everytime/ui/time_table_page/add_subject_page/add_subject_page.dart';
 import 'package:everytime/ui/time_table_page/time_table_list_page/time_table_list_page.dart';
 import 'package:flutter/cupertino.dart';
@@ -97,7 +97,7 @@ class _TimeTablePageState extends State<TimeTablePage>
                   } else {
                     return CustomAppBarAnimation(
                       scrollOffsetStream: _scrollOffset.stream,
-                      title: selectedTimeTableSnapshot.data!.termString,
+                      title: selectedTimeTableSnapshot.data!.term,
                     );
                   }
                 },
@@ -108,7 +108,7 @@ class _TimeTablePageState extends State<TimeTablePage>
                   return CustomAppBar(
                     title: selectedTimeTableSnapshot.data == null
                         ? '시간표'
-                        : selectedTimeTableSnapshot.data!.currentName,
+                        : selectedTimeTableSnapshot.data!.currentTitle,
                     buttonList: [
                       Visibility(
                         visible: selectedTimeTableSnapshot.data == null
@@ -247,7 +247,7 @@ class _TimeTablePageState extends State<TimeTablePage>
       ),
     ];
 
-    if (!widget.userBloc.currentSelectedTimeTable!.currentIsDefault) {
+    if (!widget.userBloc.currentSelectedTimeTable!.currentIsPrimary) {
       buttonList.add(
         CustomButtonModalBottomSheetButton(
           icon: Icons.push_pin_outlined,
@@ -255,11 +255,11 @@ class _TimeTablePageState extends State<TimeTablePage>
           onPressed: () {
             TimeTable currentDefaultTimeTable =
                 widget.userBloc.findTimeTableAtSpecificTerm(
-              widget.userBloc.currentSelectedTimeTable!.termString,
+              widget.userBloc.currentSelectedTimeTable!.term,
             )!;
 
-            currentDefaultTimeTable.updateIsDefault(false);
-            widget.userBloc.currentSelectedTimeTable!.updateIsDefault(true);
+            currentDefaultTimeTable.updateIsPrimary(false);
+            widget.userBloc.currentSelectedTimeTable!.updateIsPrimary(true);
 
             Navigator.pop(bottomSheetContext);
           },
@@ -285,7 +285,7 @@ class _TimeTablePageState extends State<TimeTablePage>
 
   void _buildEditNameDialog(BuildContext context) {
     _timeTableNameController.text =
-        widget.userBloc.currentSelectedTimeTable!.currentName;
+        widget.userBloc.currentSelectedTimeTable!.currentTitle;
     showCupertinoDialog(
       context: context,
       builder: (dialogContext) {
@@ -311,8 +311,8 @@ class _TimeTablePageState extends State<TimeTablePage>
                   _buildWrongNameDialog();
                 } else {
                   widget.userBloc.updateTimeTableList(
-                    widget.userBloc.currentSelectedTimeTable!.termString,
-                    widget.userBloc.currentSelectedTimeTable!.currentName,
+                    widget.userBloc.currentSelectedTimeTable!.term,
+                    widget.userBloc.currentSelectedTimeTable!.currentTitle,
                     newName: _timeTableNameController.text,
                   );
                 }
@@ -367,8 +367,8 @@ class _TimeTablePageState extends State<TimeTablePage>
               child: const Text('삭제'),
               onPressed: () {
                 widget.userBloc.removeTimeTableList(
-                  widget.userBloc.currentSelectedTimeTable!.termString,
-                  widget.userBloc.currentSelectedTimeTable!.currentName,
+                  widget.userBloc.currentSelectedTimeTable!.term,
+                  widget.userBloc.currentSelectedTimeTable!.currentTitle,
                 );
 
                 TimeTable? defaultTimeTable = widget.userBloc
