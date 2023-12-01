@@ -1,4 +1,4 @@
-import 'package:everytime/bloc/tabbar_bloc.dart';
+import 'package:everytime/bloc/tab_navigation_bloc.dart';
 import 'package:everytime/component/custom_tabbar_button.dart';
 import 'package:everytime/global_variable.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +10,7 @@ class CustomTabBar extends StatelessWidget {
     required this.buttonTitleList,
   }) : super(key: key);
 
-  final TabBarBloc tabBarBloc;
+  final TabNavigationBloc tabBarBloc;
   final List<String> buttonTitleList;
 
   @override
@@ -23,7 +23,7 @@ class CustomTabBar extends StatelessWidget {
         right: appWidth * 0.025,
       ),
       child: StreamBuilder(
-        stream: tabBarBloc.getCurrentIndex,
+        stream: tabBarBloc.currentIndexStream,
         builder: (context, AsyncSnapshot<int> snapshot) {
           if (snapshot.hasData) {
             return Row(

@@ -1,4 +1,4 @@
-import 'package:everytime/bloc/everytime_user_bloc.dart';
+import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:everytime/component/custom_container.dart';
 import 'package:everytime/component/custom_container_content_button.dart';
 import 'package:everytime/component/custom_container_title.dart';
@@ -11,7 +11,7 @@ class MyInfoPage extends StatefulWidget {
     required this.userBloc,
   }) : super(key: key);
 
-  final EverytimeUserBloc userBloc;
+  final UserProfileManagementBloc userBloc;
 
   @override
   State<MyInfoPage> createState() => _MyInfoPageState();

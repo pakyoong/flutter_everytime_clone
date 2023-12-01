@@ -2,32 +2,32 @@ import 'package:everytime/model/time_table_page/time_table.dart';
 import 'package:everytime/model/time_table_page/time_tables_page/sorted_time_table.dart';
 import 'package:rxdart/subjects.dart';
 
-class TimeTableListBloc {
+class TimeTableListManagerBloc {
   // BehaviorSubject를 사용하여 정렬된 시간표 목록을 관리하는 변수
-  final _sortedTimeTable = BehaviorSubject<List<SortedTimeTable>>.seeded([]);
+  final _sortedClassTimetable = BehaviorSubject<List<TermClassTimetable>>.seeded([]);
 
   // 정렬된 시간표 스트림을 가져오는 getter
-  Stream<List<SortedTimeTable>> get sortedTimeTable => _sortedTimeTable.stream;
+  Stream<List<TermClassTimetable>> get sortedClassTimetable => _sortedClassTimetable.stream;
 
   // 정렬된 시간표를 업데이트하는 함수
-  Function(List<SortedTimeTable>) get updateSortedTimeTable =>
-      _sortedTimeTable.sink.add;
+  Function(List<TermClassTimetable>) get updateSortedClassTimeTable =>
+      _sortedClassTimetable.sink.add;
 
   // 현재 정렬된 시간표 목록을 가져오는 getter
-  List<SortedTimeTable> get currentSortedTimeTable => _sortedTimeTable.value;
+  List<TermClassTimetable> get currentSortedTimeTable => _sortedClassTimetable.value;
 
   // 입력된 시간표 목록을 정렬하고 정렬된 목록을 업데이트하는 함수
-  void sortTimeTable(List<TimeTable> timeTableList) {
-    List<SortedTimeTable> tempSortedTimeTable = currentSortedTimeTable;
+  void sortClassTimeTable(List<TimeTable> classTimeTableList) {
+    List<TermClassTimetable> tempSortedClassTimetable = currentSortedTimeTable;
 
     // 각 시간표에 대해 처리
-    for (TimeTable timeTable in timeTableList) {
+    for (TimeTable timeTable in classTimeTableList) {
       bool result = false;
       int? index;
 
       // 이미 정렬된 시간표 중에서 같은 학기의 시간표가 있는지 확인
-      for (int i = 0; i < tempSortedTimeTable.length; i++) {
-        if (tempSortedTimeTable[i].termString == timeTable.termString) {
+      for (int i = 0; i < tempSortedClassTimetable.length; i++) {
+        if (tempSortedClassTimetable[i].termString == timeTable.termString) {
           result = true;
           index = i;
           break;
@@ -36,24 +36,24 @@ class TimeTableListBloc {
 
       // 이미 존재하는 학기에 시간표 추가 또는 새로운 학기 시간표 생성
       if (result) {
-        tempSortedTimeTable[index!].timeTables.add(timeTable);
+        tempSortedClassTimetable[index!].timeTables.add(timeTable);
       } else {
-        SortedTimeTable newSortedTimeTable = SortedTimeTable(
+        TermClassTimetable newSortedTimeTable = TermClassTimetable(
           termString: timeTable.termString,
         );
 
-        if (timeTableList.length == 1) {
+        if (classTimeTableList.length == 1) {
           timeTable.updateIsDefault(true);
         }
 
         newSortedTimeTable.timeTables.add(timeTable);
-        tempSortedTimeTable.add(newSortedTimeTable);
+        tempSortedClassTimetable.add(newSortedTimeTable);
       }
     }
 
     // 학기 순으로 정렬해야 함 (미구현)
 
-    updateSortedTimeTable(tempSortedTimeTable);
+    updateSortedClassTimeTable(tempSortedClassTimetable);
   }
 
   // 학기 목록을 관리하는 BehaviorSubject 변수
@@ -97,7 +97,7 @@ class TimeTableListBloc {
 
   // Bloc의 리소스를 해제하는 함수
   dispose() {
-    _sortedTimeTable.close();
+    _sortedClassTimetable.close();
     _termList.close();
     _pickerIndex.close();
   }

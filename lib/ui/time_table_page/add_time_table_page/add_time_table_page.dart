@@ -1,5 +1,5 @@
-import 'package:everytime/bloc/everytime_user_bloc.dart';
-import 'package:everytime/bloc/time_table_page/time_table_list_bloc.dart';
+import 'package:everytime/bloc/user_profile_management_bloc.dart';
+import 'package:everytime/bloc/time_table_page/time_table_list_manager_bloc.dart';
 import 'package:everytime/component/time_table_page/custom_text_field.dart';
 import 'package:everytime/global_variable.dart';
 import 'package:everytime/ui/time_table_page/add_time_table_page/appbar_at_add_time_table_page.dart';
@@ -13,8 +13,8 @@ class AddTimeTablePage extends StatefulWidget {
     required this.timeTableListBloc,
   }) : super(key: key);
 
-  final EverytimeUserBloc userBloc;
-  final TimeTableListBloc timeTableListBloc;
+  final UserProfileManagementBloc userBloc;
+  final TimeTableListManagerBloc timeTableListBloc;
 
   @override
   State<AddTimeTablePage> createState() => _AddTimeTablePageState();

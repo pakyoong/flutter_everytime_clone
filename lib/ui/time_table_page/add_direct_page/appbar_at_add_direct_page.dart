@@ -1,5 +1,5 @@
 import 'package:everytime/bloc/time_table_page/lecture_schedule_bloc.dart';
-import 'package:everytime/bloc/everytime_user_bloc.dart';
+import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:everytime/component/custom_cupertino_alert_dialog.dart';
 import 'package:everytime/component/time_table_page/round_button.dart';
 import 'package:everytime/global_variable.dart';
@@ -21,7 +21,7 @@ class AppBarAtAddDirectPage extends StatelessWidget {
     required this.lastEndHour,
   }) : super(key: key);
 
-  final EverytimeUserBloc userBloc;
+  final UserProfileManagementBloc userBloc;
   final LectureScheduleBloc addDirectBloc;
   final TextEditingController subjectNameController;
   final TextEditingController profNameController;

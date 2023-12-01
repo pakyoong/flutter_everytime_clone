@@ -1,5 +1,5 @@
-import 'package:everytime/bloc/everytime_user_bloc.dart';
-import 'package:everytime/bloc/grade_calculator_bloc.dart';
+import 'package:everytime/bloc/user_profile_management_bloc.dart';
+import 'package:everytime/bloc/grade_management_bloc.dart';
 import 'package:everytime/global_variable.dart';
 import 'package:flutter/material.dart';
 
@@ -10,8 +10,8 @@ class SummeryOfTermAtGradeCalculatorPage extends StatelessWidget {
     required this.gradeCalculatorBloc,
   }) : super(key: key);
 
-  final EverytimeUserBloc userBloc;
-  final GradeCalculatorBloc gradeCalculatorBloc;
+  final UserProfileManagementBloc userBloc;
+  final GradeManagementBloc gradeCalculatorBloc;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +29,7 @@ class SummeryOfTermAtGradeCalculatorPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 StreamBuilder(
-                  stream: gradeCalculatorBloc.currentTerm,
+                  stream: gradeCalculatorBloc.selectedTerm,
                   builder: (streamBuilderContext, snapshot) {
                     if (snapshot.hasData) {
                       return Text(
@@ -57,7 +57,7 @@ class SummeryOfTermAtGradeCalculatorPage extends StatelessWidget {
                       ),
                     ),
                     StreamBuilder(
-                      stream: gradeCalculatorBloc.currentTerm,
+                      stream: gradeCalculatorBloc.selectedTerm,
                       builder:
                           (currentTermIndexContext, currentTermIndexSnapshot) {
                         if (currentTermIndexSnapshot.hasData) {
@@ -101,7 +101,7 @@ class SummeryOfTermAtGradeCalculatorPage extends StatelessWidget {
                       ),
                     ),
                     StreamBuilder(
-                      stream: gradeCalculatorBloc.currentTerm,
+                      stream: gradeCalculatorBloc.selectedTerm,
                       builder:
                           (currentTermIndexContext, currentTermIndexSnapshot) {
                         if (currentTermIndexSnapshot.hasData) {
@@ -145,7 +145,7 @@ class SummeryOfTermAtGradeCalculatorPage extends StatelessWidget {
                       ),
                     ),
                     StreamBuilder(
-                      stream: gradeCalculatorBloc.currentTerm,
+                      stream: gradeCalculatorBloc.selectedTerm,
                       builder:
                           (currentTermIndexContext, currentTermIndexSnapshot) {
                         if (currentTermIndexSnapshot.hasData) {

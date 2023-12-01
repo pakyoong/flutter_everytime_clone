@@ -1,4 +1,4 @@
-import 'package:everytime/bloc/everytime_user_bloc.dart';
+import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:everytime/component/custom_button_modal_bottom_sheet.dart';
 import 'package:everytime/component/custom_cupertino_alert_dialog.dart';
 import 'package:everytime/global_variable.dart';
@@ -26,7 +26,7 @@ class TimeTableChart extends StatelessWidget {
   final List<DayOfWeek> dayOfWeekList;
   final List<TimeTableData> timeTableData;
   final List<LectureTimeAndLocation>? shadowDataList;
-  final EverytimeUserBloc userBloc;
+  final UserProfileManagementBloc userBloc;
   final bool isActivateButton;
   final ScrollController? scrollController;
 

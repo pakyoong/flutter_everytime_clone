@@ -1,4 +1,4 @@
-import 'package:everytime/bloc/everytime_user_bloc.dart';
+import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:everytime/component/custom_container.dart';
 import 'package:everytime/component/empty_content.dart';
 import 'package:everytime/component/time_table_page/time_table_chart.dart';
@@ -13,7 +13,7 @@ class TimeTableAtTimeTablePage extends StatelessWidget {
     required this.userBloc,
   }) : super(key: key);
 
-  final EverytimeUserBloc userBloc;
+  final UserProfileManagementBloc userBloc;
 
   @override
   Widget build(BuildContext context) {

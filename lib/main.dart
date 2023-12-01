@@ -1,4 +1,4 @@
-import 'package:everytime/bloc/everytime_user_bloc.dart';
+import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:flutter/material.dart';
 
 import 'package:everytime/ui/alarm_page.dart';
@@ -7,7 +7,7 @@ import 'package:everytime/ui/my_info_page.dart';
 import 'package:everytime/ui/home_page/home_page.dart';
 import 'package:everytime/ui/time_table_page/time_table_page.dart';
 
-import 'package:everytime/bloc/main_bloc.dart';
+import 'package:everytime/bloc/navigation_bloc.dart';
 import 'package:everytime/global_variable.dart';
 
 void main() {
@@ -81,8 +81,8 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
     Icons.person_outline,
   ];
 
-  final _mainBloc = MainBloc();
-  final _userBloc = EverytimeUserBloc();
+  final _mainBloc = NavigationBloc();
+  final _userBloc = UserProfileManagementBloc();
 
   @override
   void initState() {
@@ -143,7 +143,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       body: StreamBuilder(
-        stream: _mainBloc.page,
+        stream: _mainBloc.currentIndexStream,
         builder: (_, pageSnapshot) {
           if (pageSnapshot.hasData) {
             return PageView(
@@ -170,7 +170,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
         },
       ),
       bottomNavigationBar: StreamBuilder(
-        stream: _mainBloc.page,
+        stream: _mainBloc.currentIndexStream,
         builder: (context, AsyncSnapshot<int> pageSnapshot) {
           if (pageSnapshot.hasData) {
             return Container(
@@ -205,7 +205,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
                                   : Theme.of(context).unselectedWidgetColor,
                             ),
                             onPressed: () {
-                              _mainBloc.onTapNavIcon(index);
+                              _mainBloc.onNavigationIconTapped(index);
                               _pageController.jumpToPage(index);
                             },
                           ),

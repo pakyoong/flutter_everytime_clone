@@ -1,5 +1,5 @@
-import 'package:everytime/bloc/everytime_user_bloc.dart';
-import 'package:everytime/bloc/grade_calculator_bloc.dart';
+import 'package:everytime/bloc/user_profile_management_bloc.dart';
+import 'package:everytime/bloc/grade_management_bloc.dart';
 import 'package:everytime/component/custom_container.dart';
 import 'package:everytime/component/custom_cupertino_alert_dialog.dart';
 import 'package:everytime/component/custom_picker_modal_bottom_sheet.dart';
@@ -17,14 +17,14 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
     required this.listScrollController,
   }) : super(key: key);
 
-  final EverytimeUserBloc userBloc;
-  final GradeCalculatorBloc gradeCalculatorBloc;
+  final UserProfileManagementBloc userBloc;
+  final GradeManagementBloc gradeCalculatorBloc;
   final ScrollController listScrollController;
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: gradeCalculatorBloc.currentTerm,
+      stream: gradeCalculatorBloc.selectedTerm,
       builder: (_, currentTermIndexSnapshot) {
         if (currentTermIndexSnapshot.hasData) {
           return StreamBuilder(
@@ -405,7 +405,7 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
                     alignment: Alignment.center,
                     color: Theme.of(context).scaffoldBackgroundColor,
                     child: StreamBuilder(
-                      stream: gradeCalculatorBloc.currentSelectingIndex,
+                      stream: gradeCalculatorBloc.selectingGradeIndex,
                       builder: (currentSelectingIndexContext,
                           currentSelectingIndexSnapshot) {
                         return Text(
@@ -445,7 +445,7 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
                       position: position,
                     );
                     gradeCalculatorBloc
-                        .updateCurrentSelectingIndex(currentIndex);
+                        .updateSelectingGradeIndex(currentIndex);
                   },
                 );
               }
@@ -504,7 +504,7 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
     required GradeType currentGradeType,
     required TapPosition position,
   }) {
-    gradeCalculatorBloc.updateIsShowingSelectGrade(true);
+    gradeCalculatorBloc.updateShowingGradeSelector(true);
     userBloc.updateIsShowingKeyboard(false);
 
     if (position.global.dy >=
@@ -568,8 +568,8 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
         );
       },
     ).whenComplete(() {
-      gradeCalculatorBloc.updateIsShowingSelectGrade(false);
-      gradeCalculatorBloc.updateCurrentSelectingIndex(null);
+      gradeCalculatorBloc.updateShowingGradeSelector(false);
+      gradeCalculatorBloc.updateSelectingGradeIndex(null);
     });
   }
 }

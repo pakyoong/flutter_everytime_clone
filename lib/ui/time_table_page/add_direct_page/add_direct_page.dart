@@ -1,5 +1,5 @@
 import 'package:everytime/bloc/time_table_page/lecture_schedule_bloc.dart';
-import 'package:everytime/bloc/everytime_user_bloc.dart';
+import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:everytime/ui/time_table_page/add_direct_page/appbar_at_add_direct_page.dart';
 import 'package:everytime/ui/time_table_page/add_direct_page/data_input_at_add_direct_page.dart';
 import 'package:everytime/ui/time_table_page/add_direct_page/time_table_chart_at_add_direct_page.dart';
@@ -11,7 +11,7 @@ class AddDirectPage extends StatefulWidget {
     required this.userBloc,
   }) : super(key: key);
 
-  final EverytimeUserBloc userBloc;
+  final UserProfileManagementBloc userBloc;
 
   @override
   State<AddDirectPage> createState() => _AddDirectPageState();

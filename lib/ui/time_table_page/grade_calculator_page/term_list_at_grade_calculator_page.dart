@@ -1,5 +1,5 @@
-import 'package:everytime/bloc/everytime_user_bloc.dart';
-import 'package:everytime/bloc/grade_calculator_bloc.dart';
+import 'package:everytime/bloc/user_profile_management_bloc.dart';
+import 'package:everytime/bloc/grade_management_bloc.dart';
 import 'package:everytime/global_variable.dart';
 import 'package:flutter/material.dart';
 
@@ -12,15 +12,15 @@ class TermListAtGradeCalculatorPage extends StatelessWidget {
   }) : super(key: key);
 
   final ScrollController termScrollController;
-  final GradeCalculatorBloc gradeCalculatorBloc;
-  final EverytimeUserBloc userBloc;
+  final GradeManagementBloc gradeCalculatorBloc;
+  final UserProfileManagementBloc userBloc;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: appHeight * 0.065,
       child: StreamBuilder(
-        stream: gradeCalculatorBloc.currentTerm,
+        stream: gradeCalculatorBloc.selectedTerm,
         builder: (streamContext, snapshot) {
           if (snapshot.hasData) {
             return ListView.builder(
@@ -71,7 +71,7 @@ class TermListAtGradeCalculatorPage extends StatelessWidget {
                     }
 
                     userBloc.getTerm(snapshot.data!).removeEmptySubjects();
-                    gradeCalculatorBloc.updateCurrentTerm(index);
+                    gradeCalculatorBloc.updateSelectedTerm(index);
 
                     //TODO: 나중에 글자 수가 다른 학기가 추가된다면 수정해야 할 수도 있다.
                     if (termScrollController.position.maxScrollExtent <

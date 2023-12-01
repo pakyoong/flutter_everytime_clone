@@ -1,5 +1,5 @@
 import 'package:everytime/bloc/time_table_page/lecture_schedule_bloc.dart';
-import 'package:everytime/bloc/everytime_user_bloc.dart';
+import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:everytime/component/custom_container.dart';
 import 'package:everytime/component/time_table_page/time_table_chart.dart';
 import 'package:everytime/global_variable.dart';
@@ -13,7 +13,7 @@ class TimeTableChartAtAddDirectPage extends StatelessWidget {
     required this.timeTableScrollController,
   }) : super(key: key);
 
-  final EverytimeUserBloc userBloc;
+  final UserProfileManagementBloc userBloc;
   final LectureScheduleBloc addDirectBloc;
   final ScrollController timeTableScrollController;
 

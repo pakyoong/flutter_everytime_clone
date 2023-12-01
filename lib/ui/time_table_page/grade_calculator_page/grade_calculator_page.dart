@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:everytime/bloc/everytime_user_bloc.dart';
-import 'package:everytime/bloc/grade_calculator_bloc.dart';
+import 'package:everytime/bloc/user_profile_management_bloc.dart';
+import 'package:everytime/bloc/grade_management_bloc.dart';
 import 'package:everytime/ui/time_table_page/grade_calculator_page/appbar_at_grade_calculator_page.dart';
 import 'package:everytime/ui/time_table_page/grade_calculator_page/information_at_grade_calculator_page.dart';
 import 'package:everytime/ui/time_table_page/grade_calculator_page/keyboard_action_at_grade_calculator_page.dart';
@@ -18,7 +18,7 @@ class GradeCalculatorPage extends StatefulWidget {
     required this.userBloc,
   }) : super(key: key);
 
-  final EverytimeUserBloc userBloc;
+  final UserProfileManagementBloc userBloc;
 
   @override
   State<GradeCalculatorPage> createState() => _GradeCalculatorPageState();
@@ -30,14 +30,14 @@ class _GradeCalculatorPageState extends State<GradeCalculatorPage> {
 
   final _targetCreditController = TextEditingController();
 
-  final _gradeCalculatorBloc = GradeCalculatorBloc();
+  final _gradeCalculatorBloc = GradeManagementBloc();
 
   @override
   initState() {
     super.initState();
 
     Future.delayed(const Duration(milliseconds: 300)).then((value) {
-      _gradeCalculatorBloc.updateDelay(true);
+      _gradeCalculatorBloc.setUpdateDelay(true);
     });
   }
 
@@ -79,7 +79,7 @@ class _GradeCalculatorPageState extends State<GradeCalculatorPage> {
                 userBloc: widget.userBloc,
               ),
               StreamBuilder(
-                stream: _gradeCalculatorBloc.delay,
+                stream: _gradeCalculatorBloc.updateDelay,
                 builder: (_, delaySnapshot) {
                   if (delaySnapshot.hasData) {
                     return Expanded(

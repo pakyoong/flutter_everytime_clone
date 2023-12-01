@@ -1,4 +1,4 @@
-import 'package:everytime/bloc/everytime_user_bloc.dart';
+import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:everytime/component/custom_container.dart';
 import 'package:everytime/component/custom_cupertino_alert_dialog.dart';
 import 'package:everytime/component/time_table_page/show_grade_large.dart';
@@ -15,7 +15,7 @@ class InformationAtGradeCalculatorPage extends StatelessWidget {
     required this.targetCreditController,
   }) : super(key: key);
 
-  final EverytimeUserBloc userBloc;
+  final UserProfileManagementBloc userBloc;
   final TextEditingController targetCreditController;
 
   final List<Color> _barChartColorData = [

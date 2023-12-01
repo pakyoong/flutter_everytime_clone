@@ -1,5 +1,5 @@
-import 'package:everytime/bloc/everytime_user_bloc.dart';
-import 'package:everytime/bloc/time_table_page/time_table_list_bloc.dart';
+import 'package:everytime/bloc/user_profile_management_bloc.dart';
+import 'package:everytime/bloc/time_table_page/time_table_list_manager_bloc.dart';
 import 'package:everytime/component/custom_container.dart';
 import 'package:everytime/component/custom_container_title.dart';
 import 'package:everytime/global_variable.dart';
@@ -15,8 +15,8 @@ class TimeTablesAtTimeTableListPage extends StatelessWidget {
     required this.pageContext,
   }) : super(key: key);
 
-  final EverytimeUserBloc userBloc;
-  final TimeTableListBloc timeTableListBloc;
+  final UserProfileManagementBloc userBloc;
+  final TimeTableListManagerBloc timeTableListBloc;
   final ScrollController pageScrollController;
   final BuildContext pageContext;
 
@@ -26,7 +26,7 @@ class TimeTablesAtTimeTableListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: StreamBuilder(
-        stream: timeTableListBloc.sortedTimeTable,
+        stream: timeTableListBloc.sortedClassTimetable,
         builder: (_, sortedTimeTableSnapshot) {
           if (sortedTimeTableSnapshot.hasData) {
             return ListView(
@@ -61,7 +61,7 @@ class TimeTablesAtTimeTableListPage extends StatelessWidget {
   }
 
   Widget _buildContents(
-    List<SortedTimeTable> sortedTimeTable,
+    List<TermClassTimetable> sortedTimeTable,
     int sortedTimeTableIndex,
   ) {
     return Container(

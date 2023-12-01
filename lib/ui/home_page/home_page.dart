@@ -1,4 +1,4 @@
-import 'package:everytime/bloc/everytime_user_bloc.dart';
+import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:everytime/component/custom_appbar.dart';
 import 'package:everytime/component/custom_appbar_animation.dart';
 import 'package:everytime/component/custom_appbar_button.dart';
@@ -21,7 +21,7 @@ class HomePage extends StatefulWidget {
   }) : super(key: key);
 
   final ScrollController scrollController;
-  final EverytimeUserBloc userBloc;
+  final UserProfileManagementBloc userBloc;
 
   @override
   State<HomePage> createState() => _HomePageState();

@@ -1,4 +1,4 @@
-import 'package:everytime/bloc/tabbar_bloc.dart';
+import 'package:everytime/bloc/tab_navigation_bloc.dart';
 import 'package:flutter/material.dart';
 
 class CustomTabBarView extends StatelessWidget {
@@ -9,13 +9,13 @@ class CustomTabBarView extends StatelessWidget {
   }) : super(key: key);
 
   final List<Widget> tabs;
-  final TabBarBloc tabBarBloc;
+  final TabNavigationBloc tabBarBloc;
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: StreamBuilder(
-        stream: tabBarBloc.getCurrentIndex,
+        stream: tabBarBloc.currentIndexStream,
         builder: (context, AsyncSnapshot<int> snapshot) {
           if (snapshot.hasData) {
             return IndexedStack(

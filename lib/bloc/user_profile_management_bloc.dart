@@ -9,7 +9,7 @@ import 'package:everytime/model/time_table_page/time_table.dart';
 import 'package:everytime/model/time_table_page/time_table_data.dart';
 import 'package:rxdart/subjects.dart';
 
-class EverytimeUserBloc {
+class UserProfileManagementBloc {
   // 유저 관련 정보를 관리하는 클래스
 
   // 유저의 기본 정보를 BehaviorSubject로 관리하는 부분

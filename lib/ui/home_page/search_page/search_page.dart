@@ -1,4 +1,4 @@
-import 'package:everytime/bloc/everytime_user_bloc.dart';
+import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:everytime/component/custom_appbar_with_text_field.dart';
 import 'package:flutter/material.dart';
 
@@ -8,7 +8,7 @@ class SearchPage extends StatefulWidget {
     required this.userBloc,
   }) : super(key: key);
 
-  final EverytimeUserBloc userBloc;
+  final UserProfileManagementBloc userBloc;
 
   @override
   State<SearchPage> createState() => _SearchPageState();

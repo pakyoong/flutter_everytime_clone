@@ -1,4 +1,4 @@
-import 'package:everytime/bloc/tabbar_bloc.dart';
+import 'package:everytime/bloc/tab_navigation_bloc.dart';
 import 'package:everytime/component/custom_tabbar.dart';
 import 'package:everytime/component/custom_tabbar_view.dart';
 import 'package:everytime/ui/alarm_page/alarm_alarm_page.dart';
@@ -14,7 +14,7 @@ class AlarmPage extends StatefulWidget {
 
 class _AlarmPageState extends State<AlarmPage>
     with AutomaticKeepAliveClientMixin {
-  final _tabBarBloc = TabBarBloc();
+  final _tabBarBloc = TabNavigationBloc();
 
   @override
   bool get wantKeepAlive => true;
