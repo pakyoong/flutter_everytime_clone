@@ -1,5 +1,8 @@
 import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+import 'firebase_options.dart';
 
 import 'package:everytime/ui/alarm_page.dart';
 import 'package:everytime/ui/board_page.dart';
@@ -9,8 +12,13 @@ import 'package:everytime/ui/time_table_page/time_table_page.dart';
 
 import 'package:everytime/bloc/navigation_bloc.dart';
 import 'package:everytime/global_variable.dart';
+import 'package:everytime/ui/login_page.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -53,8 +61,8 @@ class MyApp extends StatelessWidget {
         cardColor: const Color.fromRGBO(26, 26, 26, 1),
         focusColor: const Color.fromRGBO(203, 93, 72, 1),
       ),
-      themeMode: ThemeMode.system,
-      home: const MainPage(),
+      themeMode: ThemeMode.system,// 애플리케이션 시작 시 나타날 첫 페이지를 로그인 페이지로 설정
+      home: const AuthWidget(),
     );
   }
 }

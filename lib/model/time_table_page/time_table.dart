@@ -29,7 +29,7 @@ class TimeTable {
   List<TimeTableData> get currentTimeTableData => _timeTableData.value;
 
   Stream<bool> get isPrimary => _isPrimary.stream;
-  Function(bool) get updateIsPrimary => _isPrimary.sink.add;
+   Function(bool) get updateIsPrimary => _isPrimary.sink.add;
   bool get currentIsPrimary => _isPrimary.value;
 
 

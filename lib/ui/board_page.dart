@@ -1,7 +1,11 @@
-import 'package:everytime/ui/board_page/free_board_page.dart';
+import 'package:everytime/bloc/board_page/free_board_page/free_board_write_bloc.dart';
+import 'package:everytime/ui/board_page/free_board_page/free_board_page.dart';
 import 'package:flutter/material.dart';
 
+FreeBoardWriteBloc freeBoardWriteBloc = FreeBoardWriteBloc();
+
 class BoardPage extends StatefulWidget {
+
   const BoardPage({Key? key}) : super(key: key);
 
   @override
@@ -10,6 +14,7 @@ class BoardPage extends StatefulWidget {
 
 class _BoardPageState extends State<BoardPage> {
   List<bool> isPinned = [
+    //user의 ispinned값을 가져오도록
     false,
     false,
     true,
@@ -161,7 +166,7 @@ final boardPages = {
   // "스크랩": FreeBoard(), //ScrapBoard(),
   // "HOT 게시판": FreeBoard(), //HotBoard(),
   // "BEST 게시판": FreeBoard(), //BestBoard(),
-  "자유게시판": const FreeBoard(),
+  "자유게시판":  FreeBoard(freeBoardWriteBloc: freeBoardWriteBloc,),
   // "비밀게시판": FreeBoard(), //SecretBoard(),
   // "졸업생게시판": FreeBoard(), //GraduatesBoard(),
   // "새내기게시판": FreeBoard(), //FreshmenBoard(),
