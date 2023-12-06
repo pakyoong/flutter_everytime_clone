@@ -1,17 +1,17 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:everytime/bloc/time_table_page/time_table_list_manager_bloc.dart';
 import 'package:everytime/global_variable.dart';
 import 'package:everytime/ui/time_table_page/add_time_table_page/add_time_table_page.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 
 class AppBarAtTimeTableListPage extends StatelessWidget {
   AppBarAtTimeTableListPage({
-    Key? key,
+    super.key,
     required this.pageContext,
     required this.userBloc,
     required this.timeTableListBloc,
-  }) : super(key: key);
+  });
 
   final BuildContext pageContext;
   final UserProfileManagementBloc userBloc;
@@ -54,7 +54,6 @@ class AppBarAtTimeTableListPage extends StatelessWidget {
               highlightColor: Colors.transparent,
               child: const Icon(Icons.add_box_outlined),
               onPressed: () {
-                //TODO: 새 시간표 만들기 페이지 추가
                 Navigator.push(
                   pageContext,
                   CupertinoPageRoute(

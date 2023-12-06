@@ -6,12 +6,14 @@ import 'package:everytime/global_variable.dart';
 import 'package:everytime/model/time_table_page/time_table.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:everytime/model/time_table_page/time_table_data.dart';
 
 class TimeTableAtTimeTablePage extends StatelessWidget {
   const TimeTableAtTimeTablePage({
-    Key? key,
+    super.key,
     required this.userBloc,
-  }) : super(key: key);
+  });
 
   final UserProfileManagementBloc userBloc;
 
@@ -65,12 +67,14 @@ class TimeTableAtTimeTablePage extends StatelessWidget {
   }
 
   void _addNewTimeTable() {
+    String newId = FirebaseFirestore.instance.collection('timetables').doc().id;
     TimeTable newTimeTable = TimeTable(
+      id: newId,
+      title: '새 시간표', // 예시 제목
       term: userBloc.currentTermString,
     );
 
     newTimeTable.updateIsPrimary(true);
-
     userBloc.addTimeTableList(newTimeTable);
     userBloc.updateSelectedTimeTable(newTimeTable);
   }
@@ -82,14 +86,14 @@ class TimeTableAtTimeTablePage extends StatelessWidget {
         if (timeListSnapshot.hasData) {
           return CustomContainer(
             height:
-                appHeight * (0.0579 * timeListSnapshot.data!.length + 0.025),
+            appHeight * (0.0579 * timeListSnapshot.data!.length + 0.025),
             usePadding: false,
             child: StreamBuilder(
               stream: userBloc.dayOfWeek,
               builder: (_, dayOfWeekSnapshot) {
                 if (dayOfWeekSnapshot.hasData) {
-                  return StreamBuilder(
-                    stream: userBloc.currentSelectedTimeTable!.timeTableData,
+                  return StreamBuilder<List<TimeTableData>>(
+                    stream: userBloc.currentSelectedTimeTable!.timeTableDataStream,
                     builder: (_, timeTableDataSnapshot) {
                       if (timeTableDataSnapshot.hasData) {
                         return TimeTableChart(
@@ -100,18 +104,15 @@ class TimeTableAtTimeTablePage extends StatelessWidget {
                           dayOfWeekList: dayOfWeekSnapshot.data!,
                         );
                       }
-
                       return const SizedBox.shrink();
                     },
                   );
                 }
-
                 return const SizedBox.shrink();
               },
             ),
           );
         }
-
         return const SizedBox.shrink();
       },
     );

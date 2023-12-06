@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 class CustomCupertinoAlertDialog extends StatelessWidget {
   const CustomCupertinoAlertDialog({
-    Key? key,
+    super.key,
     required this.isDarkStream,
     this.title = '',
     this.hasTextField = false,
@@ -16,7 +16,7 @@ class CustomCupertinoAlertDialog extends StatelessWidget {
     this.onSubmitted,
     this.content,
     this.actions,
-  }) : super(key: key);
+  });
 
   final Stream<bool> isDarkStream;
   final String title;

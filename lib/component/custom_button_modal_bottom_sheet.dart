@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 
 class CustomButtonModalBottomSheet extends StatelessWidget {
   const CustomButtonModalBottomSheet({
-    Key? key,
+    super.key,
     required this.buttonList,
-  }) : super(key: key);
+  });
 
   final List<CustomButtonModalBottomSheetButton> buttonList;
 
@@ -13,7 +13,7 @@ class CustomButtonModalBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: appHeight * 0.085 + (appHeight * 0.06 * buttonList.length),
-      color: Theme.of(context).backgroundColor,
+      color: Theme.of(context).colorScheme.background,
       child: SafeArea(
         child: Column(
           children: List.generate(

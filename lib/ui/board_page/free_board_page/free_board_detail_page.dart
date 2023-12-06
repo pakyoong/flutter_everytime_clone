@@ -1,7 +1,9 @@
+import 'package:everytime/bloc/board_page/post_bloc.dart';
+import 'package:everytime/bloc/board_page/comment_bloc.dart';
 import 'package:everytime/model/board_page/post.dart';
+import 'package:everytime/ui/board_page/free_board_page/free_board_page.dart';
+import 'package:everytime/ui/board_page/free_board_page/free_comment_detail.dart';
 import 'package:flutter/material.dart';
-
-bool isRecomment = false;
 
 class FreeBoardDetail extends StatefulWidget {
   final Post post;
@@ -13,9 +15,27 @@ class FreeBoardDetail extends StatefulWidget {
 }
 
 class _FreeBoardDetailState extends State<FreeBoardDetail> {
-  Post post;
+  late Post post;
+  late String postId;
+  late int like; // postId 추가
+  late String boardId = 'Free';
+  CommentBloc commentBloc = CommentBloc();
+  PostBloc freeBoardBloc = PostBloc();
+  TextEditingController _commentController = TextEditingController();
 
-  _FreeBoardDetailState({required this.post});
+  _FreeBoardDetailState({required this.post}) {
+    postId = post.postId; // postId 초기화
+    like = post.like;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    commentBloc = CommentBloc();
+    isAnonymous = commentBloc.isAnonymous;
+    isRecomment = commentBloc.isRecomment;
+  }
+
   bool isAnonymous = false;
   bool isAlarm = false;
 
@@ -55,8 +75,13 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                     "확인",
                     style: TextStyle(color: Colors.red),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
+                    await freeBoardBloc.sendLike(boardId,post.postId);
                     Navigator.pop(context);
+                    setState(() {
+                      // 가정: Post 객체에 좋아요 수를 나타내는 변수가 있다고 가정
+                      post.like++;
+                    });
                   },
                 ),
               ],
@@ -247,6 +272,12 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
           color: Colors.black,
           onPressed: () {
             Navigator.pop(context);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => FreeBoard(BoardBloc: freeBoardBloc),
+              ),
+            );
           },
         ),
         actions: [
@@ -291,13 +322,42 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                 report();
               }
               if (item == 3) {
-                // URL 공유 추가
-              }
+  // 삭제기능 추가
+  try {
+    await freeBoardBloc.deletePost(boardId, post.postId);
+    Navigator.pop(context);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FreeBoard(BoardBloc: freeBoardBloc),
+      ),
+    );
+  } catch (error) {
+    // 에러 발생 시 AlertDialog 표시
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("삭제 오류"),
+          content: const Text("게시글 삭제 권한이 없습니다."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("확인"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
               const PopupMenuItem<int>(value: 1, child: Text("새로고침")),
               const PopupMenuItem<int>(value: 2, child: Text("신고")),
-              const PopupMenuItem<int>(value: 3, child: Text("URL 공유")),
+              const PopupMenuItem<int>(value: 3, child: Text("삭제")),
             ],
           ),
           const SizedBox(
@@ -339,16 +399,16 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                widget.post.isanonymous == true
+                                widget.post.isAnonymous == true
                                     ? "익명"
-                                    : widget.post.postwriter,
+                                    : widget.post.writer,
                                 style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
                               Text(
-                                widget.post.postdate,
+                                "${widget.post.date} ${widget.post.time}",
                                 style: const TextStyle(
                                     fontSize: 13, color: Colors.grey),
                               ),
@@ -358,7 +418,7 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                       ),
                       const SizedBox(height: 15),
                       Text(
-                        widget.post.posttitle,
+                        widget.post.title,
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -368,12 +428,12 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                         height: 15,
                       ),
                       Text(
-                        widget.post.postcontent,
+                        widget.post.content,
                         style: const TextStyle(
                           fontSize: 15,
                         ),
                       ),
-                      if (widget.post.postpicture != null)
+                      if (widget.post.picture != null)
                         Padding(
                           padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                           child: Container(
@@ -383,8 +443,7 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                               borderRadius: BorderRadius.circular(10.0),
                               image: DecorationImage(
                                 //image: AssetImage(widget.post.picture ?? ''),//제목2
-                                image: NetworkImage(
-                                    widget.post.postpicture ?? ''), //제목3
+                                image: NetworkImage(widget.post.picture), //제목3
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -413,7 +472,7 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                             style: TextStyle(fontSize: 12),
                           ),
                           Text(
-                            widget.post.postlike.toString(),
+                            widget.post.like.toString(),
                             style: const TextStyle(
                                 fontSize: 12, color: Colors.red),
                           ),
@@ -428,7 +487,7 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                             style: TextStyle(fontSize: 12),
                           ),
                           Text(
-                            widget.post.commentList.length.toString(),
+                            widget.post.comments.length.toString(),
                             style: const TextStyle(
                                 fontSize: 12, color: Colors.cyan),
                           ),
@@ -443,7 +502,7 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                             style: TextStyle(fontSize: 12),
                           ),
                           const Text(
-                            "0",//스크랩 변수 추가시 텍스트 가져올 수 있도록
+                            "0", //스크랩 변수 추가시 텍스트 가져올 수 있도록
                             style:
                                 TextStyle(fontSize: 12, color: Colors.yellow),
                           ),
@@ -505,8 +564,9 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                       const SizedBox(
                         height: 5,
                       ),
-                      CommentDetail(
-                        post: widget.post,
+                      FreeCommentDetail(
+                        post: post,
+                        commentBloc: commentBloc,
                       ),
                       const SizedBox(
                         height: 80,
@@ -543,6 +603,7 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                                 onPressed: () {
                                   setState(() {
                                     isAnonymous = !isAnonymous;
+                                    commentBloc.updateIsAnonymous(isAnonymous);
                                   });
                                 }),
                           )
@@ -557,6 +618,7 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                                 onPressed: () {
                                   setState(() {
                                     isAnonymous = !isAnonymous;
+                                    commentBloc.updateIsAnonymous(isAnonymous);
                                   });
                                 }),
                           ),
@@ -573,6 +635,7 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                 ),
                 Expanded(
                   child: TextField(
+                    controller: _commentController,
                     style: const TextStyle(fontSize: 15.0),
                     cursorColor: Colors.red,
                     cursorHeight: 22,
@@ -585,12 +648,51 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                       suffixIcon: Transform.scale(
                         scale: 1,
                         child: IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.send,
-                              size: 25,
-                              color: Colors.red,
-                            )),
+  onPressed: () {
+    String comment = _commentController.text;
+    if (comment.trim().isEmpty) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("입력 오류"),
+            content: const Text("댓글을 입력하세요."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text("확인"),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      commentBloc.updateComment(comment);
+      if (commentBloc.comment != null) {
+        commentBloc.writeComment(boardId, postId).then((_) {
+          Navigator.pop(context);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FreeBoardDetail(post: post),
+            ),
+          );
+          _commentController.clear();
+        });
+      } else {
+        print("Comment content is null");
+      }
+    }
+  },
+  icon: const Icon(
+    Icons.send,
+    size: 25,
+    color: Colors.red,
+  ),
+),
+
                       ),
                     ),
                   ),
@@ -600,474 +702,6 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class CommentDetail extends StatefulWidget {
-  const CommentDetail({super.key, required this.post});
-  final Post post;
-  @override
-  State<CommentDetail> createState() => _CommentDetailState();
-}
-
-class _CommentDetailState extends State<CommentDetail> {
-  @override
-  Widget build(BuildContext context) {
-    void commentLike() {
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Column(
-                children: <Widget>[
-                  Text("이 댓글에 공감하시겠습니까?"),
-                ],
-              ),
-              actions: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    "취소",
-                    style: TextStyle(color: Colors.red),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    "확인",
-                    style: TextStyle(color: Colors.red),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
-            );
-          });
-    }
-
-    void commentreport() {
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("신고 사유 선택"),
-                ],
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                        width: double.infinity,
-                        height: 30,
-                        child: const Text(
-                          "낚시/놀람/도배",
-                          style: TextStyle(fontSize: 18),
-                        )),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                        width: double.infinity,
-                        height: 30,
-                        child: const Text(
-                          "욕설/비하",
-                          style: TextStyle(fontSize: 18),
-                        )),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                        width: double.infinity,
-                        height: 30,
-                        child: const Text(
-                          "게시판 성격에 부적절함",
-                          style: TextStyle(fontSize: 18),
-                        )),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                        width: double.infinity,
-                        height: 30,
-                        child: const Text(
-                          "상업적 광고 및 판매",
-                          style: TextStyle(fontSize: 18),
-                        )),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                        width: double.infinity,
-                        height: 30,
-                        child: const Text(
-                          "음란물/불건전한 만남 및 대화",
-                          style: TextStyle(fontSize: 18),
-                        )),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                        width: double.infinity,
-                        height: 30,
-                        child: const Text(
-                          "정담/정치인 비하 및 선거운동",
-                          style: TextStyle(fontSize: 18),
-                        )),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                        width: double.infinity,
-                        height: 30,
-                        child: const Text(
-                          "유출/사칭/사기",
-                          style: TextStyle(fontSize: 18),
-                        )),
-                  ),
-                ],
-              ),
-            );
-          });
-    }
-
-    void commentMore() {
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextButton(
-                    child: Container(
-                      margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                      width: double.infinity,
-                      height: 30,
-                      child: const Text(
-                        '대댓글 알림',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                    onPressed: () {
-                      //isRecommentAlarm = !isRecommentAlarm
-                      Navigator.pop(context);
-                    },
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      commentreport();
-                    },
-                    child: Container(
-                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                        width: double.infinity,
-                        height: 30,
-                        child: const Text(
-                          "신고",
-                          style: TextStyle(fontSize: 18),
-                        )),
-                  ),
-                ],
-              ),
-            );
-          });
-    }
-
-    void recomment() {
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Column(
-                children: <Widget>[
-                  Text("대댓글을 작성하시겠습니까?"),
-                ],
-              ),
-              //
-              actions: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    "취소",
-                    style: TextStyle(color: Colors.red),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    "확인",
-                    style: TextStyle(color: Colors.red),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    setState(() {
-                      isRecomment = !isRecomment;
-                    });
-                  },
-                ),
-              ],
-            );
-          });
-    }
-
-    int count = 0;
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: widget.post.commentList.length,
-      itemBuilder: (BuildContext context, index) {
-        if (widget.post.commentList[index].isanonymous == true) {
-          count++;
-        }
-        return Padding(
-          padding: const EdgeInsets.all(2.0),
-          child: Row(
-            children: [
-              Column(
-                children: [
-                  if (widget.post.commentList[index].isrecomment == true)
-                    const Icon(
-                      Icons.subdirectory_arrow_right_rounded,
-                      color: Colors.black54,
-                    ),
-                  if (widget.post.commentList[index].isrecomment == true)
-                    const SizedBox(
-                      height: 50,
-                    )
-                ],
-              ),
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: widget.post.commentList[index].isrecomment
-                        ? Colors.black12
-                        : Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(6, 0, 0, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (widget.post.commentList[index].isrecomment == false)
-                          Container(
-                            height: 1.0,
-                            color: Colors.black12,
-                          ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                //if (commentSet[index].isanonymous == true)
-                                Container(
-                                  width: 30,
-                                  height: 30,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8.0),
-                                    image: const DecorationImage(
-                                      image: AssetImage('assets/anonymous.jpg'),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-
-                                const SizedBox(
-                                  width: 5,
-                                ),
-                                Text(
-                                  widget.post.commentList[index].isanonymous ==
-                                          true
-                                      ? "익명$count"
-                                      : widget.post.commentList[index]
-                                          .commentwriter,
-                                  style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700),
-                                )
-                              ],
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    color: const Color.fromARGB(
-                                        255, 250, 250, 250),
-                                    borderRadius: BorderRadius.circular(10)),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    if (widget.post.commentList[index]
-                                            .isrecomment ==
-                                        false)
-                                      IconButton(
-                                        constraints: const BoxConstraints(),
-                                        onPressed: () {
-                                          recomment();
-                                        },
-                                        icon: const Icon(
-                                          Icons.messenger_outline,
-                                          size: 12,
-                                          color: Colors.black54,
-                                        ),
-                                      ),
-                                    if (widget.post.commentList[index]
-                                            .isrecomment ==
-                                        false)
-                                      Padding(
-                                        padding: const EdgeInsets.fromLTRB(
-                                            0, 0, 0, 0),
-                                        child: Container(
-                                          height: 12.0,
-                                          width: 1.0,
-                                          color: Colors.black54,
-                                        ),
-                                      ),
-                                    IconButton(
-                                      constraints: const BoxConstraints(),
-                                      onPressed: () {
-                                        commentLike();
-                                      },
-                                      icon: const Icon(
-                                        Icons.thumb_up_outlined,
-                                        size: 12,
-                                        color: Colors.black54,
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                                      child: Container(
-                                        height: 12.0,
-                                        width: 1.0,
-                                        color: Colors.black54,
-                                      ),
-                                    ),
-                                    IconButton(
-                                      constraints: const BoxConstraints(),
-                                      onPressed: () {
-                                        commentMore();
-                                      },
-                                      icon: const Icon(
-                                        Icons.more_vert,
-                                        size: 15,
-                                        color: Colors.black54,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text(
-                          widget.post.commentList[index].commentcontents,
-                          style: const TextStyle(
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Row(
-                          children: [
-                            Text(widget.post.commentList[index].commentdate,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey,
-                                )),
-                            Text(widget.post.commentList[index].commenttime,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey,
-                                )),
-                            if (widget.post.commentList[index].commentlike != 0)
-                              Row(
-                                children: [
-                                  const SizedBox(width: 5),
-                                  const Icon(Icons.thumb_up_outlined,
-                                      size: 12, color: Colors.red),
-                                  const Text(
-                                    " ",
-                                    style: TextStyle(fontSize: 12),
-                                  ),
-                                  Text(
-                                    widget.post.commentList[index].commentlike
-                                        .toString(),
-                                    style: const TextStyle(
-                                        fontSize: 12, color: Colors.red),
-                                  ),
-                                ],
-                              )
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

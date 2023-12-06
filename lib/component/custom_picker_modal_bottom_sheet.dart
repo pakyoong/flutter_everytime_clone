@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 
 class CustomPickerModalBottomSheet extends StatelessWidget {
   CustomPickerModalBottomSheet({
-    Key? key,
+    super.key,
     required this.title,
     this.onPressedCancel,
     this.onPressedSave,
     required this.picker,
-  }) : super(key: key);
+  });
 
   final String title;
   final Function? onPressedCancel;
@@ -24,7 +24,7 @@ class CustomPickerModalBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Theme.of(context).backgroundColor,
+      color: Theme.of(context).colorScheme.background,
       height: _selectGradeSheetHeight,
       child: Column(
         children: [

@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 class ShowGradeMini extends StatelessWidget {
   // 생성자에서 필요한 속성들을 초기화
   const ShowGradeMini({
-    Key? key,
+    super.key,
     required this.title, // 제목
     required this.current, // 현재 값
     required this.max, // 최대 값
-  }) : super(key: key);
+  });
 
   final String title;
   final String current;

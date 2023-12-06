@@ -1,18 +1,18 @@
 import 'package:everytime/ui/board_page/free_board_page/free_board_page.dart';
 import 'package:flutter/material.dart';
-import 'package:everytime/bloc/board_page/free_board_page/free_board_write_bloc.dart';
+import 'package:everytime/bloc/board_page/post_bloc.dart';
 
 class FreeBoardWrite extends StatefulWidget {
-  final FreeBoardWriteBloc freeBoardWriteBloc;
-  const FreeBoardWrite({super.key, required this.freeBoardWriteBloc});
+  final PostBloc freeBoardBloc;
+  const FreeBoardWrite({super.key, required this.freeBoardBloc});
 
   @override
   State<FreeBoardWrite> createState() => FreeBoardWriteState();
 }
 
 class FreeBoardWriteState extends State<FreeBoardWrite> {
-  late FreeBoardWriteBloc freeBoardWriteBloc;
-
+  late PostBloc freeBoardWriteBloc=PostBloc();
+  late String boardId = 'Free';
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   bool isAnonym = false;
@@ -20,10 +20,10 @@ class FreeBoardWriteState extends State<FreeBoardWrite> {
   @override
   void initState() {
     super.initState();
-    freeBoardWriteBloc = FreeBoardWriteBloc();
+    freeBoardWriteBloc = PostBloc();
     // _titleController.text = widget.freeBoardWriteBloc.title;
     // _contentController.text = widget.freeBoardWriteBloc.content;
-    isAnonym = widget.freeBoardWriteBloc.isAnonym;
+    isAnonym = widget.freeBoardBloc.isAnonymous;
   }
 
   bool isQuestion = false;
@@ -46,50 +46,51 @@ class FreeBoardWriteState extends State<FreeBoardWrite> {
           Padding(
             padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
             child: ElevatedButton(
-onPressed: () {
-    // 입력된 제목과 내용을 가져와서 updateTitle, updateContent 메서드로 전달
-    String title = _titleController.text;
-    String content = _contentController.text;
+              onPressed: () {
+                // 입력된 제목과 내용을 가져와서 updateTitle, updateContent 메서드로 전달
+                String title = _titleController.text;
+                String content = _contentController.text;
 
-    // 글 작성 전에 빈 값인지 확인
-    if (title.trim().isEmpty || content.trim().isEmpty) {
-      // 제목 또는 내용이 비어있는 경우 메시지 표시
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("입력 오류"),
-            content: const Text("제목과 내용을 입력하세요."),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text("확인"),
-              ),
-            ],
-          );
-        },
-      );
-    } else {
-      // FreeBoardWriteBloc에 제목과 내용 업데이트
-      widget.freeBoardWriteBloc.updateTitle(title);
-      widget.freeBoardWriteBloc.updateContent(content);
+                // 글 작성 전에 빈 값인지 확인
+                if (title.trim().isEmpty || content.trim().isEmpty) {
+                  // 제목 또는 내용이 비어있는 경우 메시지 표시
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text("입력 오류"),
+                        content: const Text("제목과 내용을 입력하세요."),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text("확인"),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else {
+                  // FreeBoardWriteBloc에 제목과 내용 업데이트
+                  widget.freeBoardBloc.updateTitle(title);
+                  widget.freeBoardBloc.updateContent(content);
 
-      widget.freeBoardWriteBloc.submitPost().then((_) {
-        // 글이 추가된 후에 새로고침
-        Navigator.pop(context);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => FreeBoard(freeBoardWriteBloc: widget.freeBoardWriteBloc),
-          ),
-        );
-        _titleController.clear();
-        _contentController.clear();
-      });
-    }
-  },
+                  widget.freeBoardBloc.submitPost(boardId).then((_) {
+                    // 글이 추가된 후에 새로고침
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            FreeBoard(BoardBloc: widget.freeBoardBloc),
+                      ),
+                    );
+                    _titleController.clear();
+                    _contentController.clear();
+                  });
+                }
+              },
               style: ElevatedButton.styleFrom(
                 elevation: 0,
                 backgroundColor: const Color.fromARGB(255, 201, 28, 28),
@@ -116,7 +117,8 @@ onPressed: () {
                 child: TextField(
                   controller: _titleController,
                   cursorColor: Colors.redAccent,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w800),
                   decoration: const InputDecoration(
                     focusedBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey),
@@ -221,7 +223,6 @@ onPressed: () {
             )
           ],
         ),
-        
       ),
       bottomSheet: BottomAppBar(
         clipBehavior: Clip.none,
@@ -282,7 +283,8 @@ onPressed: () {
                                   onPressed: () {
                                     setState(() {
                                       isAnonym = !isAnonym;
-                                      widget.freeBoardWriteBloc.updateIsanonymous(isAnonym);
+                                      widget.freeBoardBloc
+                                          .updateIsAnonymous(isAnonym);
                                     });
                                   })
                               : IconButton(
@@ -294,7 +296,8 @@ onPressed: () {
                                   onPressed: () {
                                     setState(() {
                                       isAnonym = !isAnonym;
-                                      widget.freeBoardWriteBloc.updateIsanonymous(isAnonym);
+                                      widget.freeBoardBloc
+                                          .updateIsAnonymous(isAnonym);
                                     });
                                   }),
                           Text(
@@ -310,9 +313,10 @@ onPressed: () {
                 ]),
           ),
         ),
-      ), 
+      ),
     );
   }
+
   @override
   void dispose() {
     _titleController.dispose();

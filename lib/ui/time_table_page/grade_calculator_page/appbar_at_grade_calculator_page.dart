@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 
 class AappBarAtGradeCalculatorPage extends StatelessWidget {
   const AappBarAtGradeCalculatorPage({
-    Key? key,
+    super.key,
     required this.pageContext,
-  }) : super(key: key);
+  });
 
   final BuildContext pageContext;
 

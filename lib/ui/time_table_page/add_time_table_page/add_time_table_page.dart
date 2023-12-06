@@ -8,10 +8,10 @@ import 'package:flutter/material.dart';
 
 class AddTimeTablePage extends StatefulWidget {
   const AddTimeTablePage({
-    Key? key,
+    super.key,
     required this.userBloc,
     required this.timeTableListBloc,
-  }) : super(key: key);
+  });
 
   final UserProfileManagementBloc userBloc;
   final TimeTableListManagerBloc timeTableListBloc;

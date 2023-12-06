@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 
 class EmptyContent extends StatelessWidget {
   const EmptyContent({
-    Key? key,
+    super.key,
     required this.icon,
     required this.title,
     required this.contentIsString,
     this.contentString,
     this.content,
-  }) : super(key: key);
+  });
 
   final IconData icon;
   final String title;

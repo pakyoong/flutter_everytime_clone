@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 class RoundButton extends StatelessWidget {
   // 라운드 버튼 위젯의 생성자
   const RoundButton({
-    Key? key,
+    super.key,
     required this.title, // 버튼의 타이틀
     this.onPressed, // 버튼 클릭 이벤트 핸들러
-  }) : super(key: key);
+  });
 
   final String title; // 버튼의 타이틀
   final Function? onPressed; // 클릭 시 실행될 함수

@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 
 class CustomTabBarButton extends StatelessWidget {
   const CustomTabBarButton({
-    Key? key,
+    super.key,
     required this.title,
     required this.index,
     required this.currentIndex,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   final String title;
   final int index;

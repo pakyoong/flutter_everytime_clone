@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 
 class KeyboardActionAtGradeCalculatorPage extends StatelessWidget {
   const KeyboardActionAtGradeCalculatorPage({
-    Key? key,
+    super.key,
     required this.userBloc,
-  }) : super(key: key);
+  });
 
   final UserProfileManagementBloc userBloc;
 
@@ -20,7 +20,7 @@ class KeyboardActionAtGradeCalculatorPage extends StatelessWidget {
           return Visibility(
             visible: isShowingKeyboardSnapshot.data!,
             child: Container(
-              color: Theme.of(context).backgroundColor,
+              color: Theme.of(context).colorScheme.background,
               alignment: Alignment.centerRight,
               height: isShowingKeyboardSnapshot.data!
                   ? paddingBottom + appHeight * 0.015

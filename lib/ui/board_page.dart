@@ -1,11 +1,21 @@
-import 'package:everytime/bloc/board_page/free_board_page/free_board_write_bloc.dart';
+
+import 'package:everytime/bloc/board_page/post_bloc.dart';
+import 'package:everytime/ui/board_page/current_issues_board_page/current_issues_board_page.dart';
 import 'package:everytime/ui/board_page/free_board_page/free_board_page.dart';
+import 'package:everytime/ui/board_page/freshmen_board_page/freshmen_board_page.dart';
+import 'package:everytime/ui/board_page/graduates_board_page/graduates_board_page.dart';
+import 'package:everytime/ui/board_page/info_board_page/info_board_page.dart';
+import 'package:everytime/ui/board_page/secret_board_page/secret_board_page.dart';
 import 'package:flutter/material.dart';
 
-FreeBoardWriteBloc freeBoardWriteBloc = FreeBoardWriteBloc();
+final PostBloc FreeBoardBloc = PostBloc();
+final PostBloc SecretBoardBloc = PostBloc();
+final PostBloc GraduatesBoardBloc = PostBloc();
+final PostBloc FreshmenBoardBloc = PostBloc();
+final PostBloc CurrentIssuesBoardBloc = PostBloc();
+final PostBloc InfoBoardBloc = PostBloc();
 
 class BoardPage extends StatefulWidget {
-
   const BoardPage({Key? key}) : super(key: key);
 
   @override
@@ -161,17 +171,29 @@ class _BoardPageState extends State<BoardPage> {
 }
 
 final boardPages = {
-  // "내가 쓴 글": FreeBoard(), //MyPostBoard(),
-  // "댓글 단 글": FreeBoard(), //MyCommentBoard(),
-  // "스크랩": FreeBoard(), //ScrapBoard(),
-  // "HOT 게시판": FreeBoard(), //HotBoard(),
-  // "BEST 게시판": FreeBoard(), //BestBoard(),
-  "자유게시판":  FreeBoard(freeBoardWriteBloc: freeBoardWriteBloc,),
-  // "비밀게시판": FreeBoard(), //SecretBoard(),
-  // "졸업생게시판": FreeBoard(), //GraduatesBoard(),
-  // "새내기게시판": FreeBoard(), //FreshmenBoard(),
-  // "시사・이슈": FreeBoard(), //CurrentIssues(),
-  // "정보게시판": FreeBoard(), //InfoBoard(),
+  // "내가 쓴 글": MyPostBoard(),
+  // "댓글 단 글":MyCommentBoard(),
+  // "스크랩": ScrapBoard(),
+  // "HOT 게시판": HotBoard(),
+  // "BEST 게시판": BestBoard(),
+  "자유게시판": FreeBoard(
+    BoardBloc: FreeBoardBloc,
+  ),
+  "비밀게시판": SecretBoard(
+    BoardBloc: SecretBoardBloc,
+  ),
+  "졸업생게시판": GraduatesBoard(
+    BoardBloc:GraduatesBoardBloc,
+  ),
+  "새내기게시판": FreshmenBoard(
+    BoardBloc:FreshmenBoardBloc,
+  ),
+  "시사・이슈": CurrentIssuesBoard(
+    BoardBloc:CurrentIssuesBoardBloc,
+  ),
+  "정보게시판": InfoBoard(
+    BoardBloc: InfoBoardBloc,
+  ),
 };
 
 Widget myboard(

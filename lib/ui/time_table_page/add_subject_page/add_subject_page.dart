@@ -5,12 +5,13 @@ import 'package:everytime/global_variable.dart';
 import 'package:everytime/ui/time_table_page/add_direct_page/add_direct_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:everytime/model/time_table_page/time_table_data.dart';
 
 class AddSubjectPage extends StatefulWidget {
   const AddSubjectPage({
-    Key? key,
+    super.key,
     required this.userBloc,
-  }) : super(key: key);
+  });
 
   final UserProfileManagementBloc userBloc;
 
@@ -19,6 +20,13 @@ class AddSubjectPage extends StatefulWidget {
 }
 
 class _AddSubjectPageState extends State<AddSubjectPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Firestore에서 시간표 데이터 로드
+    widget.userBloc.loadTimeTableListFromFirestore();
+  }
+
   void _routeAddDirectPage(BuildContext context) {
     Navigator.of(context).push(
       PageRouteBuilder(
@@ -130,51 +138,27 @@ class _AddSubjectPageState extends State<AddSubjectPage> {
             SizedBox(
               height: appHeight * 0.0025,
             ),
+            // Firestore로부터 로드된 시간표 데이터를 사용하여 TimeTableChart 구성
             CustomContainer(
               height: appHeight * 0.29,
               usePadding: false,
-              child: ListView(
-                physics: const ClampingScrollPhysics(),
-                padding: EdgeInsets.zero,
-                children: [
-                  StreamBuilder(
-                    stream: widget.userBloc.timeList,
-                    builder: (_, timeListSnapshot) {
-                      if (timeListSnapshot.hasData) {
-                        return StreamBuilder(
-                          stream: widget.userBloc.dayOfWeek,
-                          builder: (_, dayOfWeekSnapshot) {
-                            if (dayOfWeekSnapshot.hasData) {
-                              return StreamBuilder(
-                                stream: widget.userBloc
-                                    .currentSelectedTimeTable!.timeTableData,
-                                builder: (_, timeTableDataSnapshot) {
-                                  if (timeTableDataSnapshot.hasData) {
-                                    return TimeTableChart(
-                                      userBloc: widget.userBloc,
-                                      timeTableData:
-                                          timeTableDataSnapshot.data!,
-                                      startHour: timeListSnapshot.data![0],
-                                      timeList: timeListSnapshot.data!,
-                                      dayOfWeekList: dayOfWeekSnapshot.data!,
-                                      isActivateButton: false,
-                                    );
-                                  }
-
-                                  return const SizedBox.shrink();
-                                },
-                              );
-                            }
-
-                            return const SizedBox.shrink();
-                          },
-                        );
-                      }
-
-                      return const SizedBox.shrink();
-                    },
-                  )
-                ],
+              child: StreamBuilder(
+                stream: widget.userBloc.currentSelectedTimeTable!.timeTableDataStream,
+                builder: (_, snapshot) {
+                  if (snapshot.hasData) {
+                    List<TimeTableData> timeTableData = snapshot.data!;
+                    return TimeTableChart(
+                      userBloc: widget.userBloc,
+                      timeTableData: timeTableData,
+                      startHour: widget.userBloc.currentTimeList[0],
+                      timeList: widget.userBloc.currentTimeList,
+                      dayOfWeekList: widget.userBloc.currentDayOfWeek,
+                      isActivateButton: true,
+                    );
+                  } else {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                },
               ),
             ),
           ],

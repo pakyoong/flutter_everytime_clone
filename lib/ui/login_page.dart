@@ -5,16 +5,18 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:everytime/main.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 showToast(String msg) {
   Fluttertoast.showToast(
-      msg: msg,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.CENTER,
-      timeInSecForIosWeb: 1,
-      backgroundColor: Colors.red,
-      textColor: Colors.white,
-      fontSize: 16.0);
+    msg: msg,
+    toastLength: Toast.LENGTH_SHORT,
+    gravity: ToastGravity.CENTER,
+    timeInSecForIosWeb: 1,
+    backgroundColor: Color(0xFFC62818),
+    textColor: Colors.white,
+    fontSize: 16.0,
+  );
 }
 
 class AuthWidget extends StatefulWidget {
@@ -24,13 +26,17 @@ class AuthWidget extends StatefulWidget {
   AuthWidgetState createState() => AuthWidgetState();
 }
 
+
 class AuthWidgetState extends State<AuthWidget> {
   final _formKey = GlobalKey<FormState>();
 
-  late String email;
-  late String password;
-  bool isInput = true; //false - result
-  bool isSignIn = true; //false - SingUp
+  late String name='';
+  late String university='';
+  late String nickname='';
+  late String email='';
+  late String password='';
+  bool isInput = true; // false - result
+  bool isSignIn = true; // false - SignUp
 
   // login
   signIn() async {
@@ -49,7 +55,7 @@ class AuthWidgetState extends State<AuthWidget> {
           setState(() {
             isInput = false;
           });
-          showToast('login success');
+          showToast('에브리타임 로그인 성공');
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -57,16 +63,16 @@ class AuthWidgetState extends State<AuthWidget> {
             ),
           );
         } else {
-          showToast('emailVerified error');
+          showToast('이메일 인증 오류');
         }
         return value;
       });
     } on FirebaseAuthException catch (e) {
       if (e.code == 'invalid-email') {
         // 오류수정
-        showToast('user-not-found');
+        showToast('계정을 찾을 수 없습니다.');
       } else if (e.code == 'invalid-password') {
-        showToast('wrong-password');
+        showToast('잘못된 비밀번호');
       } else {
         print(e.code);
       }
@@ -84,20 +90,29 @@ class AuthWidgetState extends State<AuthWidget> {
     try {
       await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password)
-          .then((value) {
+          .then((value) async {
         if (value.user!.email != null) {
-          FirebaseAuth.instance.currentUser?.sendEmailVerification();
+          // Firestore에 사용자 정보 업데이트 (회원가입 시에 필요한 정보 추가)
+          await FirebaseFirestore.instance.collection('users').doc(value.user!.uid).set({
+            'name': name, // 이름 추가
+            'university': university, // 대학교 추가
+            'nickname': nickname, // 닉네임 추가
+            'email': email,
+          });
+          // 이메일 인증 보내기
+          await value.user!.sendEmailVerification();
+
           setState(() => isInput = false);
         }
         return value;
       });
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
-        showToast('weak-password');
+        showToast('약한 비밀번호');
       } else if (e.code == 'email-already-in-use') {
-        showToast('email-already-in-use');
+        showToast('이미 사용 중인 이메일');
       } else {
-        showToast('other error');
+        showToast('다른 오류');
         print(e.code);
       }
     } catch (e) {
@@ -107,80 +122,180 @@ class AuthWidgetState extends State<AuthWidget> {
 
   List<Widget> getInputWidget() {
     return [
-      Text(
-        // title
-        isSignIn ? "SignIn" : "SignUp",
-        style: const TextStyle(
-          color: Colors.indigo,
-          fontWeight: FontWeight.bold,
-          fontSize: 20,
+      Padding(
+        padding: const EdgeInsets.only(top: 20.0),
+        child: Image.asset(
+          'assets/everytime.jpg', // 이미지 경로에 맞게 수정
+          height: 150.0,
         ),
-        textAlign: TextAlign.center,
       ),
       Form(
         key: _formKey,
         child: Column(
+          // 회원가입 시에만 필요한 정보 입력 폼
           children: [
-            TextFormField(
-              // <- email
-              decoration: const InputDecoration(labelText: 'email'),
-              validator: (value) {
-                if (value?.isEmpty ?? false) {
-                  return 'Please enter email';
-                }
-                return null;
-              },
-              onSaved: (String? value) {
-                email = value ?? "";
-              },
-            ),
-            TextFormField(
-              // <- password
-              decoration: const InputDecoration(
-                labelText: 'password',
+            if (!isSignIn) ...[
+              SizedBox(height: 10.0),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.7,
+                child: TextFormField(
+                  // <- name
+                  decoration: InputDecoration(
+                    labelText: '이름',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value?.isEmpty ?? false) {
+                      return '이름을 입력해주세요';
+                    }
+                    return null;
+                  },
+                  onSaved: (String? value) {
+                    name = value ?? "";
+                  },
+                ),
               ),
-              obscureText: true,
-              validator: (value) {
-                if (value?.isEmpty ?? false) {
-                  return 'Please enter password';
-                }
-                return null;
-              },
-              onSaved: (String? value) {
-                password = value ?? "";
-              },
+              SizedBox(height: 10.0),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.7,
+                child: TextFormField(
+                  // <- university
+                  decoration: InputDecoration(
+                    labelText: '대학교',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value?.isEmpty ?? false) {
+                      return '대학교를 입력해주세요';
+                    }
+                    return null;
+                  },
+                  onSaved: (String? value) {
+                    university = value ?? "";
+                  },
+                ),
+              ),
+              SizedBox(height: 10.0),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.7,
+                child: TextFormField(
+                  // <- nickname
+                  decoration: InputDecoration(
+                    labelText: '닉네임',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value?.isEmpty ?? false) {
+                      return '닉네임을 입력해주세요';
+                    }
+                    return null;
+                  },
+                  onSaved: (String? value) {
+                    nickname = value ?? "";
+                  },
+                ),
+              ),
+            ],
+            // 공통 입력 폼
+            SizedBox(height: 10.0),
+            Container(
+              width: MediaQuery.of(context).size.width * 0.7,
+              child: TextFormField(
+                // <- email
+                decoration: InputDecoration(
+                  labelText: '이메일',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+                validator: (value) {
+                  if (value?.isEmpty ?? false) {
+                    return '이메일을 입력해주세요';
+                  }
+                  return null;
+                },
+                onSaved: (String? value) {
+                  email = value ?? "";
+                },
+              ),
+            ),
+            SizedBox(height: 10.0),
+            Container(
+              width: MediaQuery.of(context).size.width * 0.7,
+              child: TextFormField(
+                // <- password
+                decoration: InputDecoration(
+                  labelText: '비밀번호',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                ),
+                obscureText: true,
+                validator: (value) {
+                  if (value?.isEmpty ?? false) {
+                    return '비밀번호를 입력해주세요';
+                  }
+                  return null;
+                },
+                onSaved: (String? value) {
+                  password = value ?? "";
+                },
+              ),
             ),
           ],
         ),
       ),
-      ElevatedButton(
-          // <- "SignIn" : "SignUp"
+      SizedBox(height: 10.0),
+      Container(
+        width: MediaQuery.of(context).size.width * 0.7,
+        child: ElevatedButton(
           onPressed: () {
             if (_formKey.currentState?.validate() ?? false) {
               _formKey.currentState?.save();
-              print('email: $email, password : $password');
+              print(
+                  'name: $name, university: $university, nickname: $nickname, email: $email, password : $password');
               (isSignIn) ? signIn() : signUp();
             }
           },
-          child: Text(isSignIn ? "SignIn" : "SignUp")),
+          style: ElevatedButton.styleFrom(
+            primary: Color(0xFFC62818),
+          ),
+          child: Text(
+            isSignIn ? '에브리타임 로그인' : '에브리타임 회원가입',
+            style: TextStyle(
+              color: Colors.white, // 흰색으로 변경
+              fontWeight: FontWeight.bold, // 굵게 변경
+            ),
+          ),
+        ),
+      ),
+      SizedBox(height: 10.0),
       RichText(
-        // go to SignUp or SignIn
         textAlign: TextAlign.right,
         text: TextSpan(
-          text: 'Go ',
+          text: isSignIn
+              ? '에브리타임에 처음이신가요? '
+              : '이미 회원이신가요? ',
           style: Theme.of(context).textTheme.bodyLarge,
           children: <TextSpan>[
             TextSpan(
-                text: isSignIn ? "SignUp" : "SignIn",
-                style: const TextStyle(
-                  color: Colors.blue,
-                  fontWeight: FontWeight.bold,
-                  decoration: TextDecoration.underline,
-                ),
-                recognizer: TapGestureRecognizer()
-                  ..onTap = () {
-                    setState(() => isSignIn = !isSignIn);
-                  }),
+              text: isSignIn ? '회원가입' : '로그인',
+              style: const TextStyle(
+                color: Color(0xFFC62818),
+                fontWeight: FontWeight.bold,
+                decoration: TextDecoration.underline,
+              ),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  setState(() => isSignIn = !isSignIn);
+                },
+            ),
           ],
         ),
       ),
@@ -200,27 +315,33 @@ class AuthWidgetState extends State<AuthWidget> {
         ),
       ),
       ElevatedButton(
-          onPressed: () {
-            if (isSignIn) {
-              signOut();
-            } else {
-              setState(() {
-                isInput = true;
-                isSignIn = true;
-              });
-            }
-          },
-          child: Text(isSignIn ? "SignOut" : "SignIn")),
+        onPressed: () {
+          if (isSignIn) {
+            signOut();
+          } else {
+            setState(() {
+              isInput = true;
+              isSignIn = true;
+            });
+          }
+        },
+        child: Text(isSignIn ? '에브리타임 로그인' : '에브리타임 회원가입'),
+      ),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Auth Test")),
-      body: Column(
-          // crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: isInput ? getInputWidget() : getResultWidget()),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: isInput ? getInputWidget() : getResultWidget(),
+          ),
+        ),
+      ),
     );
   }
 }

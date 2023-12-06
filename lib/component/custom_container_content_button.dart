@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 
 class CustomContainerContentButton extends StatelessWidget {
   const CustomContainerContentButton({
-    Key? key,
+    super.key,
     required this.buttonInfoList,
     required this.currentIndex,
-  }) : super(key: key);
+  });
 
   final List<ButtonInfo> buttonInfoList;
   final int currentIndex;

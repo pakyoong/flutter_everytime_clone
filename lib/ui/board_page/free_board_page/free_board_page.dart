@@ -1,20 +1,69 @@
+import 'package:everytime/model/board_page/comment.dart';
 import 'package:everytime/model/board_page/post.dart';
-import 'package:everytime/ui/board_page.dart';
 import 'package:everytime/ui/board_page/free_board_page/free_board_detail_page.dart';
 import 'package:everytime/ui/board_page/free_board_page/free_board_write_page.dart';
 import 'package:flutter/material.dart';
-import 'package:everytime/ui/board_page/database.dart';
-import 'package:everytime/bloc/board_page/free_board_page/free_board_write_bloc.dart';
+import 'package:everytime/bloc/board_page/post_bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FreeBoard extends StatefulWidget {
-  final FreeBoardWriteBloc freeBoardWriteBloc;
-  const FreeBoard({super.key, required this.freeBoardWriteBloc});
+  final PostBloc BoardBloc;
+  const FreeBoard({super.key, required this.BoardBloc});
 
   @override
   State<FreeBoard> createState() => _FreeBoardState();
 }
 
 class _FreeBoardState extends State<FreeBoard> {
+  late PostBloc freeBoardBloc= PostBloc();
+  List<Post> postList = [];
+  late String boardId = 'Free';
+  Future<void> _loadDataFromFirestore() async {
+    QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
+        .instance
+        .collection('Board')
+        .doc(boardId)
+        .collection('Post')
+        .get();
+
+    setState(() {
+      postList = snapshot.docs.map((doc) {
+        // 게시물 세부 정보 가져오기
+        Post post = Post.fromFirestore(doc);
+
+        // 게시물에 대한 댓글 가져오기
+        FirebaseFirestore.instance
+            .collection('Board')
+            .doc(boardId)
+            .collection('Post')
+            .doc(doc.id) // 문서 ID를 게시물 ID로 사용한다고 가정합니다
+            .collection('Comment')
+            .get()
+            .then((commentSnapshot) {
+          post.comments = commentSnapshot.docs.map((commentDoc) {
+            // Comment.fromFirestore 생성자가 있는 것으로 가정합니다.
+            return Comment.fromFirestore(commentDoc);
+          }).toList();
+
+          // 새로운 게시물 목록으로 UI 업데이트
+          setState(() {
+            postList = postList;
+          });
+        });
+
+        return post;
+      }).toList();
+    });
+  }
+
+  ScrollController _scrollController = ScrollController();
+  @override
+  void initState() {
+    super.initState();
+    _loadDataFromFirestore();
+    _scrollController = ScrollController(initialScrollOffset: double.infinity);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,7 +99,7 @@ class _FreeBoardState extends State<FreeBoard> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => FreeBoard(
-                          freeBoardWriteBloc: freeBoardWriteBloc,
+                          BoardBloc: freeBoardBloc,
                         )), //검색 기능 일단 없음
               );
             },
@@ -64,7 +113,7 @@ class _FreeBoardState extends State<FreeBoard> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => FreeBoard(
-                            freeBoardWriteBloc: freeBoardWriteBloc,
+                            BoardBloc: freeBoardBloc,
                           )),
                 );
               } else if (item == 2) {
@@ -73,7 +122,7 @@ class _FreeBoardState extends State<FreeBoard> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => FreeBoardWrite(
-                            freeBoardWriteBloc: freeBoardWriteBloc,
+                            freeBoardBloc: freeBoardBloc,
                           )),
                 );
               } else if (item == 3) {
@@ -101,7 +150,7 @@ class _FreeBoardState extends State<FreeBoard> {
           ),
         ],
       ),
-      body: const Detail(),
+      body: Detail(postList: postList),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 15.0),
@@ -111,7 +160,7 @@ class _FreeBoardState extends State<FreeBoard> {
               context,
               MaterialPageRoute(
                   builder: (context) => FreeBoardWrite(
-                        freeBoardWriteBloc: freeBoardWriteBloc,
+                        freeBoardBloc: freeBoardBloc,
                       )),
             );
           },
@@ -139,7 +188,11 @@ class _FreeBoardState extends State<FreeBoard> {
 }
 
 class Detail extends StatelessWidget {
-  const Detail({Key? key});
+  final List<Post> postList;
+  const Detail({
+    Key? key,
+    required this.postList,
+  });
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -147,9 +200,10 @@ class Detail extends StatelessWidget {
         Expanded(
           child: ListView.builder(
             itemExtent: 80,
-            itemCount: postSet.length,
+            itemCount: postList.length,
             itemBuilder: (BuildContext context, index) {
-              Post post = postSet[index];
+              Post post = postList[index];
+
               return Column(
                 children: [
                   TextButton(
@@ -175,7 +229,7 @@ class Detail extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    postSet[index].posttitle,
+                                    postList[index].title,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       fontSize: 16,
@@ -186,7 +240,7 @@ class Detail extends StatelessWidget {
                                     height: 5,
                                   ),
                                   Text(
-                                    postSet[index].postcontent,
+                                    postList[index].content,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       fontSize: 12,
@@ -217,7 +271,7 @@ class Detail extends StatelessWidget {
                                             style: TextStyle(fontSize: 12),
                                           ),
                                           Text(
-                                            postSet[index].postlike.toString(),
+                                            postList[index].like.toString(),
                                             style: const TextStyle(
                                               fontSize: 12,
                                               color: Colors.red,
@@ -237,8 +291,8 @@ class Detail extends StatelessWidget {
                                             style: TextStyle(fontSize: 12),
                                           ),
                                           Text(
-                                            postSet[index]
-                                                .commentList
+                                            postList[index]
+                                                .comments
                                                 .length
                                                 .toString(),
                                             style: const TextStyle(
@@ -251,7 +305,7 @@ class Detail extends StatelessWidget {
                                             style: TextStyle(fontSize: 12),
                                           ),
                                           Text(
-                                            postSet[index].postdate,
+                                            postList[index].date,
                                             style: const TextStyle(
                                               fontSize: 12,
                                               color: Colors.grey,
@@ -265,9 +319,9 @@ class Detail extends StatelessWidget {
                                             ),
                                           ),
                                           Text(
-                                            postSet[index].isanonymous == true
+                                            postList[index].isAnonymous == true
                                                 ? "익명"
-                                                : postSet[index].postwriter,
+                                                : postList[index].writer,
                                             style: const TextStyle(
                                               fontSize: 12,
                                               color: Colors.grey,
@@ -277,15 +331,15 @@ class Detail extends StatelessWidget {
                                       ),
                                       // Row(
                                       //   children: [
-                                      //     if (postSet[index].picture != null)
+                                      //     if (postList[index].picture != null)
                                       //       const Icon(Icons.photo,
                                       //           color: Colors.grey, size: 12),
-                                      //     if (postSet[index].picture != null)
+                                      //     if (postList[index].picture != null)
                                       //       const Text(
                                       //         "  ",
                                       //         style: TextStyle(fontSize: 12),
                                       //       ),
-                                      //     if (postSet[index].picture != null)
+                                      //     if (postList[index].picture != null)
                                       //       Text(
                                       //         1.toString(),//
                                       //         style: const TextStyle(
@@ -300,22 +354,21 @@ class Detail extends StatelessWidget {
                               ),
                             ),
                           ),
-                          if (postSet[index].postpicture != null)
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                              child: Container(
-                                width: 64,
-                                height: 64,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                  image: DecorationImage(
-                                    image: NetworkImage(
-                                        postSet[index].postpicture ?? ''),
-                                    fit: BoxFit.cover,
-                                  ),
+                          //if (postList[index].picture != null)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                            child: Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10.0),
+                                image: DecorationImage(
+                                  image: NetworkImage(postList[index].picture),
+                                  fit: BoxFit.cover,
                                 ),
                               ),
                             ),
+                          ),
                         ],
                       ),
                     ),
@@ -334,4 +387,3 @@ class Detail extends StatelessWidget {
     );
   }
 }
-

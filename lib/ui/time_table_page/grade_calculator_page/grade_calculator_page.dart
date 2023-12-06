@@ -14,9 +14,9 @@ import 'package:scrolls_to_top/scrolls_to_top.dart';
 
 class GradeCalculatorPage extends StatefulWidget {
   const GradeCalculatorPage({
-    Key? key,
+    super.key,
     required this.userBloc,
-  }) : super(key: key);
+  });
 
   final UserProfileManagementBloc userBloc;
 

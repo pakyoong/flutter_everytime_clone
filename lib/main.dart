@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(
-          textScaleFactor: 0.8235294117647058,
+          textScaler: const TextScaler.linear(0.8235294117647058),
         ),
         child: child!,
       ),
@@ -68,7 +68,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MainPage extends StatefulWidget {
-  const MainPage({Key? key}) : super(key: key);
+  const MainPage({super.key});
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -167,8 +167,8 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
                   isOnScreen: pageSnapshot.data! == 1,
                   userBloc: _userBloc,
                 ),
-                BoardPage(),
-                AlarmPage(),
+                const BoardPage(),
+                const AlarmPage(),
                 MyInfoPage(userBloc: _userBloc),
               ],
             );

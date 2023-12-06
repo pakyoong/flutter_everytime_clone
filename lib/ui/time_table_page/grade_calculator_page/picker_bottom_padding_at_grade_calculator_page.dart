@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 
 class PickerBottomPaddingAtGradeCalculatorPage extends StatelessWidget {
   const PickerBottomPaddingAtGradeCalculatorPage({
-    Key? key,
+    super.key,
     required this.gradeCalculatorBloc,
-  }) : super(key: key);
+  });
 
   final GradeManagementBloc gradeCalculatorBloc;
 

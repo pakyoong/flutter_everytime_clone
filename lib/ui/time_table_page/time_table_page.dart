@@ -7,8 +7,6 @@ import 'package:everytime/component/custom_button_modal_bottom_sheet.dart';
 import 'package:everytime/model/time_table_page/time_table.dart';
 import 'package:everytime/ui/time_table_page/grade_calculator_at_time_table_page.dart';
 import 'package:everytime/ui/time_table_page/time_table_at_time_table_page.dart';
-import 'package:everytime/global_variable.dart';
-import 'package:everytime/model/time_table_enums.dart';
 import 'package:everytime/ui/time_table_page/add_subject_page/add_subject_page.dart';
 import 'package:everytime/ui/time_table_page/time_table_list_page/time_table_list_page.dart';
 import 'package:flutter/cupertino.dart';
@@ -18,11 +16,11 @@ import 'package:scrolls_to_top/scrolls_to_top.dart';
 
 class TimeTablePage extends StatefulWidget {
   const TimeTablePage({
-    Key? key,
+    super.key,
     required this.scrollController,
     required this.userBloc,
     required this.isOnScreen,
-  }) : super(key: key);
+  });
 
   final ScrollController scrollController;
   final UserProfileManagementBloc userBloc;

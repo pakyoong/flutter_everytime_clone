@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 class ShowGradeLarge extends StatelessWidget {
   // 생성자에서 필요한 속성들을 초기화
   const ShowGradeLarge({
-    Key? key,
+    super.key,
     required this.title, // 제목
     required this.currentValue, // 현재 값
     required this.totalValue, // 총 값
     this.isShowButton = false, // 버튼 표시 여부
     this.icon = Icons.settings, // 아이콘
     this.onPressed, // 버튼 클릭 이벤트 핸들러
-  }) : super(key: key);
+  });
 
   final String title;
   final String currentValue;

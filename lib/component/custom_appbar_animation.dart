@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 class CustomAppBarAnimation extends StatelessWidget {
   // 생성자에서 필요한 속성들을 초기화
   const CustomAppBarAnimation({
-    Key? key,
+    super.key,
     required this.scrollOffsetStream, // 스크롤 오프셋 스트림
     required this.title, // 제목
-  }) : super(key: key);
+  });
 
   final Stream<double> scrollOffsetStream;
   final String title;

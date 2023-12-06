@@ -64,7 +64,7 @@ class _HomePageState extends State<HomePage>
           children: [
             CustomAppBarAnimation(
               scrollOffsetStream: _scrollOffset.stream,
-              title: "에브리타임1111111111111111111",
+              title: "에브리타임",
             ),
             StreamBuilder(
               stream: widget.userBloc.univ,
@@ -92,87 +92,135 @@ class _HomePageState extends State<HomePage>
                           ),
                         ],
                       ),
-                      Text('오늘의 시간표', textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.black)
-                      ),
                       // Add 7 buttons below the title
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _buildIconTextSet(
-                            Icons.open_in_browser,
-                            'https://www.kumoh.ac.kr/ko/index.do',
-                            '학교 홈',
-                          ),
-                          _buildIconTextSet(
-                            Icons.open_in_browser,
-                            'https://www.kumoh.ac.kr/bus/index.do',
-                            '통학버스',
-                          ),
-                          _buildIconTextSet(
-                            Icons.open_in_browser,
-                            'https://www.kumoh.ac.kr/ko/sub06_01_01_01.do',
-                            '학사공지',
-                          ),
-                          _buildIconTextSet(
-                            Icons.open_in_browser,
-                            'https://www.kumoh.ac.kr/ko/schedule.do',
-                            '학사일정',
-                          ),
-                          _buildIconTextSet(
-                            Icons.open_in_browser,
-                            'https://library.kumoh.ac.kr/#/',
-                            '도서관',
-                          ),
-                          _buildIconTextSet(
-                            Icons.open_in_browser,
-                            'https://mail.kumoh.ac.kr/account/login.do',
-                            '웹메일',
-                          ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Text('즐겨찾는 게시판', textAlign: TextAlign.center, style: TextStyle(color: Colors.black)),
-
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (BuildContext pageContext) {
-                                    return BoardPage();
-                                  },
-                                ),
-                              );
+                          GestureDetector(
+                            onTap: () {
+                              _launchURL('https://www.kumoh.ac.kr/ko/index.do');
                             },
-                            child: Text('더보기'),
+                            child: Image.asset(
+                              'assets/home.png',
+                              width: 80.0,
+                              height: 80.0,
+                            ), // Image path for button 1
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              _launchURL('https://www.kumoh.ac.kr/bus/index.do');
+                            },
+                            child: Image.asset(
+                              'assets/bus.png',
+                              width: 80.0,
+                              height: 80.0,
+                            ), // Image path for button 2
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              _launchURL('https://www.kumoh.ac.kr/ko/sub06_01_01_01.do');
+                            },
+                            child: Image.asset(
+                              'assets/gongji.png',
+                              width: 80.0,
+                              height: 80.0,
+                            ), // Image path for button 3
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              _launchURL('https://www.kumoh.ac.kr/ko/schedule.do');
+                            },
+                            child: Image.asset(
+                              'assets/plan.png',
+                              width: 80.0,
+                              height: 80.0,
+                            ), // Image path for button 4
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              _launchURL('https://mail.kumoh.ac.kr/account/login.do');
+                            },
+                            child: Image.asset(
+                              'assets/mail.png',
+                              width: 80.0,
+                              height: 80.0,
+                            ), // Image path for button 5
                           ),
                         ],
                       ),
-
-                      // Add buttons for each board
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      Column(
                         children: [
-                          for (String boardTitle in boardPages.keys)
-                            ElevatedButton(
-                              onPressed: () {
-                                var page = boardPages[boardTitle];
-                                if (page != null) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => page),
-                                  );
-                                }
-                              },
-                              child: Text(boardTitle),
+                          Padding(
+                            padding: EdgeInsets.all(15.0),
+                            child: Container(
+                              padding: EdgeInsets.all(16.0),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(15.0),
+                                border: Border.all(
+                                  color: Colors.grey,
+                                  width: 0.5,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      Text(
+                                        '즐겨찾는 게시판',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 23.0,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(width: 20), // 원하는 간격 설정
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (BuildContext pageContext) {
+                                                return BoardPage();
+                                              },
+                                            ),
+                                          );
+                                        },
+                                        child: Text(
+                                          '더 보기 >',
+                                          style: const TextStyle(
+                                            color: Color(0xFFC62818),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  // Add buttons for each board
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      for (String boardTitle in boardPages.keys)
+                                        TextButton(
+                                          onPressed: () {
+                                            var page = boardPages[boardTitle];
+                                            if (page != null) {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(builder: (context) => page),
+                                              );
+                                            }
+                                          },
+                                          child: Text(boardTitle),
+                                        ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
+                          ),
                         ],
-                      ),
-                      Text('실시간 핫 게시물', textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.black)
                       ),
                     ],
                   );

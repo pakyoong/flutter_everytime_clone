@@ -1,55 +1,35 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:everytime/model/time_table_enums.dart';
 import 'package:everytime/model/time_table_page/grade_calculator_page/class_info.dart';
 import 'package:rxdart/subjects.dart';
 
 class GradeOfTerm {
-  GradeOfTerm({
-    required this.term,
-  });
+  String? id; // Firestore 문서 ID (null 가능)
+  final String term; // 학기
 
-  /// 학기 이름
-  final String term;
-
-  /// 학점 * 점수의 총합
-  final _totalGrade = BehaviorSubject<double>.seeded(0.0);
-
-  /// P 과목 학점을 제외한 모든 학점
-  final _totalCredit = BehaviorSubject<int>.seeded(0);
-
-  /// 전공 과목의 학점 * 점수의 총합
-  final _majorGrade = BehaviorSubject<double>.seeded(0.0);
-
-  /// 전공 과목의 P 과목 학점을 제외한 모든 학점
-  final _majorCredit = BehaviorSubject<int>.seeded(0);
-
-  /// P 과목 학점
-  final _pCredit = BehaviorSubject<int>.seeded(0);
-
-  /// 평점
-  final _totalGradeAve = BehaviorSubject<double>.seeded(0.0);
-
-  /// 전공 평점
-  final _majorGradeAve = BehaviorSubject<double>.seeded(0.0);
-
-  /// 취득 학점
-  final _creditAmount = BehaviorSubject<int>.seeded(0);
-
-  /// 각종 성적 갯수? 학점?
+  // BehaviorSubjects
+  final _totalGrade = BehaviorSubject<double>.seeded(0.0); // 총 학점
+  final _totalCredit = BehaviorSubject<int>.seeded(0); // 총 이수 학점
+  final _majorGrade = BehaviorSubject<double>.seeded(0.0); // 전공 학점
+  final _majorCredit = BehaviorSubject<int>.seeded(0); // 전공 이수 학점
+  final _pCredit = BehaviorSubject<int>.seeded(0); // P/NP 학점
+  final _totalGradeAve = BehaviorSubject<double>.seeded(0.0); // 총 평균 학점
+  final _majorGradeAve = BehaviorSubject<double>.seeded(0.0); // 전공 평균 학점
+  final _creditAmount = BehaviorSubject<int>.seeded(0); // 총 이수 학점 + P/NP 학점
+  final _subjects = BehaviorSubject<List<ClassInfo>>.seeded([]); // 과목 정보 리스트
   final List<BehaviorSubject<int>> _gradeAmounts = List.generate(
-      Grade.allGrades().length, (index) => BehaviorSubject.seeded(0));
+      Grade.values.length, (index) => BehaviorSubject<int>.seeded(0)); // 각 학점별 과목 수
 
+
+
+  // 스트림 및 BehaviorSubject 업데이트 함수
   Stream<double> get totalGrade => _totalGrade.stream;
   Stream<int> get totalCredit => _totalCredit.stream;
   Stream<double> get majorGrade => _majorGrade.stream;
   Stream<int> get majorCredit => _majorCredit.stream;
   Stream<int> get pCredit => _pCredit.stream;
 
-  Function(double) get _updateTotalGrade => _totalGrade.sink.add;
-  Function(int) get _updateTotalCredit => _totalCredit.sink.add;
-  Function(double) get _updateMajorGrade => _majorGrade.sink.add;
-  Function(int) get _updateMajorCredit => _majorCredit.sink.add;
-  Function(int) get _updatePCredit => _pCredit.sink.add;
-
+  // 스트림 및 BehaviorSubject 업데이트 함수
   Stream<double> get totalGradeAve => _totalGradeAve.stream;
   double get currentTotalGradeAve => _totalGradeAve.value;
   Stream<double> get majorGradeAve => _majorGradeAve.stream;
@@ -57,8 +37,6 @@ class GradeOfTerm {
   Stream<int> get creditAmount => _creditAmount.stream;
 
   Stream<int> gradeAmountsElementAt(int index) => _gradeAmounts[index].stream;
-  void _updateGradeAmountsElementAt(int index, int newValue) =>
-      _gradeAmounts[index].sink.add(newValue);
   int currentGradeAmountsElementAt(int index) => _gradeAmounts[index].value;
 
   double get currentTotalGrade => _totalGrade.value;
@@ -67,221 +45,225 @@ class GradeOfTerm {
   int get currentMajorCredit => _majorCredit.value;
   int get currentPCredit => _pCredit.value;
 
-  void _updateTotalGradeAve(double newTotalGrade, int newTotalCredit) =>
-      _totalGradeAve.sink.add(double.parse(
-          (newTotalGrade / ((newTotalCredit == 0) ? 1 : newTotalCredit))
-              .toStringAsFixed(2)));
+  // BehaviorSubjects를 업데이트하는 private 메서드들
+  void _updateTotalGrade(double value) {
+    _totalGrade.sink.add(value);
+  }
 
-  void _updateMajorGradeAve(double newMajorGrade, int newMajorCredit) =>
-      _majorGradeAve.sink.add(double.parse(
-          (newMajorGrade / ((newMajorCredit == 0) ? 1 : newMajorCredit))
-              .toStringAsFixed(2)));
+  void _updateTotalCredit(int value) {
+    _totalCredit.sink.add(value);
+  }
 
-  void _updateCreditAmount(int newTotalCredit, int newPCredit) =>
-      _creditAmount.sink.add(newTotalCredit + newPCredit);
+  void _updateMajorGrade(double value) {
+    _majorGrade.sink.add(value);
+  }
+
+  void _updateMajorCredit(int value) {
+    _majorCredit.sink.add(value);
+  }
+
+  void _updatePCredit(int value) {
+    _pCredit.sink.add(value);
+  }
+
+  void _updateTotalGradeAve(double totalGrade, int totalCredit) {
+    _totalGradeAve.sink.add(totalGrade / (totalCredit > 0 ? totalCredit : 1));
+  }
+
+  void _updateMajorGradeAve(double majorGrade, int majorCredit) {
+    _majorGradeAve.sink.add(majorGrade / (majorCredit > 0 ? majorCredit : 1));
+  }
+
+  void _updateCreditAmount(int totalCreditWithPCredit) {
+    _creditAmount.sink.add(totalCreditWithPCredit);
+  }
+
+  void _updateSubjects(List<ClassInfo> subjects) {
+    _subjects.sink.add(subjects);
+  }
+
+  // Constructor
+  GradeOfTerm({required this.term, this.id});
+
+  // Firestore에서 문서를 생성하는 함수
+  Future<void> createFirestoreData() async {
+    if (id == null) {
+      DocumentReference docRef = FirebaseFirestore.instance.collection('gradesOfTerms').doc();
+      id = docRef.id;
+      await docRef.set(toFirestore());
+    }
+  }
+
+  // Firestore 문서를 업데이트하는 함수
+  Future<void> updateFirestoreData() async {
+    if (id != null) {
+      await FirebaseFirestore.instance.collection('gradesOfTerms').doc(id).update(toFirestore());
+    }
+  }
+
+  // Firestore에서 읽어온 데이터를 객체로 변환
+  static Future<GradeOfTerm> fromFirestore(DocumentSnapshot doc) async {
+    var data = doc.data() as Map<String, dynamic>?;
+    if (data == null) {
+      throw Exception('Invalid Firestore data');
+    }
+
+    return GradeOfTerm(
+      id: doc.id,
+      term: data['term'],
+    );
+  }
+
+
+  // Firestore 문서로부터 데이터를 가져와서 BehaviorSubjects를 업데이트하는 함수
+  Future<void> loadFromFirestore() async {
+    if (id != null) {
+      DocumentSnapshot doc = await FirebaseFirestore.instance.collection('gradesOfTerms').doc(id).get();
+      var data = doc.data() as Map<String, dynamic>;
+
+      _updateTotalGrade(data['totalGrade']);
+      _updateTotalCredit(data['totalCredit']);
+      _updateMajorGrade(data['majorGrade']);
+      _updateMajorCredit(data['majorCredit']);
+      _updatePCredit(data['pCredit']);
+      _updateTotalGradeAve(data['totalGrade'], data['totalCredit']);
+      _updateMajorGradeAve(data['majorGrade'], data['majorCredit']);
+      _updateCreditAmount(data['totalCredit'] + data['pCredit']);
+      _updateSubjects((data['subjects'] as List).map((e) => ClassInfo.fromFirestore(e as QueryDocumentSnapshot)).toList());
+    }
+  }
+
+  // Firestore에 데이터를 저장하기 위한 Map 변환
+  Map<String, dynamic> toFirestore() {
+    return {
+      'term': term,
+      'totalGrade': _totalGrade.value,
+      'totalCredit': _totalCredit.value,
+      'majorGrade': _majorGrade.value,
+      'majorCredit': _majorCredit.value,
+      'pCredit': _pCredit.value,
+      'totalGradeAve': _totalGradeAve.value,
+      'majorGradeAve': _majorGradeAve.value,
+      'creditAmount': _creditAmount.value,
+      'subjects': _subjects.value.map((subject) => subject.toFirestore()).toList(),
+    };
+  }
+
+  // 성적을 업데이트하는 함수
+  void updateGrades() {
+    double totalGrade = 0.0;
+    int totalCredit = 0;
+    double majorGrade = 0.0;
+    int majorCredit = 0;
+    int pCredit = 0;
+
+    for (var subject in _subjects.value) {
+      if (subject.isPassFail) {
+        if (subject.classGrade == Grade.P) {
+          pCredit += subject.classCredits;
+        }
+        continue;
+      }
+
+      if (subject.isMajorClass) {
+        majorGrade += subject.classGrade.point * subject.classCredits;
+        majorCredit += subject.classCredits;
+      }
+
+      totalGrade += subject.classGrade.point * subject.classCredits;
+      totalCredit += subject.classCredits;
+    }
+
+    _updateTotalGrade(totalGrade);
+    _updateTotalCredit(totalCredit);
+    _updateMajorGrade(majorGrade);
+    _updateMajorCredit(majorCredit);
+    _updatePCredit(pCredit);
+    _updateTotalGradeAve(totalGrade, totalCredit);
+    _updateMajorGradeAve(majorGrade, majorCredit);
+    _updateCreditAmount(totalCredit + pCredit);
+    updateFirestoreData();
+    updateFirestoreData();
+  }
+
+  Stream<List<ClassInfo>> get subjects => _subjects.stream;
+
+  // 과목을 추가하는 함수
+  void addSubject(ClassInfo subject) {
+    List<ClassInfo> updatedSubjects = List.from(_subjects.value);
+    updatedSubjects.add(subject);
+    _subjects.sink.add(updatedSubjects);
+    updateFirestoreData();
+  }
+
+  // 과목을 업데이트하는 함수
+  void updateSubject(int index, ClassInfo updatedSubject) {
+    List<ClassInfo> updatedSubjects = List.from(_subjects.value);
+    if (index >= 0 && index < updatedSubjects.length) {
+      updatedSubjects[index] = updatedSubject;
+      _subjects.sink.add(updatedSubjects);
+      updateFirestoreData();
+    }
+  }
 
   /// subjects배열 길이의 기본값
   // ignore: constant_identifier_names
   static const DEFAULT_SUBJECTS_LENGTH = 10;
 
-  /// 과목 정보들
-  // ignore: prefer_final_fields
-  final _subjects = BehaviorSubject<List<ClassInfo>>.seeded([
-    ClassInfo(),
-    ClassInfo(),
-    ClassInfo(),
-    ClassInfo(),
-    ClassInfo(),
-    ClassInfo(),
-    ClassInfo(),
-    ClassInfo(),
-    ClassInfo(),
-    ClassInfo(),
-  ]);
 
-  /// 임시로 각 성적의 총합을 저장할 공간. 자주 사용하는거 같아서 전역 변수로 선언해줌.
-  // ignore: prefer_for_elements_to_map_fromiterable, prefer_final_fields
-  Map<Grade, int> _tempGrades = Map.fromIterable(Grade.allGrades(),
-      key: (element) => element, value: (element) => 0);
+// 빈 과목 제거
+  Future<void> removeEmptySubjects() async {
+    if (_subjects.value.length <= DEFAULT_SUBJECTS_LENGTH) return;
 
-  Stream<List<ClassInfo>> get subjects => _subjects.stream;
-  List<ClassInfo> get currentSubjects => _subjects.value;
-  void _updateSubjects(List<ClassInfo> newSubjects) {
-    _subjects.sink.add(newSubjects);
-  }
-
-  void updateSubjects() {
-    _updateSubjects(currentSubjects);
-  }
-
-  /// 학점계산기 페이지에서 [더 입력하기] 버튼을 눌렀을 경우 실행될 함수.
-  ///
-  /// 현재의 [_subjects]에 새로운 [ClassInfo]를 추가한다.
-  void addSubject() {
-    List<ClassInfo> tempList = currentSubjects;
-    tempList.add(ClassInfo());
-    _updateSubjects(tempList);
-  }
-
-  /// 학점계산기 페이지에서 다른 학기를 눌렀을 때 실행될 함수
-  ///
-  /// [더 입력하기] 버튼으로 추가된 새로운 [ClassInfo]들 중에서 값을 입력
-  /// 받지 않은 [ClassInfo]를 삭제하는 함수.
-  void removeEmptySubjects() {
-    if (currentSubjects.length == DEFAULT_SUBJECTS_LENGTH) return;
-
-    ClassInfo targetSubject;
-    List<int> removeIndexes = [];
-    List<ClassInfo> tempList = currentSubjects;
-
-    for (int i = 0; i < (tempList.length - DEFAULT_SUBJECTS_LENGTH); i++) {
-      targetSubject = tempList[DEFAULT_SUBJECTS_LENGTH + i];
-      if (targetSubject.isMajorClass == false &&
-          targetSubject.classsCredits == 0 &&
-          targetSubject.className.isEmpty &&
-          targetSubject.classGrade == Grade.aPlus) {
-        removeIndexes.add(DEFAULT_SUBJECTS_LENGTH + i);
+    List<ClassInfo> updatedSubjects = [];
+    for (var subject in _subjects.value) {
+      if (subject.isMajorClass == false &&
+          subject.classCredits == 0 &&
+          subject.className.isEmpty &&
+          subject.classGrade == Grade.aPlus) {
+        continue; // 제거 대상 과목은 추가하지 않음
       }
+      updatedSubjects.add(subject);
     }
 
-    for (int i = removeIndexes.length - 1; i >= 0; i--) {
-      if (i < 0) {
-        continue;
-      }
-
-      tempList.removeAt(removeIndexes[i]);
-    }
-    _updateSubjects(tempList);
+    _subjects.sink.add(updatedSubjects);
+    await updateFirestoreData(); // Firestore 문서 업데이트
   }
 
-  /// 학점계산기 페이지에서 [초기화] 버튼을 눌렀을 때 실행될 함수
-  ///
-  /// 모든 [더 입력하기] 버튼으로 생성된 [ClassInfo]를 삭제하는 함수
-  void removeAdditionalSubjects() {
-    if (currentSubjects.length == DEFAULT_SUBJECTS_LENGTH) return;
-    List<ClassInfo> tempList = currentSubjects;
-    for (int i = tempList.length - DEFAULT_SUBJECTS_LENGTH - 1; i >= 0; i--) {
-      tempList.removeLast();
-    }
-    _updateSubjects(tempList);
+  // 추가된 과목 초기화
+  Future<void> removeAdditionalSubjects() async {
+    if (_subjects.value.length <= DEFAULT_SUBJECTS_LENGTH) return;
+
+    List<ClassInfo> updatedSubjects = _subjects.value.sublist(0, DEFAULT_SUBJECTS_LENGTH);
+    _subjects.sink.add(updatedSubjects);
+    await updateFirestoreData(); // Firestore 문서 업데이트
   }
 
-  /// 현재 학기의 성적을 최신 값으로 갱신하는 함수
-  void updateGrades() {
-    double tempTotalGrade = 0.0;
-    int tempTotalCredit = 0;
-    double tempMajorGrade = 0.0;
-    int tempMajorCredit = 0;
-    int tempPCredit = 0;
-    _tempGrades.forEach(
-      (key, value) => _tempGrades[key] = 0,
-    );
-
-    int credit = 0;
-    Grade gradeType = Grade.F;
-    bool isMajor = false;
-    bool isPNP = false;
-
-    for (int i = 0; i < currentSubjects.length; i++) {
-      credit = currentSubjects[i].classsCredits;
-      gradeType = currentSubjects[i].classGrade;
-      isMajor = currentSubjects[i].isMajorClass;
-      isPNP = currentSubjects[i].isPassFail;
-
-      if (credit != 0) {
-        if (gradeType.point > 0) {
-          tempTotalGrade += gradeType.point * credit;
-          tempTotalCredit += credit;
-
-          if (isMajor) {
-            tempMajorGrade += gradeType.point * credit;
-            tempMajorCredit += credit;
-          }
-        } else if (gradeType == Grade.P && isPNP) {
-          tempPCredit += credit;
-        }
-
-        _tempGrades.update(gradeType, (value) => value += credit);
-      }
-    }
-
-    _tempGrades.forEach(
-      (key, value) =>
-          _updateGradeAmountsElementAt(Grade.indexOfGrade(key), value),
-    );
-
-    _updateTotalGrade(tempTotalGrade);
-    _updateTotalCredit(tempTotalCredit);
-    _updateMajorGrade(tempMajorGrade);
-    _updateMajorCredit(tempMajorCredit);
-    _updatePCredit(tempPCredit);
-
-    _updateTotalGradeAve(tempTotalGrade, tempTotalCredit);
-    _updateMajorGradeAve(tempMajorGrade, tempMajorCredit);
-    _updateCreditAmount(tempTotalCredit, tempPCredit);
-  }
-
-  /// [_subjects]의 [index] 번째 과목을 갱신하는 함수
-  ///
-  /// inputs
-  /// * [index] : [_subjects]에서 갱신할 [ClassInfo]가 있는 [index]
-  ///
-  /// inputs(option)
-  /// * [title] : 과목 이름
-  /// * [credit] : 학점
-  /// * [gradeType] : 성적
-  /// * [isPNP] : P 또는 NP 과목 여부
-  /// * [isMajor] : 전공과목 여부
-  ///
-  /// ### [option] 값 들 중 [title]을 제외한 나머지 값들 중 하나라도 [null]이 아닐 경우,
-  /// -> [updateGrades()] 가 실행된다.
-  void updateSubject(
-    int index, {
-    String? title,
-    int? credit,
-    Grade? gradeType,
-    bool? isPNP,
-    bool? isMajor,
-  }) {
-    if (title != null) currentSubjects[index].className = title;
-    if (credit != null) currentSubjects[index].classsCredits = credit;
-    if (gradeType != null) currentSubjects[index].classGrade = gradeType;
-    if (isPNP != null) currentSubjects[index].isPassFail = isPNP;
-    if (isMajor != null) currentSubjects[index].isMajorClass = isMajor;
-
-    if (credit != null ||
-        gradeType != null ||
-        isPNP != null ||
-        isMajor != null) {
-      updateGrades();
+  // 과목을 기본값으로 설정하는 함수
+  void setDefaultSubject(int index) {
+    if (index >= 0 && index < _subjects.value.length) {
+      _subjects.value[index] = ClassInfo(
+        className: '',
+        classCredits: 0,
+        classGrade: Grade.undefined, // 적절한 기본값 설정
+        isPassFail: false,
+        isMajorClass: false,
+      );
+      _subjects.sink.add(List.from(_subjects.value));
+      updateFirestoreData();
     }
   }
 
-  /// [_subjects]의 [index]에 있는 [ClassInfo]를 초기값으로 되돌리는 함수.
-  void setDefault(int index) {
-    currentSubjects[index].className = '';
-    currentSubjects[index].classsCredits = 0;
-    currentSubjects[index].classGrade = Grade.aPlus;
-    currentSubjects[index].isMajorClass = false;
-    currentSubjects[index].isPassFail = false;
-    updateGrades();
-  }
-
+  // 리소스 해제 함수
   void dispose() {
     _totalGrade.close();
     _totalCredit.close();
     _majorGrade.close();
     _majorCredit.close();
     _pCredit.close();
-
     _totalGradeAve.close();
     _majorGradeAve.close();
     _creditAmount.close();
-
-    for (int i = 0; i < _gradeAmounts.length; i++) {
-      _gradeAmounts[i].close();
-    }
-
     _subjects.close();
   }
 }

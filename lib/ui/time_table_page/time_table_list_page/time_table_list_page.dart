@@ -6,9 +6,9 @@ import 'package:flutter/material.dart';
 
 class TimeTableListPage extends StatefulWidget {
   const TimeTableListPage({
-    Key? key,
+    super.key,
     required this.userBloc,
-  }) : super(key: key);
+  });
 
   final UserProfileManagementBloc userBloc;
 
@@ -25,16 +25,17 @@ class _TimeTableListPageState extends State<TimeTableListPage> {
   void initState() {
     super.initState();
 
-    _timeTableListBloc.sortTimeTables(widget.userBloc.currentTimeTableList);
+    // Load and sort time tables from Firestore
+    widget.userBloc.loadTimeTableListFromFirestore().then((_) {
+      _timeTableListBloc.sortTimeTables(widget.userBloc.currentTimeTableList);
+    });
   }
 
   @override
   void dispose() {
-    super.dispose();
-
     _pageScrollController.dispose();
-
     _timeTableListBloc.dispose();
+    super.dispose();
   }
 
   @override

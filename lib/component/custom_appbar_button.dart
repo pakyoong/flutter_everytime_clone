@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 class CustomAppBarButton extends StatelessWidget {
   // 생성자에서 필요한 속성들을 초기화
   CustomAppBarButton({
-    Key? key,
+    super.key,
     required this.icon, // 아이콘 데이터
     this.onPressed, // 버튼 클릭 이벤트 핸들러
-  }) : super(key: key);
+  });
 
   final IconData icon;
   final Function? onPressed;

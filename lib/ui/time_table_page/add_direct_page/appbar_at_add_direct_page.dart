@@ -8,10 +8,11 @@ import 'package:everytime/model/time_table_page/lecture_time_and_location.dart';
 import 'package:everytime/model/time_table_page/time_table_data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AppBarAtAddDirectPage extends StatelessWidget {
-  const AppBarAtAddDirectPage({
-    Key? key,
+  AppBarAtAddDirectPage({
+    super.key,
     required this.userBloc,
     required this.addDirectBloc,
     required this.subjectNameController,
@@ -19,7 +20,7 @@ class AppBarAtAddDirectPage extends StatelessWidget {
     required this.lastDayOfWeekIndex,
     required this.lastStartHour,
     required this.lastEndHour,
-  }) : super(key: key);
+  });
 
   final UserProfileManagementBloc userBloc;
   final LectureScheduleBloc addDirectBloc;
@@ -29,6 +30,9 @@ class AppBarAtAddDirectPage extends StatelessWidget {
   final int lastDayOfWeekIndex;
   final int lastStartHour;
   final int lastEndHour;
+
+  // Firestore 인스턴스 추가
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +52,9 @@ class AppBarAtAddDirectPage extends StatelessWidget {
               highlightColor: Colors.transparent,
               child: Icon(
                 Icons.clear,
-                color: Theme.of(context).highlightColor,
+                color: Theme
+                    .of(context)
+                    .highlightColor,
               ),
               onPressed: () {
                 _removeShadow();
@@ -78,7 +84,8 @@ class AppBarAtAddDirectPage extends StatelessWidget {
     int tempStartHour = userBloc.defaultTimeListFirst;
     int tempEndHour = userBloc.defaultTimeListLast;
 
-    for (LectureTimeAndLocation dates in addDirectBloc.currentLectureScheduleData) {
+    for (LectureTimeAndLocation dates in addDirectBloc
+        .currentLectureScheduleData) {
       if (Weekday.indexOfWeekday(dates.weekday) > tempDayOfWeekIndex) {
         tempDayOfWeekIndex = Weekday.indexOfWeekday(dates.weekday);
       }
@@ -117,96 +124,88 @@ class AppBarAtAddDirectPage extends StatelessWidget {
   }
 
   void _onPressedButton(BuildContext context) {
+    // 키보드가 열려있다면 닫음
     if (primaryFocus?.hasFocus ?? false) {
       primaryFocus?.unfocus();
     }
 
+    // 키보드 상태 업데이트
     if (userBloc.currentIsShowingKeyboard) {
       userBloc.updateIsShowingKeyboard(false);
     }
 
+    // 강의 시간 및 장소 데이터가 없는 경우 다이얼로그 표시
     if (addDirectBloc.currentLectureScheduleData.isEmpty) {
-      showCupertinoDialog(
-        context: context,
-        builder: (dialogContext) {
-          return CustomCupertinoAlertDialog(
-            isDarkStream: userBloc.isDark,
-            title: '시간정보를 입력해주세요',
-            actions: [
-              CupertinoButton(
-                padding: EdgeInsets.zero,
-                child: const Text('확인'),
-                onPressed: () {
-                  Navigator.pop(dialogContext);
-                },
-              ),
-            ],
-          );
-        },
-      );
+      _showDialog(context, '시간정보를 입력해주세요');
       return;
     }
 
+    // 수업 데이터 객체 생성
     TimeTableData tempData = TimeTableData(
       professor: profNameController.text,
       times: addDirectBloc.currentLectureScheduleData,
       className: subjectNameController.text,
     );
+
+    // 시간표 충돌 검사
     String? result = userBloc.checkTimeTableCrash(tempData);
 
+    // 시간표 충돌 발생 시 다이얼로그 표시
     if (result != null) {
-      showCupertinoDialog(
-        context: context,
-        builder: (dialogContext) {
-          return CustomCupertinoAlertDialog(
-            isDarkStream: userBloc.isDark,
-            title: '$result 수업과\n 시간이 겹칩니다.',
-            actions: [
-              CupertinoButton(
-                padding: EdgeInsets.zero,
-                child: const Text('확인'),
-                onPressed: () {
-                  Navigator.pop(dialogContext);
-                },
-              ),
-            ],
-          );
-        },
-      );
+      _showDialog(context, '$result 수업과\n 시간이 겹칩니다.');
       return;
     }
 
+    // 수업명이 비어있는 경우 다이얼로그 표시
     if (subjectNameController.text.isEmpty) {
-      showCupertinoDialog(
-        context: context,
-        builder: (dialogContext) {
-          return CustomCupertinoAlertDialog(
-            isDarkStream: userBloc.isDark,
-            title: '수업명을 입력해주세요',
-            actions: [
-              CupertinoButton(
-                padding: EdgeInsets.zero,
-                child: const Text('확인'),
-                onPressed: () {
-                  Navigator.pop(dialogContext);
-                },
-              ),
-            ],
-          );
-        },
-      );
+      _showDialog(context, '수업명을 입력해주세요');
       return;
     }
 
-    //TODO: 전체 시간표 목록 갱신해야함.
-    userBloc.currentSelectedTimeTable!.addClass(tempData);
+    // Firestore에 수업 정보 저장
+    firestore.collection('timeTables').add({
+      'professor': profNameController.text,
+      'className': subjectNameController.text,
+      'times': addDirectBloc.currentLectureScheduleData.map((e) =>
+      {
+        'weekday': e.weekday.index,
+        'startHour': e.startHour,
+        'startMinute': e.startMinute,
+        'endHour': e.endHour,
+        'endMinute': e.endMinute,
+        'location': e.location, // 필요한 경우
+      }).toList(),
+    }).then((value) {
+      // 성공적으로 추가된 경우
+      profNameController.text = '';
+      subjectNameController.text = '';
+      addDirectBloc.resetLectureSchedule();
 
-    profNameController.text = '';
-    subjectNameController.text = '';
-    addDirectBloc.resetLectureSchedule();
+      Navigator.pop(context);
+    }).catchError((error) {
+      // 에러 처리
+      _showDialog(context, '오류가 발생했습니다. 다시 시도해주세요');
+    });
+  }
 
-    Navigator.pop(context);
-
-    //TODO: 전체 시간표 배열에서도 업데이트하는 구문 필요함.
+  void _showDialog(BuildContext context, String message) {
+    showCupertinoDialog(
+      context: context,
+      builder: (dialogContext) {
+        return CustomCupertinoAlertDialog(
+          isDarkStream: userBloc.isDark,
+          title: message,
+          actions: [
+            CupertinoButton(
+              padding: EdgeInsets.zero,
+              child: const Text('확인'),
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

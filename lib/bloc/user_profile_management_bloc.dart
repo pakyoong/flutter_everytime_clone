@@ -1,16 +1,24 @@
+// ignore_for_file: constant_identifier_names, prefer_final_fields
+
 import 'dart:math';
 
 import 'package:everytime/model/time_table_enums.dart';
 import 'package:everytime/model/time_table_page/grade_calculator_page/grade_distribution_data.dart';
 import 'package:everytime/model/time_table_page/grade_calculator_page/grade_of_term.dart';
 import 'package:everytime/model/time_table_page/grade_calculator_page/term_grade_point_data.dart';
+import 'package:everytime/model/time_table_page/grade_calculator_page/class_info.dart';
 import 'package:everytime/model/time_table_page/lecture_time_and_location.dart';
 import 'package:everytime/model/time_table_page/time_table.dart';
 import 'package:everytime/model/time_table_page/time_table_data.dart';
 import 'package:rxdart/subjects.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class UserProfileManagementBloc {
   // 유저 관련 정보를 관리하는 클래스
+
+  // Firestore 인스턴스
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // 유저의 기본 정보를 BehaviorSubject로 관리하는 부분
   final _name = BehaviorSubject<String>(); // 유저 이름
@@ -49,6 +57,54 @@ class UserProfileManagementBloc {
   // 현재 시간표 리스트와 선택된 시간표에 대한 getter
   List<TimeTable> get currentTimeTableList => _timeTableList.value;
   TimeTable? get currentSelectedTimeTable => _selectedTimeTable.value;
+
+  // Firestore에 시간표 리스트를 저장하는 함수
+  Future<void> saveTimeTableListToFirestore() async {
+    await _firestore.collection('timeTables').doc(_id.value).set({
+      'timeTables': _timeTableList.value
+          .map((timeTable) => timeTable.toFirestore())
+          .toList(),
+    });
+  }
+
+  // Firestore에서 시간표 리스트를 불러오는 함수
+  Future<void> loadTimeTableListFromFirestore() async {
+    var doc = await _firestore.collection('timeTables').doc(_id.value).get();
+    if (doc.exists) {
+      var data = doc.data() as Map<String, dynamic>;
+      var timeTablesFutures = (data['timeTables'] as List)
+          .map((e) => TimeTable.fromFirestore(e))
+          .toList();
+
+      // 모든 Future<TimeTable> 객체들이 완료될 때까지 기다립니다.
+      var timeTables = await Future.wait(timeTablesFutures);
+      _timeTableList.add(timeTables);
+    }
+  }
+
+// Firestore에 성적 데이터를 저장하는 함수
+  Future<void> saveGradeDataToFirestore() async {
+    await _firestore.collection('grades').doc(_id.value).set({
+      'grades': _gradeOfTerms.map((term) => term.toFirestore()).toList(),
+    });
+  }
+
+// Firestore에서 성적 데이터를 불러오는 함수
+  Future<void> loadGradeDataFromFirestore() async {
+    var doc = await _firestore.collection('grades').doc(_id.value).get();
+    if (doc.exists) {
+      var data = doc.data() as Map<String, dynamic>;
+      var gradesFutures = (data['grades'] as List)
+          .map((e) => GradeOfTerm.fromFirestore(e))
+          .toList();
+
+      // 모든 Future<GradeOfTerm> 객체들이 완료될 때까지 기다립니다.
+      var grades = await Future.wait(gradesFutures);
+      _gradeOfTerms.clear();
+      _gradeOfTerms.addAll(grades);
+      updateData();
+    }
+  }
 
   // 특정 학기에 해당하는 시간표를 찾는 함수
   TimeTable? findTimeTableAtSpecificTerm(String termString) {
@@ -495,7 +551,6 @@ class UserProfileManagementBloc {
   Stream<double> get majorGradeAve => _majorGradeAve.stream;
   Function(double) get _updateMajorGradeAve => _majorGradeAve.sink.add;
   Stream<double> get maxAve => _maxAve.stream;
-  Function(double) get _updateMaxAve => _maxAve.sink.add;
 
   Stream<int> get currentCredit => _currentCredit.stream;
   Function(int) get _updateCurrentCredit => _currentCredit.sink.add;
@@ -523,11 +578,7 @@ class UserProfileManagementBloc {
   ];
 
   // 성적 유형별 총합을 임시 저장할 맵
-  Map<Grade, int> _tempGradesAmount = Map<Grade, int>.fromIterable(
-      Grade.allGrades(),
-      key: (element) => element,
-      value: (element) => 0
-  );
+  Map<Grade, int> _tempGradesAmount = { for (var element in Grade.allGrades()) element : 0 };
 
   // 학기 정보의 길이를 반환하는 getter
   int get getTermsLength => _gradeOfTerms.length;
@@ -631,16 +682,65 @@ class UserProfileManagementBloc {
     updateTargetCredit(140); // 목표 학점 설정
 
     // 첫 학기의 각 과목별 성적 정보 설정
-    getTerm(0).updateSubject(0, credit: 9, gradeType: Grade.aPlus);
-    getTerm(0).updateSubject(1, credit: 5, gradeType: Grade.A);
-    getTerm(0).updateSubject(2, credit: 5, gradeType: Grade.aPlus, isMajor: true);
-    getTerm(0).updateSubject(3, credit: 2, gradeType: Grade.bPlus);
+    getTerm(0).updateSubject(0, ClassInfo(
+        className: "첫 번째 과목",
+        classCredits: 9,
+        classGrade: Grade.aPlus,
+        isPassFail: false,
+        isMajorClass: false
+    ));
+    getTerm(0).updateSubject(1, ClassInfo(
+        className: "두 번째 과목",
+        classCredits: 5,
+        classGrade: Grade.A,
+        isPassFail: false,
+        isMajorClass: false
+    ));
+    getTerm(0).updateSubject(2, ClassInfo(
+        className: "세 번째 과목",
+        classCredits: 5,
+        classGrade: Grade.aPlus,
+        isPassFail: false,
+        isMajorClass: true // 전공 과목 표시
+    ));
+    getTerm(0).updateSubject(3, ClassInfo(
+        className: "네 번째 과목",
+        classCredits: 2,
+        classGrade: Grade.bPlus,
+        isPassFail: false,
+        isMajorClass: false
+    ));
 
-    // 두 번째 학기의 각 과목별 성적 정보 설정
-    getTerm(1).updateSubject(0, credit: 4, gradeType: Grade.aPlus);
-    getTerm(1).updateSubject(1, credit: 6, gradeType: Grade.A);
-    getTerm(1).updateSubject(2, credit: 6, gradeType: Grade.aPlus, isMajor: true);
-    getTerm(1).updateSubject(3, credit: 4, gradeType: Grade.B);
+// 두 번째 학기의 각 과목별 성적 정보 설정
+    getTerm(1).updateSubject(0, ClassInfo(
+        className: "첫 번째 과목",
+        classCredits: 4,
+        classGrade: Grade.aPlus,
+        isPassFail: false,
+        isMajorClass: false
+    ));
+    getTerm(1).updateSubject(1, ClassInfo(
+        className: "두 번째 과목",
+        classCredits: 6,
+        classGrade: Grade.A,
+        isPassFail: false,
+        isMajorClass: false
+    ));
+    getTerm(1).updateSubject(2, ClassInfo(
+        className: "세 번째 과목",
+        classCredits: 6,
+        classGrade: Grade.aPlus,
+        isPassFail: false,
+        isMajorClass: true // 전공 과목 표시
+    ));
+    getTerm(1).updateSubject(3, ClassInfo(
+        className: "네 번째 과목",
+        classCredits: 4,
+        classGrade: Grade.B,
+        isPassFail: false,
+        isMajorClass: false
+    ));
+
 
     updateData(); // 성적 데이터 업데이트
   }
