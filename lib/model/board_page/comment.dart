@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Comment {
   final String commentId;
+  final int commentNo; 
   final String comment;
   final String date;
   final bool isAnonymous;
@@ -11,9 +12,9 @@ class Comment {
   final String writer;
   final String writerid;
 
-
   Comment({
     required this.commentId,
+    required this.commentNo,
     required this.comment,
     required this.date,
     required this.isAnonymous,
@@ -29,6 +30,7 @@ class Comment {
     final data = commentDoc.data();
     return Comment(
       commentId: commentDoc.id,
+      commentNo: data['commentNo'] ?? 0, 
       comment: data['comment'] ?? '',
       date: data['date'] ?? '',
       isAnonymous: data['isAnonymous'] ?? false,
@@ -39,6 +41,7 @@ class Comment {
       writerid: data['writerid'] ?? '',
     );
   }
+
   static Future<List<Comment>> fetchComments(
       DocumentReference postReference) async {
     final commentsCollection = await postReference.collection('Comment').get();

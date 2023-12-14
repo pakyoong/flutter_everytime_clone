@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyBuD2dgKwTSFr31FJ9cjV3Yevpu6lzd9iE</string>
+	<string>AIzaSyB254Eedwa69l-w53DnD4BOAXxf4mmQ7bY</string>
 	<key>GCM_SENDER_ID</key>
-	<string>1070513318052</string>
+	<string>358879497597</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.everytime</string>
+	<string>com.example.flutterEverytimeClone</string>
 	<key>PROJECT_ID</key>
-	<string>everytime-cae65</string>
+	<string>everytime-9930d</string>
 	<key>STORAGE_BUCKET</key>
-	<string>everytime-cae65.appspot.com</string>
+	<string>everytime-9930d.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:1070513318052:ios:cf032d6d0ab0df911ede31</string>
+	<string>1:358879497597:ios:e9924ffd42ed921840d014</string>
 </dict>
 </plist>

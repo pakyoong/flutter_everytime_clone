@@ -1,6 +1,5 @@
-
-import 'package:everytime/bloc/board_page/comment_bloc.dart';
 import 'package:everytime/bloc/board_page/post_bloc.dart';
+import 'package:everytime/bloc/board_page/comment_bloc.dart';
 import 'package:everytime/model/board_page/post.dart';
 import 'package:everytime/ui/board_page/secret_board_page/secret_board_page.dart';
 import 'package:everytime/ui/board_page/secret_board_page/secret_comment_detail.dart';
@@ -18,14 +17,15 @@ class SecretBoardDetail extends StatefulWidget {
 class _SecretBoardDetailState extends State<SecretBoardDetail> {
   late Post post;
   late String postId;
+  late int like;
   late String boardId = 'Secret';
-  late int like; // postId 추가
- CommentBloc commentBloc = CommentBloc();
-PostBloc secretBoardBloc = PostBloc();
-  TextEditingController _commentController = TextEditingController();
+  late BuildContext currentContext = context;
+  CommentBloc commentBloc = CommentBloc();
+  PostBloc secretBoardBloc = PostBloc();
+  final TextEditingController _commentController = TextEditingController();
 
   _SecretBoardDetailState({required this.post}) {
-    postId = post.postId; // postId 초기화
+    postId = post.postId;
     like = post.like;
   }
 
@@ -77,12 +77,11 @@ PostBloc secretBoardBloc = PostBloc();
                     style: TextStyle(color: Colors.red),
                   ),
                   onPressed: () async {
-                    await secretBoardBloc.sendLike(boardId, post.postId);
-                    Navigator.pop(context);
+                    await secretBoardBloc.postLike(boardId, post.postId);
                     setState(() {
-                      // 가정: Post 객체에 좋아요 수를 나타내는 변수가 있다고 가정
                       post.like++;
                     });
+                    Navigator.pop(context);
                   },
                 ),
               ],
@@ -273,10 +272,10 @@ PostBloc secretBoardBloc = PostBloc();
           color: Colors.black,
           onPressed: () {
             Navigator.pop(context);
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => SecretBoard(BoardBloc: secretBoardBloc),
+                builder: (context) => SecretBoard(boardBloc: secretBoardBloc),
               ),
             );
           },
@@ -312,27 +311,49 @@ PostBloc secretBoardBloc = PostBloc();
           PopupMenuButton(
             child: const Icon(Icons.more_vert, size: 20),
             onSelected: (int item) async {
+              BuildContext currentContext = context;
+
               if (item == 1) {
                 Navigator.pushReplacement(
-                  context,
+                  currentContext,
                   MaterialPageRoute(
-                      builder: (context) => SecretBoardDetail(post: post)),
+                    builder: (currentContext) => SecretBoardDetail(post: post),
+                  ),
                 );
               }
               if (item == 2) {
                 report();
               }
               if (item == 3) {
-                //삭제기능 추가
-                await secretBoardBloc.deletePost(boardId, post.postId);
-                Navigator.pop(context);
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        SecretBoard(BoardBloc: secretBoardBloc),
-                  ),
-                );
+                try {
+                  await secretBoardBloc.deletePost(boardId, post.postId);
+                  Navigator.pop(currentContext);
+                  Navigator.pushReplacement(
+                    currentContext,
+                    MaterialPageRoute(
+                      builder: (currentContext) =>
+                          SecretBoard(boardBloc: secretBoardBloc),
+                    ),
+                  );
+                } catch (error) {
+                  showDialog(
+                    context: currentContext,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text("삭제 오류"),
+                        content: const Text("게시글 삭제 권한이 없습니다."),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(currentContext).pop();
+                            },
+                            child: const Text("확인"),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
@@ -423,8 +444,7 @@ PostBloc secretBoardBloc = PostBloc();
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10.0),
                               image: DecorationImage(
-                                //image: AssetImage(widget.post.picture ?? ''),//제목2
-                                image: NetworkImage(widget.post.picture), //제목3
+                                image: NetworkImage(widget.post.picture ?? ''),
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -629,51 +649,49 @@ PostBloc secretBoardBloc = PostBloc();
                       suffixIcon: Transform.scale(
                         scale: 1,
                         child: IconButton(
-  onPressed: () {
-    String comment = _commentController.text;
-    if (comment.trim().isEmpty) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("입력 오류"),
-            content: const Text("댓글을 입력하세요."),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text("확인"),
-              ),
-            ],
-          );
-        },
-      );
-    } else {
-      commentBloc.updateComment(comment);
-      if (commentBloc.comment != null) {
-        commentBloc.writeComment(boardId, postId).then((_) {
-          Navigator.pop(context);
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => SecretBoardDetail(post: post),
-            ),
-          );
-          _commentController.clear();
-        });
-      } else {
-        print("Comment content is null");
-      }
-    }
-  },
-  icon: const Icon(
-    Icons.send,
-    size: 25,
-    color: Colors.red,
-  ),
-),
-
+                          onPressed: () {
+                            String comment = _commentController.text;
+                            if (comment.trim().isEmpty) {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text("입력 오류"),
+                                    content: const Text("댓글을 입력하세요."),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text("확인"),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            } else {
+                              commentBloc.updateComment(comment);
+                              commentBloc
+                                  .writeComment(boardId, postId)
+                                  .then((_) {
+                                Navigator.pop(context);
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        SecretBoardDetail(post: post),
+                                  ),
+                                );
+                                _commentController.clear();
+                              });
+                                                        }
+                          },
+                          icon: const Icon(
+                            Icons.send,
+                            size: 25,
+                            color: Colors.red,
+                          ),
+                        ),
                       ),
                     ),
                   ),

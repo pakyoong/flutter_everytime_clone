@@ -4,6 +4,8 @@ import 'package:everytime/model/board_page/post.dart';
 import 'package:everytime/ui/board_page/free_board_page/free_board_page.dart';
 import 'package:everytime/ui/board_page/free_board_page/free_comment_detail.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class FreeBoardDetail extends StatefulWidget {
   final Post post;
@@ -17,14 +19,15 @@ class FreeBoardDetail extends StatefulWidget {
 class _FreeBoardDetailState extends State<FreeBoardDetail> {
   late Post post;
   late String postId;
-  late int like; // postId 추가
+  late int like;
   late String boardId = 'Free';
+  late BuildContext currentContext = context;
   CommentBloc commentBloc = CommentBloc();
   PostBloc freeBoardBloc = PostBloc();
-  TextEditingController _commentController = TextEditingController();
+  final TextEditingController _commentController = TextEditingController();
 
   _FreeBoardDetailState({required this.post}) {
-    postId = post.postId; // postId 초기화
+    postId = post.postId;
     like = post.like;
   }
 
@@ -34,10 +37,46 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
     commentBloc = CommentBloc();
     isAnonymous = commentBloc.isAnonymous;
     isRecomment = commentBloc.isRecomment;
+    checkPostOwner();
   }
 
   bool isAnonymous = false;
   bool isAlarm = false;
+
+  void checkPostOwner() async {
+    User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null && widget.post.writerid == currentUser.email) {
+      setState(() {
+        isAlarm = true; // 현재 사용자가 게시글 작성자인 경우
+      });
+
+      // Firestore에 알람 상태 저장
+      FirebaseFirestore.instance.collection('user_alarms').doc(currentUser.uid).set({
+        'alarmStatus': isAlarm,
+        'postId': postId,
+      }, SetOptions(merge: true)); // merge 옵션을 사용하여 기존 문서를 덮어쓰지 않고, 필드를 추가하거나 업데이트합니다.
+    } else {
+      setState(() {
+        isAlarm = false; // 현재 사용자가 게시글 작성자가 아닌 경우
+      });
+    }
+  }
+
+  // 알람 상태 토글 함수
+  void toggleAlarm() async {
+    setState(() {
+      isAlarm = !isAlarm;
+    });
+
+    // Firestore에 알람 상태 저장
+    var user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      FirebaseFirestore.instance.collection('user_alarms').doc(user.uid).set({
+        'alarmStatus': isAlarm,
+        'postId': postId,
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,12 +115,11 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                     style: TextStyle(color: Colors.red),
                   ),
                   onPressed: () async {
-                    await freeBoardBloc.sendLike(boardId,post.postId);
-                    Navigator.pop(context);
+                    await freeBoardBloc.postLike(boardId, post.postId);
                     setState(() {
-                      // 가정: Post 객체에 좋아요 수를 나타내는 변수가 있다고 가정
                       post.like++;
                     });
+                    Navigator.pop(context);
                   },
                 ),
               ],
@@ -272,87 +310,72 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
           color: Colors.black,
           onPressed: () {
             Navigator.pop(context);
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => FreeBoard(BoardBloc: freeBoardBloc),
+                builder: (context) => FreeBoard(boardBloc: freeBoardBloc),
               ),
             );
           },
         ),
         actions: [
-          isAlarm
-              ? IconButton(
-                  constraints: const BoxConstraints(),
-                  iconSize: 50,
-                  icon: const Icon(
-                    Icons.alarm_on,
-                    size: 25,
-                    color: Colors.red,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isAlarm = !isAlarm;
-                    });
-                  })
-              : IconButton(
-                  constraints: const BoxConstraints(),
-                  iconSize: 50,
-                  icon: const Icon(
-                    Icons.alarm_off,
-                    size: 25,
-                    color: Colors.grey,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isAlarm = !isAlarm;
-                    });
-                  }),
+          IconButton(
+            constraints: const BoxConstraints(),
+            iconSize: 50,
+            icon: Icon(
+              isAlarm ? Icons.alarm_on : Icons.alarm_off,
+              size: 25,
+              color: isAlarm ? Colors.red : Colors.grey,
+            ),
+            onPressed: toggleAlarm, // 여기서 toggleAlarm 함수를 호출합니다.
+          ),
           PopupMenuButton(
             child: const Icon(Icons.more_vert, size: 20),
             onSelected: (int item) async {
+              BuildContext currentContext = context;
+
               if (item == 1) {
                 Navigator.pushReplacement(
-                  context,
+                  currentContext,
                   MaterialPageRoute(
-                      builder: (context) => FreeBoardDetail(post: post)),
+                    builder: (currentContext) => FreeBoardDetail(post: post),
+                  ),
                 );
               }
               if (item == 2) {
                 report();
               }
               if (item == 3) {
-  // 삭제기능 추가
-  try {
-    await freeBoardBloc.deletePost(boardId, post.postId);
-    Navigator.pop(context);
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => FreeBoard(BoardBloc: freeBoardBloc),
-      ),
-    );
-  } catch (error) {
-    // 에러 발생 시 AlertDialog 표시
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("삭제 오류"),
-          content: const Text("게시글 삭제 권한이 없습니다."),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("확인"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
+                try {
+                  await freeBoardBloc.deletePost(boardId, post.postId);
+                  Navigator.pop(currentContext);
+                  Navigator.pushReplacement(
+                    currentContext,
+                    MaterialPageRoute(
+                      builder: (currentContext) =>
+                          FreeBoard(boardBloc: freeBoardBloc),
+                    ),
+                  );
+                } catch (error) {
+                  showDialog(
+                    context: currentContext,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text("삭제 오류"),
+                        content: const Text("게시글 삭제 권한이 없습니다."),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(currentContext).pop();
+                            },
+                            child: const Text("확인"),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
+              }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
               const PopupMenuItem<int>(value: 1, child: Text("새로고침")),
@@ -433,7 +456,7 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                           fontSize: 15,
                         ),
                       ),
-                      if (widget.post.picture != null)
+                        if (widget.post.picture != null)
                         Padding(
                           padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                           child: Container(
@@ -442,8 +465,7 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10.0),
                               image: DecorationImage(
-                                //image: AssetImage(widget.post.picture ?? ''),//제목2
-                                image: NetworkImage(widget.post.picture), //제목3
+                                image: NetworkImage(widget.post.picture ?? ''),
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -648,51 +670,49 @@ class _FreeBoardDetailState extends State<FreeBoardDetail> {
                       suffixIcon: Transform.scale(
                         scale: 1,
                         child: IconButton(
-  onPressed: () {
-    String comment = _commentController.text;
-    if (comment.trim().isEmpty) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("입력 오류"),
-            content: const Text("댓글을 입력하세요."),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text("확인"),
-              ),
-            ],
-          );
-        },
-      );
-    } else {
-      commentBloc.updateComment(comment);
-      if (commentBloc.comment != null) {
-        commentBloc.writeComment(boardId, postId).then((_) {
-          Navigator.pop(context);
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => FreeBoardDetail(post: post),
-            ),
-          );
-          _commentController.clear();
-        });
-      } else {
-        print("Comment content is null");
-      }
-    }
-  },
-  icon: const Icon(
-    Icons.send,
-    size: 25,
-    color: Colors.red,
-  ),
-),
-
+                          onPressed: () {
+                            String comment = _commentController.text;
+                            if (comment.trim().isEmpty) {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text("입력 오류"),
+                                    content: const Text("댓글을 입력하세요."),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text("확인"),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            } else {
+                              commentBloc.updateComment(comment);
+                              commentBloc
+                                  .writeComment(boardId, postId)
+                                  .then((_) {
+                                Navigator.pop(context);
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        FreeBoardDetail(post: post),
+                                  ),
+                                );
+                                _commentController.clear();
+                              });
+                                                        }
+                          },
+                          icon: const Icon(
+                            Icons.send,
+                            size: 25,
+                            color: Colors.red,
+                          ),
+                        ),
                       ),
                     ),
                   ),

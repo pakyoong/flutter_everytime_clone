@@ -14,6 +14,9 @@ import 'package:everytime/bloc/navigation_bloc.dart';
 import 'package:everytime/global_variable.dart';
 import 'package:everytime/ui/login_page.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -31,7 +34,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(
-          textScaler: const TextScaler.linear(0.8235294117647058),
+          textScaleFactor: 0.8235294117647058,
         ),
         child: child!,
       ),
@@ -68,7 +71,7 @@ class MyApp extends StatelessWidget {
 }
 
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  const MainPage({Key? key}) : super(key: key);
 
   @override
   State<MainPage> createState() => _MainPageState();
@@ -95,21 +98,34 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance.addObserver(this);
-
     _userBloc.updateIsDark(
         WidgetsBinding.instance.window.platformBrightness == Brightness.dark);
     _userBloc.updateTermString();
-
-    // 이하는 테스트용 구문
-    _userBloc.updateName('8팀');
-    _userBloc.updateNickName('오픈소스');
-    _userBloc.updateId('opensource');
-    _userBloc.updateUniv('금오공대');
-    _userBloc.updateYear(19);
-
+    fetchUserData(); // Firestore에서 사용자 데이터를 가져옵니다.
     _userBloc.initGradeCalTest();
+  }
+  Future<void> fetchUserData() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+          Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+          // Firestore에서 가져온 데이터로 _userBloc을 업데이트합니다.
+          _userBloc.updateName(userData['name'] ?? '');
+          _userBloc.updateNickName(userData['nickname'] ?? '');
+          _userBloc.updateUniv(userData['university'] ?? '');
+          String emailId = userData['email']?.split('@')[0] ?? '';
+          _userBloc.updateId(emailId);
+          // year 정보가 Firestore에 있다면 아래와 같이 업데이트할 수 있습니다.
+          // int year = userData['year'] as int? ?? 19; // Firestore에 year 필드가 있다고 가정
+          // _userBloc.updateYear(year);
+        }
+      } catch (e) {
+        print("Error fetching user data: $e");
+      }
+    }
   }
 
   @override
@@ -167,8 +183,8 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
                   isOnScreen: pageSnapshot.data! == 1,
                   userBloc: _userBloc,
                 ),
-                const BoardPage(),
-                const AlarmPage(),
+                BoardPage(),
+                AlarmPage(),
                 MyInfoPage(userBloc: _userBloc),
               ],
             );

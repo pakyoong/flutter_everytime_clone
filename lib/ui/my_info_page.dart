@@ -4,6 +4,13 @@ import 'package:everytime/component/custom_container_content_button.dart';
 import 'package:everytime/component/custom_container_title.dart';
 import 'package:everytime/global_variable.dart';
 import 'package:flutter/material.dart';
+import 'package:everytime/ui/info/change_password_page.dart';
+import 'package:everytime/ui/login_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:everytime/ui/info/change_email_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:everytime/ui/info/change_nickname_page.dart';
+
 
 class MyInfoPage extends StatefulWidget {
   const MyInfoPage({
@@ -17,6 +24,7 @@ class MyInfoPage extends StatefulWidget {
   State<MyInfoPage> createState() => _MyInfoPageState();
 }
 
+
 class _MyInfoPageState extends State<MyInfoPage> {
   final double _buttonWidth = appWidth * 0.15;
   final EdgeInsets _customContainerContentMargin = EdgeInsets.only(
@@ -24,6 +32,8 @@ class _MyInfoPageState extends State<MyInfoPage> {
     left: appWidth * 0.05,
     right: appWidth * 0.05,
   );
+
+
 
   final Map<String, List<ButtonInfo>> _data = {
     '계정': [
@@ -123,6 +133,127 @@ class _MyInfoPageState extends State<MyInfoPage> {
       ),
     ],
   };
+  Future<void> deleteUserAccount() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // Firestore에서 사용자 데이터 삭제
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).delete();
+
+      // Firebase Authentication에서 사용자 삭제
+      await user.delete();
+
+      // 성공적으로 삭제 처리 후 로그인 페이지로 이동
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => AuthWidget()),
+      );
+    }
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+
+    // '계정' 키에 대한 null 체크와 리스트 길이 확인
+    if (_data.containsKey('계정') && _data['계정']!.length > 1) {
+      // '비밀번호 변경' 버튼의 onPressed 수정
+      _data['계정']![1] = ButtonInfo(
+        title: '비밀번호 변경',
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ChangePasswordPage()),
+          );
+        },
+      );
+
+      // '이메일 변경' 버튼의 onPressed 수정
+      int emailChangeIndex = _data['계정']!.indexWhere((buttonInfo) => buttonInfo.title == '이메일 변경');
+      if (emailChangeIndex != -1) {
+        _data['계정']![emailChangeIndex] = ButtonInfo(
+          title: '이메일 변경',
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ChangeEmailPage()),
+            );
+          },
+        );
+      }
+    }
+
+    // '기타' 키에 대한 null 체크와 리스트 길이 확인
+    if (_data.containsKey('기타')) {
+      int logoutIndex = _data['기타']!.indexWhere((buttonInfo) => buttonInfo.title == '로그아웃');
+      if (logoutIndex != -1) {
+        _data['기타']![logoutIndex] = ButtonInfo(
+          title: '로그아웃',
+          onPressed: () async {
+            await FirebaseAuth.instance.signOut();
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => AuthWidget()), // AuthWidget은 로그인 페이지 위젯의 이름입니다.
+            );
+          },
+        );
+      }
+    }
+    // '기타' 키에 대한 null 체크와 리스트 길이 확인
+    if (_data.containsKey('기타')) {
+      int deleteAccountIndex = _data['기타']!.indexWhere((buttonInfo) => buttonInfo.title == '회원 탈퇴');
+      if (deleteAccountIndex != -1) {
+        _data['기타']![deleteAccountIndex] = ButtonInfo(
+          title: '회원 탈퇴',
+          onPressed: () {
+            // 회원 탈퇴 전에 사용자에게 확인을 요청하는 대화상자 표시
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('회원 탈퇴'),
+                  content: Text('정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.'),
+                  actions: <Widget>[
+                    TextButton(
+                      child: Text('취소'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    TextButton(
+                      child: Text('탈퇴'),
+                      onPressed: () {
+                        // 대화상자를 닫고 회원 탈퇴 처리
+                        Navigator.of(context).pop();
+                        deleteUserAccount();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      }
+    }
+
+    // '커뮤니티' 키에 대한 null 체크와 리스트 길이 확인
+    if (_data.containsKey('커뮤니티')) {
+      int nicknameIndex = _data['커뮤니티']!.indexWhere((buttonInfo) => buttonInfo.title == '닉네임 설정');
+      if (nicknameIndex != -1) {
+        _data['커뮤니티']![nicknameIndex] = ButtonInfo(
+          title: '닉네임 설정',
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ChangeNicknamePage()),
+            );
+          },
+        );
+      }
+    }
+  }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +262,7 @@ class _MyInfoPageState extends State<MyInfoPage> {
         bottom: false,
         child: Column(
           children: [
-            _buildAppBar(context),
+            _buildAppBar(),
             Expanded(
               child: ListView(
                 children: [
@@ -149,7 +280,7 @@ class _MyInfoPageState extends State<MyInfoPage> {
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
+  Widget _buildAppBar() {
     return SizedBox(
       height: appHeight * 0.055,
       child: Row(

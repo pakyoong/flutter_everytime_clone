@@ -17,14 +17,15 @@ class InfoBoardDetail extends StatefulWidget {
 class _InfoBoardDetailState extends State<InfoBoardDetail> {
   late Post post;
   late String postId;
-  late int like; // postId 추가
+  late int like;
   late String boardId = 'Info';
+  late BuildContext currentContext = context;
   CommentBloc commentBloc = CommentBloc();
   PostBloc infoBoardBloc = PostBloc();
-  TextEditingController _commentController = TextEditingController();
+  final TextEditingController _commentController = TextEditingController();
 
   _InfoBoardDetailState({required this.post}) {
-    postId = post.postId; // postId 초기화
+    postId = post.postId;
     like = post.like;
   }
 
@@ -76,12 +77,11 @@ class _InfoBoardDetailState extends State<InfoBoardDetail> {
                     style: TextStyle(color: Colors.red),
                   ),
                   onPressed: () async {
-                    await infoBoardBloc.sendLike(boardId,post.postId);
-                    Navigator.pop(context);
+                    await infoBoardBloc.postLike(boardId, post.postId);
                     setState(() {
-                      // 가정: Post 객체에 좋아요 수를 나타내는 변수가 있다고 가정
                       post.like++;
                     });
+                    Navigator.pop(context);
                   },
                 ),
               ],
@@ -270,14 +270,14 @@ class _InfoBoardDetailState extends State<InfoBoardDetail> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           color: Colors.black,
-          onPressed: () {
-            Navigator.pop(context);
-            Navigator.pushReplacement(
+          onPressed: () {Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => InfoBoard(BoardBloc: infoBoardBloc),
+                builder: (context) => InfoBoard(boardBloc: infoBoardBloc),
               ),
             );
+            Navigator.pop(context);
+
           },
         ),
         actions: [
@@ -311,27 +311,49 @@ class _InfoBoardDetailState extends State<InfoBoardDetail> {
           PopupMenuButton(
             child: const Icon(Icons.more_vert, size: 20),
             onSelected: (int item) async {
+              BuildContext currentContext = context;
+
               if (item == 1) {
                 Navigator.pushReplacement(
-                  context,
+                  currentContext,
                   MaterialPageRoute(
-                      builder: (context) => InfoBoardDetail(post: post)),
+                    builder: (currentContext) => InfoBoardDetail(post: post),
+                  ),
                 );
               }
               if (item == 2) {
                 report();
               }
               if (item == 3) {
-                //삭제기능 추가
-                await infoBoardBloc.deletePost(boardId,post.postId);
-                Navigator.pop(context);
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        InfoBoard(BoardBloc: infoBoardBloc),
-                  ),
-                );
+                try {
+                  await infoBoardBloc.deletePost(boardId, post.postId);
+                  Navigator.pop(currentContext);
+                  Navigator.pushReplacement(
+                    currentContext,
+                    MaterialPageRoute(
+                      builder: (currentContext) =>
+                          InfoBoard(boardBloc: infoBoardBloc),
+                    ),
+                  );
+                } catch (error) {
+                  showDialog(
+                    context: currentContext,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text("삭제 오류"),
+                        content: const Text("게시글 삭제 권한이 없습니다."),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(currentContext).pop();
+                            },
+                            child: const Text("확인"),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                }
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
@@ -388,7 +410,7 @@ class _InfoBoardDetailState extends State<InfoBoardDetail> {
                                 ),
                               ),
                               Text(
-                               "${widget.post.date} ${widget.post.time}",
+                                "${widget.post.date} ${widget.post.time}",
                                 style: const TextStyle(
                                     fontSize: 13, color: Colors.grey),
                               ),
@@ -422,8 +444,7 @@ class _InfoBoardDetailState extends State<InfoBoardDetail> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(10.0),
                               image: DecorationImage(
-                                //image: AssetImage(widget.post.picture ?? ''),//제목2
-                                image: NetworkImage(widget.post.picture), //제목3
+                                image: NetworkImage(widget.post.picture ?? ''),
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -628,51 +649,49 @@ class _InfoBoardDetailState extends State<InfoBoardDetail> {
                       suffixIcon: Transform.scale(
                         scale: 1,
                         child: IconButton(
-  onPressed: () {
-    String comment = _commentController.text;
-    if (comment.trim().isEmpty) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("입력 오류"),
-            content: const Text("댓글을 입력하세요."),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text("확인"),
-              ),
-            ],
-          );
-        },
-      );
-    } else {
-      commentBloc.updateComment(comment);
-      if (commentBloc.comment != null) {
-        commentBloc.writeComment(boardId, postId).then((_) {
-          Navigator.pop(context);
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => InfoBoardDetail(post: post),
-            ),
-          );
-          _commentController.clear();
-        });
-      } else {
-        print("Comment content is null");
-      }
-    }
-  },
-  icon: const Icon(
-    Icons.send,
-    size: 25,
-    color: Colors.red,
-  ),
-),
-
+                          onPressed: () {
+                            String comment = _commentController.text;
+                            if (comment.trim().isEmpty) {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text("입력 오류"),
+                                    content: const Text("댓글을 입력하세요."),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text("확인"),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            } else {
+                              commentBloc.updateComment(comment);
+                              commentBloc
+                                  .writeComment(boardId, postId)
+                                  .then((_) {
+                                Navigator.pop(context);
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        InfoBoardDetail(post: post),
+                                  ),
+                                );
+                                _commentController.clear();
+                              });
+                                                        }
+                          },
+                          icon: const Icon(
+                            Icons.send,
+                            size: 25,
+                            color: Colors.red,
+                          ),
+                        ),
                       ),
                     ),
                   ),

@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 class CustomAppBar extends StatelessWidget {
   // 생성자에서 필요한 속성들을 초기화
   CustomAppBar({
-    super.key,
+    Key? key,
     required this.buttonList, // 앱바에 포함될 버튼 리스트
     required this.title, // 앱바의 제목
-  });
+  }) : super(key: key);
 
   final List<Widget> buttonList;
   final String title;

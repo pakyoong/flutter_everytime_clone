@@ -7,6 +7,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:everytime/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+
 showToast(String msg) {
   Fluttertoast.showToast(
     msg: msg,

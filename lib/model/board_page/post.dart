@@ -3,12 +3,13 @@ import 'package:everytime/model/board_page/comment.dart';
 
 class Post {
   final String postId;
+  final int postNo;
   final String content;
   final String date;
   final String time;
   final bool isAnonymous;
   int like;
-  final String picture;
+  final String? picture;
   final String title;
   final String writer;
   final String writerid;
@@ -16,6 +17,7 @@ class Post {
 
   Post({
     required this.postId,
+    required this.postNo,
     required this.content,
     required this.date,
     required this.time,
@@ -33,16 +35,17 @@ class Post {
 
     return Post._(
       postId: doc.id,
+      postNo: data['postNo'] ?? 0, 
       content: data['content'] ?? '',
       date: data['date'] ?? '',
       time: data['time'] ?? '',
       isAnonymous: data['isAnonymous'] ?? false,
       like: data['like'] ?? 0,
-      picture: data['picture'] ?? '',
+      picture: data['picture'],
       title: data['title'] ?? '',
       writer: data['writer'] ?? '',
       writerid: data['writerid'] ?? '',
-      comments: [], // Comments를 가져오는 코드를 추가해야 합니다.
+      comments: [],
     );
   }
 
@@ -55,12 +58,13 @@ class Post {
 
     return Post._(
       postId: doc.id,
+      postNo: data['postNo'] ?? 0,
       content: data['content'] ?? '',
       date: data['date'] ?? '',
       time: data['time'] ?? '',
       isAnonymous: data['isAnonymous'] ?? false,
       like: data['like'] ?? 0,
-      picture: data['picture'] ?? '',
+      picture: data['picture'],
       title: data['title'] ?? '',
       writer: data['writer'] ?? '',
       writerid: data['writerid'] ?? '',
@@ -68,9 +72,9 @@ class Post {
     );
   }
 
-  // 팩토리 생성자에서 사용할 비공개 생성자
   Post._({
     required this.postId,
+    required this.postNo,
     required this.content,
     required this.date,
     required this.time,

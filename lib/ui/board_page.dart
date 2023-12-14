@@ -8,12 +8,12 @@ import 'package:everytime/ui/board_page/info_board_page/info_board_page.dart';
 import 'package:everytime/ui/board_page/secret_board_page/secret_board_page.dart';
 import 'package:flutter/material.dart';
 
-final PostBloc FreeBoardBloc = PostBloc();
-final PostBloc SecretBoardBloc = PostBloc();
-final PostBloc GraduatesBoardBloc = PostBloc();
-final PostBloc FreshmenBoardBloc = PostBloc();
-final PostBloc CurrentIssuesBoardBloc = PostBloc();
-final PostBloc InfoBoardBloc = PostBloc();
+final PostBloc freeBoardBloc = PostBloc();
+final PostBloc secretBoardBloc = PostBloc();
+final PostBloc graduatesBoardBloc = PostBloc();
+final PostBloc freshmenBoardBloc = PostBloc();
+final PostBloc currentIssuesBoardBloc = PostBloc();
+final PostBloc infoBoardBloc = PostBloc();
 
 class BoardPage extends StatefulWidget {
   const BoardPage({Key? key}) : super(key: key);
@@ -24,7 +24,6 @@ class BoardPage extends StatefulWidget {
 
 class _BoardPageState extends State<BoardPage> {
   List<bool> isPinned = [
-    //user의 ispinned값을 가져오도록
     false,
     false,
     true,
@@ -176,24 +175,12 @@ final boardPages = {
   // "스크랩": ScrapBoard(),
   // "HOT 게시판": HotBoard(),
   // "BEST 게시판": BestBoard(),
-  "자유게시판": FreeBoard(
-    BoardBloc: FreeBoardBloc,
-  ),
-  "비밀게시판": SecretBoard(
-    BoardBloc: SecretBoardBloc,
-  ),
-  "졸업생게시판": GraduatesBoard(
-    BoardBloc:GraduatesBoardBloc,
-  ),
-  "새내기게시판": FreshmenBoard(
-    BoardBloc:FreshmenBoardBloc,
-  ),
-  "시사・이슈": CurrentIssuesBoard(
-    BoardBloc:CurrentIssuesBoardBloc,
-  ),
-  "정보게시판": InfoBoard(
-    BoardBloc: InfoBoardBloc,
-  ),
+  "자유게시판": FreeBoard(boardBloc: freeBoardBloc,),
+  "비밀게시판": SecretBoard(boardBloc: secretBoardBloc,),
+  "졸업생게시판": GraduatesBoard(boardBloc:graduatesBoardBloc,),
+  "새내기게시판": FreshmenBoard(boardBloc: freeBoardBloc),
+  "시사・이슈": CurrentIssuesBoard(boardBloc:currentIssuesBoardBloc,),
+  "정보게시판": InfoBoard(boardBloc:infoBoardBloc,),
 };
 
 Widget myboard(

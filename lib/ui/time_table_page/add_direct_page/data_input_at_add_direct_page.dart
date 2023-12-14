@@ -8,12 +8,10 @@ import 'package:everytime/model/time_table_enums.dart';
 import 'package:everytime/model/time_table_page/lecture_time_and_location.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 
 class DataInputAtAddDirectPage extends StatelessWidget {
-  DataInputAtAddDirectPage({
-    super.key,
+  const DataInputAtAddDirectPage({
+    Key? key,
     required this.userBloc,
     required this.addDirectBloc,
     required this.subjectNameController,
@@ -22,7 +20,7 @@ class DataInputAtAddDirectPage extends StatelessWidget {
     required this.lastDayOfWeekIndex,
     required this.lastStartHour,
     required this.lastEndHour,
-  });
+  }) : super(key: key);
 
   final UserProfileManagementBloc userBloc;
   final LectureScheduleBloc addDirectBloc;
@@ -34,23 +32,20 @@ class DataInputAtAddDirectPage extends StatelessWidget {
   final int lastStartHour;
   final int lastEndHour;
 
-  // Firestore 인스턴스 추가
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
-
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: StreamBuilder<QuerySnapshot>(
-        // Firestore 컬렉션 경로를 스트림으로 가져오기
-        stream: firestore.collection('lectureSchedules').snapshots(),
-        builder: (_, snapshot) {
-          if (!snapshot.hasData) return const SizedBox.shrink();
+      child: StreamBuilder(
+        stream: addDirectBloc.lectureSchedule,
+        builder: (_, timeNPlaceDataSnapshot) {
+          if (timeNPlaceDataSnapshot.hasData) {
+            return ListView(
+              children: _buildListViewChildren(
+                  context, timeNPlaceDataSnapshot.data!.length),
+            );
+          }
 
-          var lectureSchedules = snapshot.data!.docs;
-
-          return ListView(
-            children: _buildListViewChildren(context, lectureSchedules.length),
-          );
+          return const SizedBox.shrink();
         },
       ),
     );
@@ -151,7 +146,7 @@ class DataInputAtAddDirectPage extends StatelessWidget {
               curve: Curves.linear,
             );
           }
-          addDirectBloc.addLectureScheduleEntry(LectureTimeAndLocation());
+          addDirectBloc.addLectureScheduleEntry();
         },
       ),
     );
@@ -244,21 +239,11 @@ class DataInputAtAddDirectPage extends StatelessWidget {
                     userBloc.updateIsShowingKeyboard(true);
                   },
                   onChanged: (value) {
-                    // 현재 시간 및 장소 데이터 가져오기
-                    var currentData = addDirectBloc.currentLectureScheduleData[index - 1];
-                    // 새로운 객체 생성
-                    var updatedData = LectureTimeAndLocation(
-                      weekday: currentData.weekday,
-                      startHour: currentData.startHour,
-                      startMinute: currentData.startMinute,
-                      endHour: currentData.endHour,
-                      endMinute: currentData.endMinute,
-                      location: value, // 입력된 장소 값
+                    addDirectBloc.updateLectureScheduleEntry(
+                      index - 1,
+                      location: value,
                     );
-                    // 객체를 사용하여 업데이트
-                    addDirectBloc.updateLectureScheduleEntry(index - 1, updatedData);
                   },
-
                   onSubmitted: (value) {
                     userBloc.updateIsShowingKeyboard(false);
                   },
@@ -292,34 +277,6 @@ class DataInputAtAddDirectPage extends StatelessWidget {
         ],
       ),
     );
-  }
-  // Firestore에 새로운 일정을 추가하는 함수
-  void addLectureSchedule(LectureTimeAndLocation schedule) {
-    firestore.collection('lectureSchedules').add({
-      'weekday': schedule.weekday.index,
-      'startHour': schedule.startHour,
-      'startMinute': schedule.startMinute,
-      'endHour': schedule.endHour,
-      'endMinute': schedule.endMinute,
-      'location': schedule.location,
-    });
-  }
-
-  // Firestore에서 특정 일정을 업데이트하는 함수
-  void updateLectureSchedule(String documentId, LectureTimeAndLocation updatedSchedule) {
-    firestore.collection('lectureSchedules').doc(documentId).update({
-      'weekday': updatedSchedule.weekday.index,
-      'startHour': updatedSchedule.startHour,
-      'startMinute': updatedSchedule.startMinute,
-      'endHour': updatedSchedule.endHour,
-      'endMinute': updatedSchedule.endMinute,
-      'location': updatedSchedule.location,
-    });
-  }
-
-  // Firestore에서 특정 일정을 삭제하는 함수
-  void removeLectureSchedule(String documentId) {
-    firestore.collection('lectureSchedules').doc(documentId).delete();
   }
 
   double _getScrollOffsetY(LectureTimeAndLocation data) {
@@ -388,7 +345,6 @@ class DataInputAtAddDirectPage extends StatelessWidget {
                 startTime: startTime,
                 endTime: endTime,
                 currentIndex: currentIndex,
-                location: '여기에 적절한 장소 문자열',
               );
             }
           },
@@ -504,7 +460,6 @@ class DataInputAtAddDirectPage extends StatelessWidget {
     required DateTime startTime,
     required DateTime endTime,
     required int currentIndex,
-    required String location,
   }) {
     Navigator.pop(bottomSheetContext);
 
@@ -513,16 +468,12 @@ class DataInputAtAddDirectPage extends StatelessWidget {
 
     addDirectBloc.updateLectureScheduleEntry(
       currentIndex - 1,
-      LectureTimeAndLocation(
-        weekday: Weekday.weekdayAtIndex(dayOfWeekIndex),
-        startHour: startTime.hour,
-        startMinute: startTime.minute,
-        endHour: endTime.hour,
-        endMinute: endTime.minute,
-        location: location, // 여기에 사용
-      ),
+      dayOfWeek: Weekday.weekdayAtIndex(dayOfWeekIndex),
+      startHour: startTime.hour,
+      startMinute: startTime.minute,
+      endHour: endTime.hour,
+      endMinute: endTime.minute,
     );
-
 
     if (timeTableScrollController.hasClients) {
       timeTableScrollController.animateTo(

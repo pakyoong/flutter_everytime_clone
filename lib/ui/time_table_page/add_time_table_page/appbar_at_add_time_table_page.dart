@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:everytime/bloc/time_table_page/time_table_list_manager_bloc.dart';
 import 'package:everytime/component/custom_cupertino_alert_dialog.dart';
@@ -8,16 +6,15 @@ import 'package:everytime/global_variable.dart';
 import 'package:everytime/model/time_table_page/time_table.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AppBarAtAddTimeTablePage extends StatelessWidget {
   const AppBarAtAddTimeTablePage({
-    super.key,
+    Key? key,
     required this.pageContext,
     required this.userBloc,
     required this.timeTableListBloc,
     required this.timeTableNameController,
-  });
+  }) : super(key: key);
 
   final BuildContext pageContext;
   final UserProfileManagementBloc userBloc;
@@ -52,22 +49,17 @@ class AppBarAtAddTimeTablePage extends StatelessWidget {
           ),
           RoundButton(
             title: '완료',
-            onPressed: () async {
+            onPressed: () {
               if (timeTableNameController.text.isEmpty) {
                 _buildIncorrectTimeTableNameDialog();
               } else {
-                // Firestore 문서 ID 생성과 동시에 시간표 저장
-                String documentId = await createFirestoreDocumentAndGetId();
-
                 TimeTable timeTable = TimeTable(
-                  id: documentId,
-                  title: timeTableNameController.text,
                   term: timeTableListBloc
                       .currentTermList[timeTableListBloc.currentPickerIndex],
                 );
+                timeTable.updateTitle(timeTableNameController.text);
 
-                // 시간표 목록 관리자에 새로운 시간표 추가
-                timeTableListBloc.addTimeTable(timeTable);
+                timeTableListBloc.sortTimeTables([timeTable]);
                 userBloc.addTimeTableList(timeTable);
 
                 Navigator.pop(pageContext);
@@ -79,18 +71,6 @@ class AppBarAtAddTimeTablePage extends StatelessWidget {
     );
   }
 
-  // Firestore에 새 문서를 생성하고 해당 ID를 반환하는 함수
-  Future<String> createFirestoreDocumentAndGetId() async {
-    DocumentReference docRef = FirebaseFirestore.instance.collection('timetables').doc();
-    await docRef.set({
-      'title': timeTableNameController.text,
-      'term': timeTableListBloc
-          .currentTermList[timeTableListBloc.currentPickerIndex],
-    });
-    return docRef.id;
-  }
-
-  // 잘못된 시간표 이름 입력에 대한 대화상자
   void _buildIncorrectTimeTableNameDialog() {
     showCupertinoDialog(
       context: pageContext,

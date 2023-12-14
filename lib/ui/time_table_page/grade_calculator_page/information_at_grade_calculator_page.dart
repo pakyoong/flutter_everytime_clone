@@ -10,10 +10,10 @@ import 'package:syncfusion_flutter_charts/charts.dart';
 
 class InformationAtGradeCalculatorPage extends StatelessWidget {
   InformationAtGradeCalculatorPage({
-    super.key,
+    Key? key,
     required this.userBloc,
     required this.targetCreditController,
-  });
+  }) : super(key: key);
 
   final UserProfileManagementBloc userBloc;
   final TextEditingController targetCreditController;

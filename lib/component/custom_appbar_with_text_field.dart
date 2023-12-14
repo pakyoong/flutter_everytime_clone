@@ -7,9 +7,9 @@ import 'package:flutter/material.dart';
 
 class CustomAppBarWithTextField extends StatefulWidget {
   const CustomAppBarWithTextField({
-    super.key,
+    Key? key,
     required this.userBloc,
-  });
+  }) : super(key: key);
 
   final UserProfileManagementBloc userBloc;
 
@@ -82,7 +82,7 @@ class _CustomAppBarWithTextFieldState extends State<CustomAppBarWithTextField> {
                 },
               ),
               maxLines: 1,
-              padding: const EdgeInsets.only(),
+              padding: EdgeInsets.only(),
               placeholder: '글 제목, 내용, 해시태그',
               placeholderStyle: TextStyle(
                 fontSize: 19,

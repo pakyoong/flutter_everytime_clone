@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 class TimeTableChart extends StatelessWidget {
   // 생성자에서 필요한 속성들을 초기화
   const TimeTableChart({
-    super.key,
+    Key? key,
     required this.userBloc, // 사용자 블록
     this.isActivateButton = true, // 버튼 활성화 여부
     this.shadowDataList, // 그림자 데이터 리스트
@@ -20,7 +20,7 @@ class TimeTableChart extends StatelessWidget {
     required this.timeList, // 시간 목록
     required this.dayOfWeekList, // 요일 목록
     this.scrollController, // 스크롤 컨트롤러
-  });
+  }) : super(key: key);
 
   final List<int> timeList;
   final List<Weekday> dayOfWeekList;
@@ -228,7 +228,7 @@ class TimeTableChart extends StatelessWidget {
     return Expanded(
       child: Container(
         alignment: Alignment.topLeft,
-        color: Theme.of(context).colorScheme.background,
+        color: Theme.of(context).backgroundColor,
         padding: EdgeInsets.only(
           top: appHeight * 0.035,
           left: appWidth * 0.065,
@@ -303,8 +303,8 @@ class TimeTableChart extends StatelessWidget {
         (currentColIndex) {
           return Container(
             height: (currentColIndex == 0)
-                ? appHeight * 0.024
-                : appHeight * 0.058,
+                ? appHeight * 0.022
+                : appHeight * 0.0579125,
             decoration: (currentColIndex + 1 == timeList.length + 1)
                 ? null
                 : BoxDecoration(

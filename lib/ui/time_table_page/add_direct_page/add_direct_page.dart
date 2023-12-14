@@ -4,13 +4,12 @@ import 'package:everytime/ui/time_table_page/add_direct_page/appbar_at_add_direc
 import 'package:everytime/ui/time_table_page/add_direct_page/data_input_at_add_direct_page.dart';
 import 'package:everytime/ui/time_table_page/add_direct_page/time_table_chart_at_add_direct_page.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AddDirectPage extends StatefulWidget {
   const AddDirectPage({
-    super.key,
+    Key? key,
     required this.userBloc,
-  });
+  }) : super(key: key);
 
   final UserProfileManagementBloc userBloc;
 
@@ -27,9 +26,7 @@ class _AddDirectPageState extends State<AddDirectPage> {
   late final int _lastStartHour;
   late final int _lastEndHour;
 
-  final _addDirectBloc = LectureScheduleBloc('lectures');
-
-  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final _addDirectBloc = LectureScheduleBloc();
 
   @override
   void initState() {

@@ -16,11 +16,11 @@ import 'package:scrolls_to_top/scrolls_to_top.dart';
 
 class TimeTablePage extends StatefulWidget {
   const TimeTablePage({
-    super.key,
+    Key? key,
     required this.scrollController,
     required this.userBloc,
     required this.isOnScreen,
-  });
+  }) : super(key: key);
 
   final ScrollController scrollController;
   final UserProfileManagementBloc userBloc;
@@ -197,7 +197,6 @@ class _TimeTablePageState extends State<TimeTablePage>
   }
 
   _buildEditSettingBottomSheet(BuildContext context) {
-    List<CustomButtonModalBottomSheetButton> buttonList = [];
 
     showModalBottomSheet(
       context: context,

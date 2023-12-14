@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 
 class CustomTabBarView extends StatelessWidget {
   const CustomTabBarView({
-    super.key,
+    Key? key,
     required this.tabs,
     required this.tabBarBloc,
-  });
+  }) : super(key: key);
 
   final List<Widget> tabs;
   final TabNavigationBloc tabBarBloc;

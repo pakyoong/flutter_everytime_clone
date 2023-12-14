@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 
 class TermListAtGradeCalculatorPage extends StatelessWidget {
   const TermListAtGradeCalculatorPage({
-    super.key,
+    Key? key,
     required this.termScrollController,
     required this.gradeCalculatorBloc,
     required this.userBloc,
-  });
+  }) : super(key: key);
 
   final ScrollController termScrollController;
   final GradeManagementBloc gradeCalculatorBloc;
@@ -54,8 +54,8 @@ class TermListAtGradeCalculatorPage extends StatelessWidget {
                       Container(
                         height: 2,
                         width: appWidth *
-                            0.0215 *
-                            userBloc.getTerm(index).term.length +
+                                0.0215 *
+                                userBloc.getTerm(index).term.length +
                             appWidth * 0.02,
                         margin: EdgeInsets.only(top: appHeight * 0.005),
                         color: (index == snapshot.data!)
@@ -73,7 +73,7 @@ class TermListAtGradeCalculatorPage extends StatelessWidget {
                     userBloc.getTerm(snapshot.data!).removeEmptySubjects();
                     gradeCalculatorBloc.updateSelectedTerm(index);
 
-                    // 스크롤 위치 조정
+                    //TODO: 나중에 글자 수가 다른 학기가 추가된다면 수정해야 할 수도 있다.
                     if (termScrollController.position.maxScrollExtent <
                         appWidth * 0.205 * index) {
                       termScrollController.jumpTo(
@@ -86,6 +86,7 @@ class TermListAtGradeCalculatorPage extends StatelessWidget {
               ),
             );
           }
+
           return const SizedBox.shrink();
         },
       ),

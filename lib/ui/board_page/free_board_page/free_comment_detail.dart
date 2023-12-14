@@ -13,19 +13,17 @@ class FreeCommentDetail extends StatefulWidget {
   final CommentBloc commentBloc;
 
   @override
-  State<FreeCommentDetail> createState() => _FreeCommentDetailState(post: post);
+  State<FreeCommentDetail> createState() => _FreeCommentDetailState();
 }
 
 class _FreeCommentDetailState extends State<FreeCommentDetail> {
-  late Post post;
-  late String postId;
+  late Post post= widget.post;
+  late String postId=post.postId;
   late List<DocumentSnapshot> commentList = [];
   late List<String> commentIdList;
   String boardId = 'Free';
 
-  _FreeCommentDetailState({required this.post}) {
-    postId = post.postId; // postId 초기화
-  }
+
   @override
   void initState() {
     super.initState();
@@ -39,333 +37,311 @@ class _FreeCommentDetailState extends State<FreeCommentDetail> {
         .collection('Post')
         .doc(postId)
         .collection('Comment')
+        .orderBy('commentNo', descending: true) 
         .get();
 
     setState(() {
       commentList = commentsSnapshot.docs;
-       commentIdList = commentsSnapshot.docs.map((doc) => doc.id).toList(); 
+      commentIdList = commentsSnapshot.docs.map((doc) => doc.id).toList();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-      void commentLike(int index) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Column(
-              children: <Widget>[
-                Text("이 댓글에 공감하시겠습니까?"),
-              ],
-            ),
-            actions: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  elevation: 0,
-                ),
-                child: const Text(
-                  "취소",
-                  style: TextStyle(color: Colors.red),
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  elevation: 0,
-                ),
-                child: const Text(
-                  "확인",
-                  style: TextStyle(color: Colors.red),
-                ),
-                onPressed: () async {
-              // Firestore에서 like 카운트 업데이트
-              await widget.commentBloc.likeComment(boardId,postId, commentIdList[index]);
-
-              // Firestore에서 업데이트된 댓글을 가져옴
-              var updatedComment = await FirebaseFirestore.instance
-                  .collection('Board')
-                  .doc(boardId)
-                  .collection('Post')
-                  .doc(postId)
-                  .collection('Comment')
-                  .doc(commentIdList[index])
-                  .get();
- Navigator.pop(context);
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FreeBoardDetail(post: post),
-                  ),
-                );
-              // 새로운 like 카운트로 로컬 상태 업데이트
-              setState(() {
-                commentList[index] = updatedComment;
-              });
-
-             
-            },
-              ),
-            ],
-          );
-        });
-  }
-
-  void commentreport() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("신고 사유 선택"),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                      margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                      width: double.infinity,
-                      height: 30,
-                      child: const Text(
-                        "낚시/놀람/도배",
-                        style: TextStyle(fontSize: 18),
-                      )),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                      margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                      width: double.infinity,
-                      height: 30,
-                      child: const Text(
-                        "욕설/비하",
-                        style: TextStyle(fontSize: 18),
-                      )),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                      margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                      width: double.infinity,
-                      height: 30,
-                      child: const Text(
-                        "게시판 성격에 부적절함",
-                        style: TextStyle(fontSize: 18),
-                      )),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                      margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                      width: double.infinity,
-                      height: 30,
-                      child: const Text(
-                        "상업적 광고 및 판매",
-                        style: TextStyle(fontSize: 18),
-                      )),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                      margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                      width: double.infinity,
-                      height: 30,
-                      child: const Text(
-                        "음란물/불건전한 만남 및 대화",
-                        style: TextStyle(fontSize: 18),
-                      )),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                      margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                      width: double.infinity,
-                      height: 30,
-                      child: const Text(
-                        "정담/정치인 비하 및 선거운동",
-                        style: TextStyle(fontSize: 18),
-                      )),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                      margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                      width: double.infinity,
-                      height: 30,
-                      child: const Text(
-                        "유출/사칭/사기",
-                        style: TextStyle(fontSize: 18),
-                      )),
-                ),
-              ],
-            ),
-          );
-        });
-  }
-
-  void recomment() {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Column(
-              children: <Widget>[
-                Text("대댓글을 작성하시겠습니까?"),
-              ],
-            ),
-            //
-            actions: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  elevation: 0,
-                ),
-                child: const Text(
-                  "취소",
-                  style: TextStyle(color: Colors.red),
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  elevation: 0,
-                ),
-                child: const Text(
-                  "확인",
-                  style: TextStyle(color: Colors.red),
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                  setState(() {
-                    // isRecomment = !isRecomment;
-                    // widget.commentBloc.updateisRecomment(isRecomment);
-                  });
-                },
-              ),
-            ],
-          );
-        });
-  }
-
-  void commentMore(int index) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextButton(
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                    width: double.infinity,
-                    height: 30,
-                    child: const Text(
-                      '대댓글 알림',
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ),
-                  onPressed: () {
-                    //isRecommentAlarm = !isRecommentAlarm
-                    Navigator.pop(context);
-                  },
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    commentreport();
-                  },
-                  child: Container(
-                      margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                      width: double.infinity,
-                      height: 30,
-                      child: const Text(
-                        "신고",
-                        style: TextStyle(fontSize: 18),
-                      )),
-                ),
-                TextButton(
-              onPressed: () async {
-try {
-      await widget.commentBloc.deleteComment(boardId, postId, commentIdList[index]);
-      Navigator.pop(context);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => FreeBoardDetail(post: post),
-        ),
-      );
-    } catch (error) {
-      // 댓글 삭제 중 오류 발생 시 AlertDialog 표시
+    void commentLike(int index) {
       showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("댓글 삭제 오류"),
-            content: const Text("댓글 삭제 권한이 없습니다."),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text("확인"),
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Column(
+                children: <Widget>[
+                  Text("이 댓글에 공감하시겠습니까?"),
+                ],
               ),
-            ],
-          );
-        },
-      );
-    }
-              },
-              child: Container(
-                margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
-                width: double.infinity,
-                height: 30,
-                child: const Text(
-                  "삭제",
-                  style: TextStyle(fontSize: 18),
+              actions: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    "취소",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
                 ),
-              ),)
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    "확인",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onPressed: () async {
+                    await widget.commentBloc
+                        .likeComment(boardId, postId, commentIdList[index]);
+
+                    var updatedComment = await FirebaseFirestore.instance
+                        .collection('Board')
+                        .doc(boardId)
+                        .collection('Post')
+                        .doc(postId)
+                        .collection('Comment')
+                        .doc(commentIdList[index])
+                        .get();
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FreeBoardDetail(post: post),
+                      ),
+                    );
+
+                    setState(() {
+                      commentList[index] = updatedComment;
+                    });
+                  },
+                ),
               ],
-            ),
-          );
-        });
-  }
+            );
+          });
+    }
+
+    void commentreport() {
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("신고 사유 선택"),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
+                        width: double.infinity,
+                        height: 30,
+                        child: const Text(
+                          "낚시/놀람/도배",
+                          style: TextStyle(fontSize: 18),
+                        )),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
+                        width: double.infinity,
+                        height: 30,
+                        child: const Text(
+                          "욕설/비하",
+                          style: TextStyle(fontSize: 18),
+                        )),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
+                        width: double.infinity,
+                        height: 30,
+                        child: const Text(
+                          "게시판 성격에 부적절함",
+                          style: TextStyle(fontSize: 18),
+                        )),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
+                        width: double.infinity,
+                        height: 30,
+                        child: const Text(
+                          "상업적 광고 및 판매",
+                          style: TextStyle(fontSize: 18),
+                        )),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
+                        width: double.infinity,
+                        height: 30,
+                        child: const Text(
+                          "음란물/불건전한 만남 및 대화",
+                          style: TextStyle(fontSize: 18),
+                        )),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
+                        width: double.infinity,
+                        height: 30,
+                        child: const Text(
+                          "정담/정치인 비하 및 선거운동",
+                          style: TextStyle(fontSize: 18),
+                        )),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
+                        width: double.infinity,
+                        height: 30,
+                        child: const Text(
+                          "유출/사칭/사기",
+                          style: TextStyle(fontSize: 18),
+                        )),
+                  ),
+                ],
+              ),
+            );
+          });
+    }
+
+    void recomment() {
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Column(
+                children: <Widget>[
+                  Text("대댓글을 작성하시겠습니까?"),
+                ],
+              ),
+              actions: [
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    "취소",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    "확인",
+                    style: TextStyle(color: Colors.red),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    setState(() {
+                      // isRecomment = !isRecomment;
+                      // widget.commentBloc.updateisRecomment(isRecomment);//대댓글 기능은 오류로 보류 후에 대댓글 콜렉션으로 추가해야 함
+                    });
+                  },
+                ),
+              ],
+            );
+          });
+    }
+
+    void commentMore(int index) {
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextButton(
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
+                      width: double.infinity,
+                      height: 30,
+                      child: const Text(
+                        '대댓글 알림',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
+                    onPressed: () {
+                      //isRecommentAlarm = !isRecommentAlarm //알람기능 미구현
+                      Navigator.pop(context);
+                    },
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      commentreport();
+                    },
+                    child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
+                        width: double.infinity,
+                        height: 30,
+                        child: const Text(
+                          "신고",
+                          style: TextStyle(fontSize: 18),
+                        )),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      await widget.commentBloc
+                          .deleteComment(boardId, postId, commentIdList[index]);
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FreeBoardDetail(post: post),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(0, 10, 0, 5),
+                      width: double.infinity,
+                      height: 30,
+                      child: const Text(
+                        "삭제",
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            );
+          });
+    }
+
     return ListView.builder(
       reverse: true,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: commentList.length,
       itemBuilder: (BuildContext context, index) {
-        final comment = commentList[index]; // 개별 댓글에 접근
+        final comment = commentList[index];
 
         return Padding(
           padding: const EdgeInsets.all(2.0),
@@ -373,12 +349,12 @@ try {
             children: [
               Column(
                 children: [
-                  if (comment != null && comment['isRecomment'] == true)
+                  if (comment['isRecomment'] == true)
                     const Icon(
                       Icons.subdirectory_arrow_right_rounded,
                       color: Colors.black54,
                     ),
-                  if (comment != null && comment['isRecomment'] == true)
+                  if (comment['isRecomment'] == true)
                     const SizedBox(
                       height: 50,
                     )
@@ -387,7 +363,7 @@ try {
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: comment != null && comment['isRecomment']
+                    color: comment['isRecomment']
                         ? Colors.black12
                         : Colors.white,
                     borderRadius: BorderRadius.circular(10),
@@ -397,7 +373,7 @@ try {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (comment != null && comment['isRecomment'] == false)
+                        if (comment['isRecomment'] == false)
                           Container(
                             height: 1.0,
                             color: Colors.black12,
@@ -425,8 +401,7 @@ try {
                                   width: 5,
                                 ),
                                 Text(
-                                  comment != null &&
-                                          comment['isAnonymous'] == true
+                                  comment['isAnonymous'] == true
                                       ? "익명"
                                       : comment['writer'],
                                   style: const TextStyle(
@@ -445,8 +420,7 @@ try {
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-                                    if (comment != null &&
-                                        comment['isRecomment'] == false)
+                                    if (comment['isRecomment'] == false)
                                       IconButton(
                                         constraints: const BoxConstraints(),
                                         onPressed: () {
@@ -458,8 +432,7 @@ try {
                                           color: Colors.black54,
                                         ),
                                       ),
-                                    if (comment != null &&
-                                        comment['isRecomment'] == false)
+                                    if (comment['isRecomment'] == false)
                                       Padding(
                                         padding: const EdgeInsets.fromLTRB(
                                             0, 0, 0, 0),
@@ -510,7 +483,7 @@ try {
                           height: 5,
                         ),
                         Text(
-                          comment != null ? comment['comment'] : '',
+                          comment['comment'],
                           style: const TextStyle(
                             fontSize: 16,
                           ),
@@ -520,17 +493,19 @@ try {
                         ),
                         Row(
                           children: [
-                            Text(comment != null ? comment['date'] : '',
+                            Text(
+                                comment['date'],
                                 style: const TextStyle(
                                   fontSize: 13,
                                   color: Colors.grey,
                                 )),
-                            Text(comment != null ? comment['time'] : '',
+                            Text(
+                                comment['time'],
                                 style: const TextStyle(
                                   fontSize: 13,
                                   color: Colors.grey,
                                 )),
-                            if (comment != null && comment['like'] != 0)
+                            if (comment['like'] != 0)
                               Row(
                                 children: [
                                   const SizedBox(width: 5),
@@ -563,6 +538,4 @@ try {
       },
     );
   }
-
-
 }

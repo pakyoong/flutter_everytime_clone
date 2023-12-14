@@ -1,68 +1,78 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:everytime/model/time_table_enums.dart';
 import 'package:everytime/model/time_table_page/lecture_time_and_location.dart';
 import 'package:rxdart/subjects.dart';
 
+// 강의 시간과 위치를 관리하는 클래스입니다.
 class LectureScheduleBloc {
+  // 강의 시간 및 장소 데이터를 관리하는 리스트입니다.
   final _lectureScheduleList = BehaviorSubject<List<LectureTimeAndLocation>>.seeded([]);
-  final String collectionPath; // Firestore 컬렉션 경로
 
-  LectureScheduleBloc(this.collectionPath) {
-    _loadLectureSchedule();
-  }
-
+  // 현재 저장된 강의 시간 및 장소 데이터를 스트림 형태로 제공합니다.
   Stream<List<LectureTimeAndLocation>> get lectureSchedule => _lectureScheduleList.stream;
 
+  // 새로운 강의 시간 및 장소 데이터를 추가하는 함수입니다.
+  Function(List<LectureTimeAndLocation>) get _updateLectureScheduleList =>
+      _lectureScheduleList.sink.add;
+
+  // 현재 저장된 강의 시간 및 장소 데이터를 리스트 형태로 반환합니다.
   List<LectureTimeAndLocation> get currentLectureScheduleData => _lectureScheduleList.value;
 
-  void _loadLectureSchedule() async {
-    // Firestore에서 강의 시간 및 장소 데이터를 불러옵니다.
-    var collection = FirebaseFirestore.instance.collection(collectionPath);
-    var snapshot = await collection.get();
-    var lectureSchedule = snapshot.docs
-        .map((doc) => LectureTimeAndLocation.fromFirestore(doc.data()))
-        .toList();
-    _lectureScheduleList.sink.add(lectureSchedule);
+  // 저장된 모든 강의 시간 및 장소 데이터를 초기화하는 함수입니다.
+  void resetLectureSchedule() {
+    _updateLectureScheduleList([]);
   }
 
-  void addLectureScheduleEntry(LectureTimeAndLocation lecture) {
-    var newSchedule = List<LectureTimeAndLocation>.from(_lectureScheduleList.value)..add(lecture);
-    _updateLectureScheduleList(newSchedule);
-    _saveLectureSchedule();
-  }
+  // 지정된 인덱스의 강의 시간 및 장소 데이터를 업데이트하는 함수입니다.
+  void updateLectureScheduleEntry(
+      int index, {
+        String? location,
+        int? startHour,
+        int? startMinute,
+        int? endHour,
+        int? endMinute,
+        Weekday? dayOfWeek,
+      }) {
+    if (location != null ||
+        startHour != null ||
+        startMinute != null ||
+        endHour != null ||
+        endMinute != null ||
+        dayOfWeek != null) {
+      List<LectureTimeAndLocation> temp = _lectureScheduleList.value;
+      if (location != null) temp[index].location = location;
+      if (startHour != null) temp[index].startHour = startHour;
+      if (startMinute != null) temp[index].startMinute = startMinute;
+      if (endHour != null) temp[index].endHour = endHour;
+      if (endMinute != null) temp[index].endMinute = endMinute;
+      if (dayOfWeek != null) temp[index].weekday = dayOfWeek;
 
-  void updateLectureScheduleEntry(int index, LectureTimeAndLocation updatedLecture) {
-    var updatedSchedule = List<LectureTimeAndLocation>.from(_lectureScheduleList.value);
-    updatedSchedule[index] = updatedLecture;
-    _updateLectureScheduleList(updatedSchedule);
-    _saveLectureSchedule();
-  }
-
-  void removeLectureScheduleEntry(int index) {
-    var updatedSchedule = List<LectureTimeAndLocation>.from(_lectureScheduleList.value)..removeAt(index);
-    _updateLectureScheduleList(updatedSchedule);
-    _saveLectureSchedule();
-  }
-
-  void _updateLectureScheduleList(List<LectureTimeAndLocation> schedule) {
-    _lectureScheduleList.sink.add(schedule);
-  }
-
-  void _saveLectureSchedule() async {
-    // 강의 시간 및 장소 데이터를 Firestore에 저장합니다.
-    var collection = FirebaseFirestore.instance.collection(collectionPath);
-    for (var lecture in _lectureScheduleList.value) {
-      var docRef = collection.doc(); // 새 문서 ID를 생성합니다.
-      await docRef.set(lecture.toFirestore());
+      _updateLectureScheduleList(temp);
     }
   }
 
-  void resetLectureSchedule() {
-    // 강의 시간 및 장소 데이터를 초기화합니다.
-    _updateLectureScheduleList([]);
-    _saveLectureSchedule();
+  // 지정된 인덱스의 강의 시간 및 장소 데이터를 삭제하는 함수입니다.
+  void removeLectureScheduleEntry(int index) {
+    List<LectureTimeAndLocation> temp = currentLectureScheduleData;
+    temp.removeAt(index);
+    _updateLectureScheduleList(temp);
   }
 
+  // 새로운 강의 시간 및 장소 데이터를 리스트에 추가하는 함수입니다.
+  void addLectureScheduleEntry({
+    String? location,
+    int? startHour,
+    int? startMinute,
+    int? endHour,
+    int? endMinute,
+    Weekday? dayOfWeek,
+  }) {
+    _updateLectureScheduleList([
+      ...currentLectureScheduleData,
+      LectureTimeAndLocation(),
+    ]);
+  }
+
+  // 모든 리소스를 정리하는 함수입니다.
   void dispose() {
     _lectureScheduleList.close();
   }

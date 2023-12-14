@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
@@ -22,7 +24,6 @@ class CommentDeleteEvent extends CommentEvent {
   CommentDeleteEvent(this.commentId);
 }
 
-// 상태 정의
 abstract class CommentState {}
 
 class CommentInitial extends CommentState {}
@@ -35,17 +36,17 @@ class CommentError extends CommentState {
   CommentError(this.errorMessage);
 }
 
-// BLoC 클래스 정의
 class CommentBloc {
   String _comment = "";
   bool _isAnonymous = false;
   bool _isRecomment = false;
+  final int _commentNo = 0;
 
   String get comment => _comment;
   bool get isAnonymous => _isAnonymous;
   bool get isRecomment => _isRecomment;
+  int get commentNo => _commentNo;
 
-  // 내용 업데이트
   void updateComment(String comment) {
     _comment = comment;
   }
@@ -60,32 +61,30 @@ class CommentBloc {
 
   Future<CommentState> writeComment(String boardId, String postId) async {
     try {
-      String formattedDate =
-          DateFormat('MM/dd').format(DateTime.now().toLocal());
-      String formattedTime =
-          DateFormat('HH:mm').format(DateTime.now().toLocal());
+      String formattedDate = DateFormat('MM/dd').format(DateTime.now().toLocal());
+      String formattedTime = DateFormat('HH:mm').format(DateTime.now().toLocal());
 
       User? user = FirebaseAuth.instance.currentUser;
-      // 사용자 UID로 /users 컬렉션에서 사용자 정보 가져오기
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(user?.uid)
           .get();
 
       if (!userDoc.exists) {
-        // 사용자 정보를 찾을 수 없는 경우 처리
         return CommentError('사용자 정보를 찾을 수 없습니다.');
       }
       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
 
-      // Firestore에 댓글 추가
-      await FirebaseFirestore.instance
+      int currentCommentNo = await _getCurrentCommentNo(boardId, postId);
+
+      DocumentReference commentRef = await FirebaseFirestore.instance
           .collection('Board')
           .doc(boardId)
           .collection('Post')
           .doc(postId)
           .collection('Comment')
           .add({
+        'commentNo': currentCommentNo + 1,
         'comment': _comment,
         'date': formattedDate,
         'isAnonymous': _isAnonymous,
@@ -96,18 +95,56 @@ class CommentBloc {
         'writerid': userData['email']
       });
 
-      // 성공 상태를 발생시킴
+      // 게시글 작성자에게 알림 추가
+      DocumentSnapshot postDoc = await FirebaseFirestore.instance
+          .collection('Board')
+          .doc(boardId)
+          .collection('Post')
+          .doc(postId)
+          .get();
+
+      if (postDoc.exists) {
+        Map<String, dynamic> postData = postDoc.data() as Map<String, dynamic>; // 캐스팅 추가
+        String postWriterId = postData['writerid'];
+
+        if (postWriterId != null && postWriterId != user?.uid) { // 자신의 글에는 알림을 보내지 않음
+          FirebaseFirestore.instance.collection('user_alarms').doc(postWriterId)
+              .set({'commentIds': FieldValue.arrayUnion([commentRef.id])}, SetOptions(merge: true));
+        }
+      }
+
       return CommentSuccess();
     } catch (e) {
-      // 실패 상태를 발생시킴
       return CommentError('댓글 작성에 실패했습니다.');
+    }
+  }
+
+  Future<int> _getCurrentCommentNo(String boardId, String postId) async {
+    try {
+      QuerySnapshot<Map<String, dynamic>> snapshot =
+          await FirebaseFirestore.instance
+              .collection('Board')
+              .doc(boardId)
+              .collection('Post')
+              .doc(postId)
+              .collection('Comment')
+              .orderBy('commentNo', descending: true)
+              .limit(1)
+              .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        return snapshot.docs[0]['commentNo'];
+      } else {
+        return 0;
+      }
+    } catch (e) {
+      return 0;
     }
   }
 
   Future<CommentState> likeComment(
       String boardId, String postId, String commentId) async {
     try {
-      // Firestore에서 해당 댓글 가져오기
       var commentDoc = await FirebaseFirestore.instance
           .collection('Board')
           .doc(boardId)
@@ -117,12 +154,10 @@ class CommentBloc {
           .doc(commentId)
           .get();
 
-      // 댓글이 존재하는지 확인
       if (commentDoc.exists) {
-        // 좋아요 수 증가
         int currentLikes = commentDoc['like'] ?? 0;
+        currentLikes++;
 
-        // Firestore에 좋아요 수 업데이트 (FieldValue.increment 사용)
         await FirebaseFirestore.instance
             .collection('Board')
             .doc(boardId)
@@ -130,16 +165,13 @@ class CommentBloc {
             .doc(postId)
             .collection('Comment')
             .doc(commentId)
-            .update({'like': FieldValue.increment(1)});
+            .update({'like': currentLikes});
 
-        // 성공 상태를 발생시킴
         return CommentSuccess();
       } else {
-        // 댓글이 존재하지 않는 경우 실패 상태를 발생시킴
         return CommentError('댓글이 존재하지 않습니다.');
       }
     } catch (e) {
-      // 실패 상태를 발생시킴
       return CommentError('좋아요 처리에 실패했습니다.');
     }
   }
@@ -153,7 +185,6 @@ class CommentBloc {
           .doc(user?.uid)
           .get();
       if (!userDoc.exists) {
-        // 사용자 정보를 찾을 수 없는 경우 처리
         return CommentError('사용자 정보를 찾을 수 없습니다.');
       }
       Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
@@ -167,11 +198,8 @@ class CommentBloc {
           .get();
       if (commentSnapshot.exists) {
         String writerId = commentSnapshot['writerid'];
-
-        // 현재 사용자의 이메일 주소 가져오기
         String userEmail = userData['email'];
         if (userEmail == writerId) {
-          // Firestore에서 댓글 삭제
           await FirebaseFirestore.instance
               .collection('Board')
               .doc(boardId)
@@ -180,19 +208,14 @@ class CommentBloc {
               .collection('Comment')
               .doc(commentId)
               .delete();
-
-          // 성공 상태를 발생시킴
           return CommentSuccess();
         } else {
-          // 사용자가 작성자가 아닌 경우 권한이 없다는 오류 상태를 반환합니다.
           return CommentError('댓글 삭제 권한이 없습니다.');
         }
       } else {
-        // 댓글이 존재하지 않는 경우 오류 상태를 반환합니다.
         return CommentError('댓글이 존재하지 않습니다.');
       }
     } catch (e) {
-      // 삭제 중 오류가 발생한 경우 오류 상태를 반환합니다.
       return CommentError('댓글 삭제에 실패했습니다.');
     }
   }

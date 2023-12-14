@@ -44,6 +44,10 @@ dependencies:
   syncfusion_flutter_charts: ^23.1.44
   positioned_tap_detector_2: ^1.0.4
   url_launcher: ^6.0.12
+  intl: ^0.18.1
+  firebase_storage: ^11.5.4
+  image_picker: ^1.0.4
+  path: ^1.8.3
 
 dev_dependencies:
   flutter_test:

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "358879497597",
+    "project_id": "everytime-9930d",
+    "storage_bucket": "everytime-9930d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:358879497597:android:375613dc7706a39f40d014",
+        "android_client_info": {
+          "package_name": "com.example.everytime"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjJTQ-tjhqGW0_d4DIR6p_HaE-cyNPzXk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:358879497597:android:823d9acec49954b240d014",
+        "android_client_info": {
+          "package_name": "com.example.flutter_everytime_clone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjJTQ-tjhqGW0_d4DIR6p_HaE-cyNPzXk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

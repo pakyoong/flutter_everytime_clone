@@ -1,51 +1,50 @@
+import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:everytime/model/board_page/comment.dart';
 import 'package:everytime/model/board_page/post.dart';
 import 'package:everytime/ui/board_page/info_board_page/info_board_detail_page.dart';
 import 'package:everytime/ui/board_page/info_board_page/info_board_write_page.dart';
+import 'package:everytime/ui/home_page/search_page/search_page.dart';
 import 'package:flutter/material.dart';
 import 'package:everytime/bloc/board_page/post_bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class InfoBoard extends StatefulWidget {
-  final PostBloc BoardBloc;
-  const InfoBoard({super.key, required this.BoardBloc});
+  final PostBloc boardBloc;
+  const InfoBoard({super.key, required this.boardBloc});
 
   @override
   State<InfoBoard> createState() => _InfoBoardState();
 }
 
 class _InfoBoardState extends State<InfoBoard> {
-  late PostBloc infoBoardBloc= PostBloc();
+  late UserProfileManagementBloc userBloc = UserProfileManagementBloc();
+  late PostBloc infoBoardBloc = PostBloc();
   List<Post> postList = [];
   late String boardId = 'Info';
   Future<void> _loadDataFromFirestore() async {
-    QuerySnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
-        .instance
-        .collection('Board')
-        .doc(boardId)
-        .collection('Post')
-        .get();
+    QuerySnapshot<Map<String, dynamic>> snapshot =
+        await FirebaseFirestore.instance
+            .collection('Board')
+            .doc(boardId)
+            .collection('Post')
+            .orderBy('postNo', descending: true) 
+            .get();
 
     setState(() {
       postList = snapshot.docs.map((doc) {
-        // 게시물 세부 정보 가져오기
         Post post = Post.fromFirestore(doc);
 
-        // 게시물에 대한 댓글 가져오기
         FirebaseFirestore.instance
             .collection('Board')
             .doc(boardId)
             .collection('Post')
-            .doc(doc.id) // 문서 ID를 게시물 ID로 사용한다고 가정합니다
+            .doc(doc.id)
             .collection('Comment')
             .get()
             .then((commentSnapshot) {
           post.comments = commentSnapshot.docs.map((commentDoc) {
-            // Comment.fromFirestore 생성자가 있는 것으로 가정합니다.
             return Comment.fromFirestore(commentDoc);
           }).toList();
-
-          // 새로운 게시물 목록으로 UI 업데이트
           setState(() {
             postList = postList;
           });
@@ -56,12 +55,10 @@ class _InfoBoardState extends State<InfoBoard> {
     });
   }
 
-  ScrollController _scrollController = ScrollController();
   @override
   void initState() {
     super.initState();
     _loadDataFromFirestore();
-    _scrollController = ScrollController(initialScrollOffset: double.infinity);
   }
 
   @override
@@ -98,9 +95,8 @@ class _InfoBoardState extends State<InfoBoard> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => InfoBoard(
-                          BoardBloc: infoBoardBloc,
-                        )), //검색 기능 일단 없음
+                    builder: (context) =>
+                        SearchPage(userBloc: userBloc)), // 검색기능은 구현 안했습니다.
               );
             },
           ),
@@ -113,7 +109,7 @@ class _InfoBoardState extends State<InfoBoard> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => InfoBoard(
-                            BoardBloc: infoBoardBloc,
+                            boardBloc: infoBoardBloc,
                           )),
                 );
               } else if (item == 2) {
@@ -329,46 +325,28 @@ class Detail extends StatelessWidget {
                                           )
                                         ],
                                       ),
-                                      // Row(
-                                      //   children: [
-                                      //     if (postList[index].picture != null)
-                                      //       const Icon(Icons.photo,
-                                      //           color: Colors.grey, size: 12),
-                                      //     if (postList[index].picture != null)
-                                      //       const Text(
-                                      //         "  ",
-                                      //         style: TextStyle(fontSize: 12),
-                                      //       ),
-                                      //     if (postList[index].picture != null)
-                                      //       Text(
-                                      //         1.toString(),//
-                                      //         style: const TextStyle(
-                                      //             fontSize: 12,
-                                      //             color: Colors.grey),
-                                      //       ),
-                                      //   ],
-                                      //),//사진 개수 넣는 것 때문에 보류 2개 이상 어떻게 넣지??
                                     ],
                                   ),
                                 ],
                               ),
                             ),
                           ),
-                          //if (postList[index].picture != null)
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-                            child: Container(
-                              width: 64,
-                              height: 64,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10.0),
-                                image: DecorationImage(
-                                  image: NetworkImage(postList[index].picture),
-                                  fit: BoxFit.cover,
+                          if (postList[index].picture != null) 
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+                              child: Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  image: DecorationImage(
+                                    image:
+                                        NetworkImage(postList[index].picture ?? ''),
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
                         ],
                       ),
                     ),

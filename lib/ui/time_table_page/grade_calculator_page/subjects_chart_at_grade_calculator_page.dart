@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:everytime/bloc/grade_management_bloc.dart';
 import 'package:everytime/component/custom_container.dart';
@@ -10,15 +8,14 @@ import 'package:everytime/model/time_table_enums.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:positioned_tap_detector_2/positioned_tap_detector_2.dart';
-import 'package:everytime/model/time_table_page/grade_calculator_page/class_info.dart';
 
 class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
   const SubjectsChartAtGradeCalculatorPage({
-    super.key,
+    Key? key,
     required this.userBloc,
     required this.gradeCalculatorBloc,
     required this.listScrollController,
-  });
+  }) : super(key: key);
 
   final UserProfileManagementBloc userBloc;
   final GradeManagementBloc gradeCalculatorBloc;
@@ -34,65 +31,66 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
             stream: userBloc.getTerm(currentTermIndexSnapshot.data!).subjects,
             builder: (_, subjectsSnapshot) {
               if (subjectsSnapshot.hasData) {
-                return SingleChildScrollView( // 스크롤 가능한 위젯으로 감쌌습니다.
-                  child: SizedBox(
-                    height: (subjectsSnapshot.data!.length + 2) * appHeight * 0.05313,
-                    child: CustomContainer(
-                      height: (subjectsSnapshot.data!.length + 2) *
-                          appHeight *
-                          0.05313,
-                      usePadding: false,
-                      child: _buildEditSubjects(
-                        context,
-                        currentTermIndexSnapshot.data!,
-                        subjectsSnapshot.data!.length,
-                      ),
+                return SizedBox(
+                  height:
+                      (subjectsSnapshot.data!.length + 2) * appHeight * 0.05313,
+                  child: CustomContainer(
+                    height: (subjectsSnapshot.data!.length + 2) *
+                        appHeight *
+                        0.05313,
+                    usePadding: false,
+                    child: _buildEditSubjects(
+                      context,
+                      currentTermIndexSnapshot.data!,
+                      subjectsSnapshot.data!.length,
                     ),
                   ),
                 );
               }
+
               return const SizedBox.shrink();
             },
           );
         }
+
         return const SizedBox.shrink();
       },
     );
   }
 
   Widget _buildEditSubjects(
-      BuildContext context,
-      int currentTermIndex,
-      int currentSubjectsLength,
-      ) {
-    return SingleChildScrollView( // SingleChildScrollView 추가
-      child: Column(
-        children: List.generate(
-          currentSubjectsLength + 2,
-              (index) {
-            return Container(
-              height: appHeight * 0.0520625,
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: (index + 1 == currentSubjectsLength + 2)
-                      ? BorderSide.none
-                      : BorderSide(
-                    color: Theme.of(context).dividerColor,
-                  ),
-                ),
+    BuildContext context,
+    int currentTermIndex,
+    int currentSubjectsLength,
+  ) {
+    return Column(
+      children: List.generate(
+        currentSubjectsLength + 2,
+        (index) {
+          return Container(
+            height: appHeight * 0.0520625,
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: (index + 1 == currentSubjectsLength + 2)
+                    ? BorderSide.none
+                    : BorderSide(
+                        color: Theme.of(context).dividerColor,
+                      ),
               ),
-              child: (index == 0)
-                  ? _buildEditSubjectsIndexFirst(context, currentTermIndex, currentSubjectsLength)
-                  : ((index + 1 == currentSubjectsLength + 2)
-                  ? _buildEditSubjectsIndexLast(context, currentTermIndex, currentSubjectsLength)
-                  : _buildEditSubjectsIndexRemain(context, currentTermIndex, currentSubjectsLength, index)),
-            );
-          },
-        ),
+            ),
+            child: (index == 0)
+                ? (_buildEditSubjectsIndexFirst(
+                    context, currentTermIndex, currentSubjectsLength))
+                : ((index + 1 == currentSubjectsLength + 2)
+                    ? (_buildEditSubjectsIndexLast(
+                        context, currentTermIndex, currentSubjectsLength))
+                    : (_buildEditSubjectsIndexRemain(context, currentTermIndex,
+                        currentSubjectsLength, index))),
+          );
+        },
       ),
     );
   }
-
 
   Widget _buildEditSubjectsIndexFirst(
       BuildContext context, int currentTermIndex, int currentSubjectsLength) {
@@ -203,15 +201,7 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
                 ),
               ),
               onPressed: () {
-                userBloc.getTerm(currentTermIndex).addSubject(
-                  ClassInfo(
-                    className: '',
-                    classCredits: 0,
-                    classGrade: Grade.F, // 기본값 설정
-                    isPassFail: false,
-                    isMajorClass: false,
-                  ),
-                );
+                userBloc.getTerm(currentTermIndex).addSubject();
               },
             ),
           ),
@@ -261,6 +251,16 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
               child: const Text('예'),
               onPressed: () {
                 userBloc.getTerm(currentTermIndex).removeAdditionalSubjects();
+                for (int i = 0;
+                    i <
+                        userBloc
+                            .getTerm(currentTermIndex)
+                            .currentSubjects
+                            .length;
+                    i++) {
+                  userBloc.getTerm(currentTermIndex).setDefault(i);
+                }
+                userBloc.getTerm(currentTermIndex).updateSubjects();
                 userBloc.updateData();
                 Navigator.pop(dialogContext);
               },
@@ -314,19 +314,16 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
                       ),
                       textInputAction: TextInputAction.done,
                       onChanged: (value) {
-                        // StreamBuilder의 스냅샷 데이터를 사용
-                        var subject = subjectsSnapshot.data![currentIndex - 1];
-                        subject.className = value;
-                        userBloc.getTerm(currentTermIndex).updateSubject(currentIndex - 1, subject);
+                        userBloc
+                            .getTerm(currentTermIndex)
+                            .updateSubject(currentIndex - 1, title: value);
                       },
                       onSubmitted: (value) {
-                        // StreamBuilder의 스냅샷 데이터를 사용
-                        var subject = subjectsSnapshot.data![currentIndex - 1];
-                        subject.className = value;
-                        userBloc.getTerm(currentTermIndex).updateSubject(currentIndex - 1, subject);
+                        userBloc
+                            .getTerm(currentTermIndex)
+                            .updateSubject(currentIndex - 1, title: value);
                         userBloc.updateData();
                       },
-
                       onTap: _showKeyboardAction,
                     ),
                   );
@@ -355,7 +352,8 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
                 if (subjectsSnapshot.hasData) {
                   return CupertinoTextField(
                     controller: TextEditingController(
-                      text: subjectsSnapshot.data![currentIndex - 1].classCredits.toString(),
+                      text: subjectsSnapshot.data![currentIndex - 1].classsCredits
+                          .toString(),
                     ),
                     textAlign: TextAlign.center,
                     keyboardType: TextInputType.number,
@@ -367,16 +365,15 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
                       color: Theme.of(context).highlightColor,
                     ),
                     onChanged: (value) {
-                      // StreamBuilder의 스냅샷 데이터를 사용
-                      var subject = subjectsSnapshot.data![currentIndex - 1];
-                      subject.classCredits = int.parse(value.isEmpty ? '0' : value);
-                      userBloc.getTerm(currentTermIndex).updateSubject(currentIndex - 1, subject);
+                      userBloc.getTerm(currentTermIndex).updateSubject(
+                          currentIndex - 1,
+                          credit: int.parse(value.isEmpty ? '0' : value));
+                      userBloc.updateData();
                     },
                     onSubmitted: (value) {
-                      // StreamBuilder의 스냅샷 데이터를 사용
-                      var subject = subjectsSnapshot.data![currentIndex - 1];
-                      subject.classCredits = int.parse(value.isEmpty ? '0' : value);
-                      userBloc.getTerm(currentTermIndex).updateSubject(currentIndex - 1, subject);
+                      userBloc.getTerm(currentTermIndex).updateSubject(
+                          currentIndex - 1,
+                          credit: int.parse(value.isEmpty ? '0' : value));
                       userBloc.updateData();
                     },
                     onTap: _showKeyboardAction,
@@ -401,8 +398,6 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
             stream: userBloc.getTerm(currentTermIndex).subjects,
             builder: (_, subjectsSnapshot) {
               if (subjectsSnapshot.hasData) {
-                // subjectsSnapshot의 데이터를 subjectsData 변수에 저장
-                var subjectsData = subjectsSnapshot.data!;
                 return PositionedTapDetector2(
                   child: Container(
                     width: appWidth * 0.16,
@@ -447,7 +442,6 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
                       currentIndex: currentIndex,
                       currentGradeType:
                           subjectsSnapshot.data![currentIndex - 1].classGrade,
-                      subjectsData: subjectsData,  // subjectsData를 전달합니다.
                       position: position,
                     );
                     gradeCalculatorBloc
@@ -479,13 +473,14 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(5),
                     ),
                     onChanged: (newValue) {
-                      // StreamBuilder의 스냅샷 데이터를 사용
-                      var subject = subjectsSnapshot.data![currentIndex - 1];
-                      subject.isMajorClass = newValue!;
-                      userBloc.getTerm(currentTermIndex).updateSubject(currentIndex - 1, subject);
+                      userBloc
+                          .getTerm(currentTermIndex)
+                          .updateSubject(currentIndex - 1, isMajor: newValue!);
+
+                      userBloc.getTerm(currentTermIndex).updateSubjects();
+
                       userBloc.updateData();
                     },
-
                   );
                 }
 
@@ -507,7 +502,6 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
     required int currentTermIndex,
     required int currentIndex,
     required Grade currentGradeType,
-    required List<ClassInfo> subjectsData,
     required TapPosition position,
   }) {
     gradeCalculatorBloc.updateShowingGradeSelector(true);
@@ -543,12 +537,15 @@ class SubjectsChartAtGradeCalculatorPage extends StatelessWidget {
             Navigator.pop(popupContext);
           },
           onPressedSave: () {
-            // 저장 버튼 클릭 시 실행
-            var subject = subjectsData[currentIndex - 1];
-            subject.classGrade = Grade.getByIndex(selected);
-            subject.isPassFail = (Grade.getByIndex(selected) == Grade.P);
-            userBloc.getTerm(currentTermIndex).updateSubject(currentIndex - 1, subject);
+            userBloc.getTerm(currentTermIndex).updateSubject(
+                  currentIndex - 1,
+                  gradeType: Grade.getByIndex(selected),
+                  isPNP: (Grade.getByIndex(selected) == Grade.P)
+                      ? true
+                      : null,
+                );
             userBloc.updateData();
+
             Navigator.pop(popupContext);
           },
           picker: CupertinoPicker(

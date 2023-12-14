@@ -1,9 +1,10 @@
+// ignore_for_file: must_call_super
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:everytime/component/custom_appbar.dart';
 import 'package:everytime/component/custom_appbar_animation.dart';
 import 'package:everytime/component/custom_appbar_button.dart';
-import 'package:everytime/global_variable.dart';
-import 'package:everytime/ui/my_info_page.dart';
 import 'package:everytime/ui/home_page/search_page/search_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +12,6 @@ import 'package:rxdart/subjects.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../board_page.dart';
-
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -108,7 +108,8 @@ class _HomePageState extends State<HomePage>
                           ),
                           GestureDetector(
                             onTap: () {
-                              _launchURL('https://www.kumoh.ac.kr/bus/index.do');
+                              _launchURL(
+                                  'https://www.kumoh.ac.kr/bus/index.do');
                             },
                             child: Image.asset(
                               'assets/bus.png',
@@ -118,7 +119,8 @@ class _HomePageState extends State<HomePage>
                           ),
                           GestureDetector(
                             onTap: () {
-                              _launchURL('https://www.kumoh.ac.kr/ko/sub06_01_01_01.do');
+                              _launchURL(
+                                  'https://www.kumoh.ac.kr/ko/sub06_01_01_01.do');
                             },
                             child: Image.asset(
                               'assets/gongji.png',
@@ -128,7 +130,8 @@ class _HomePageState extends State<HomePage>
                           ),
                           GestureDetector(
                             onTap: () {
-                              _launchURL('https://www.kumoh.ac.kr/ko/schedule.do');
+                              _launchURL(
+                                  'https://www.kumoh.ac.kr/ko/schedule.do');
                             },
                             child: Image.asset(
                               'assets/plan.png',
@@ -138,7 +141,8 @@ class _HomePageState extends State<HomePage>
                           ),
                           GestureDetector(
                             onTap: () {
-                              _launchURL('https://mail.kumoh.ac.kr/account/login.do');
+                              _launchURL(
+                                  'https://mail.kumoh.ac.kr/account/login.do');
                             },
                             child: Image.asset(
                               'assets/mail.png',
@@ -164,9 +168,10 @@ class _HomePageState extends State<HomePage>
                               child: Column(
                                 children: [
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
                                     children: [
-                                      Text(
+                                      const Text(
                                         '즐겨찾는 게시판',
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
@@ -175,21 +180,22 @@ class _HomePageState extends State<HomePage>
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      SizedBox(width: 20), // 원하는 간격 설정
+                                      const SizedBox(width: 20), // 원하는 간격 설정
                                       TextButton(
                                         onPressed: () {
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (BuildContext pageContext) {
-                                                return BoardPage();
+                                              builder:
+                                                  (BuildContext pageContext) {
+                                                return const BoardPage();
                                               },
                                             ),
                                           );
                                         },
-                                        child: Text(
+                                        child: const Text(
                                           '더 보기 >',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             color: Color(0xFFC62818),
                                           ),
                                         ),
@@ -199,21 +205,243 @@ class _HomePageState extends State<HomePage>
 
                                   // Add buttons for each board
                                   Column(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
                                     children: [
-                                      for (String boardTitle in boardPages.keys)
-                                        TextButton(
-                                          onPressed: () {
-                                            var page = boardPages[boardTitle];
-                                            if (page != null) {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(builder: (context) => page),
-                                              );
-                                            }
-                                          },
-                                          child: Text(boardTitle),
+                                      TextButton(
+                                        onPressed: () {
+                                          var page = boardPages['자유게시판'];
+                                          if (page != null) {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) => page),
+                                            );
+                                          }
+                                        },
+                                        child: Row(
+                                          children: [
+                                            const Text('자유게시판   ',
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                )
+                                              ),
+                                            const SizedBox(width: 70),
+                                            FutureBuilder<DocumentSnapshot>(
+                                              future: _fetchMostRecentPostTitle(
+                                                  'Free'),
+                                              builder: (_, freeBoardSnapshot) {
+                                                String freeBoardTitle =
+                                                    freeBoardSnapshot
+                                                            .data?['title'] ??
+                                                        'No Title';
+
+                                                return Text(freeBoardTitle,
+                                                style: const TextStyle(
+                                                  color: Colors.grey,
+                                                )                                          
+                                                );
+                                              },
+                                            ),
+                                          ],
                                         ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          var page = boardPages['비밀게시판'];
+                                          if (page != null) {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) => page),
+                                            );
+                                          }
+                                        },
+                                        child: Row(
+                                          children: [
+                                            const Text('비밀게시판   ',
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                )
+                                              ),
+                                            const SizedBox(width: 75),
+                                            FutureBuilder<DocumentSnapshot>(
+                                              future: _fetchMostRecentPostTitle(
+                                                  'Secret'),
+                                              builder:
+                                                  (_, secretBoardSnapshot) {
+                                                String secretBoardTitle =
+                                                    secretBoardSnapshot
+                                                            .data?['title'] ??
+                                                        'No Title';
+
+                                                return Text(secretBoardTitle,
+                                                style: const TextStyle(
+                                                  color: Colors.grey,
+                                                )
+                                              );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          var page = boardPages['졸업생게시판'];
+                                          if (page != null) {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) => page),
+                                            );
+                                          }
+                                        },
+                                        child: Row(
+                                          children: [
+                                            const Text('졸업생게시판  ',
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                )
+                                              ),
+                                            const SizedBox(width: 65),
+                                            FutureBuilder<DocumentSnapshot>(
+                                              future: _fetchMostRecentPostTitle(
+                                                  'Graduates'),
+                                              builder:
+                                                  (_, graduatesBoardSnapshot) {
+                                                String graduatesBoardTitle =
+                                                    graduatesBoardSnapshot
+                                                            .data?['title'] ??
+                                                        'No Title';
+
+                                                return Text(
+                                                    graduatesBoardTitle,
+                                                style: const TextStyle(
+                                                  color: Colors.grey,
+                                                )
+                                              );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          var page = boardPages['새내기게시판'];
+                                          if (page != null) {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) => page),
+                                            );
+                                          }
+                                        },
+                                        child: Row(
+                                          children: [
+                                            const Text('새내기게시판  ',
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                )
+                                              ),
+                                            const SizedBox(width: 65),
+                                            FutureBuilder<DocumentSnapshot>(
+                                              future: _fetchMostRecentPostTitle(
+                                                  'Freshmen'),
+                                              builder:
+                                                  (_, freshmenBoardSnapshot) {
+                                                String freshmenBoardTitle =
+                                                    freshmenBoardSnapshot
+                                                            .data?['title'] ??
+                                                        'No Title';
+
+                                                return Text(freshmenBoardTitle,
+                                                style: const  TextStyle(
+                                                  color: Colors.grey,
+                                                )
+                                              );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          var page = boardPages['시사・이슈'];
+                                          if (page != null) {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) => page),
+                                            );
+                                          }
+                                        },
+                                        child: Row(
+                                          children: [
+                                            const Text('시사・이슈          ',
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                )
+                                              ),
+                                            const SizedBox(width: 50),
+                                            FutureBuilder<DocumentSnapshot>(
+                                              future: _fetchMostRecentPostTitle(
+                                                  'CurrentIssues'),
+                                              builder: (_,
+                                                  currentissuesBoardSnapshot) {
+                                                String currentissuesBoardTitle =
+                                                    currentissuesBoardSnapshot
+                                                            .data?['title'] ??
+                                                        'No Title';
+
+                                                return Text(
+                                                    currentissuesBoardTitle,
+                                                style: const TextStyle(
+                                                  color: Colors.grey,
+                                                )
+                                              );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          var page = boardPages['정보게시판'];
+                                          if (page != null) {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) => page),
+                                            );
+                                          }
+                                        },
+                                        child: Row(
+                                          children: [
+                                            const Text('정보게시판   ',
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                )
+                                              ),
+                                            const SizedBox(width: 75),
+                                            FutureBuilder<DocumentSnapshot>(
+                                              future: _fetchMostRecentPostTitle(
+                                                  'Info'),
+                                              builder: (_, infoBoardSnapshot) {
+                                                String infoBoardTitle =
+                                                    infoBoardSnapshot
+                                                            .data?['title'] ??
+                                                        'No Title';
+
+                                                return Text(infoBoardTitle,
+                                                style: const TextStyle(
+                                                  color: Colors.grey,
+                                                )
+                                              );
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ],
@@ -226,7 +454,7 @@ class _HomePageState extends State<HomePage>
                   );
                 }
                 return CustomAppBar(
-                  title: "로딩중1111111111111111111111111111..",
+                  title: "로딩중..",
                   buttonList: const [],
                 );
               },
@@ -238,10 +466,10 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _buildIconTextSet(
-      IconData icon,
-      String url,
-      String buttonText,
-      ) {
+    IconData icon,
+    String url,
+    String buttonText,
+  ) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -259,8 +487,6 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-
-
   // URL을 열기 위한 함수
   Future<void> _launchURL(String url) async {
     if (await canLaunch(url)) {
@@ -268,5 +494,22 @@ class _HomePageState extends State<HomePage>
     } else {
       throw 'Could not launch $url';
     }
+  }
+}
+
+Future<DocumentSnapshot> _fetchMostRecentPostTitle(String boardType) async {
+  CollectionReference postsCollection = FirebaseFirestore.instance
+      .collection('Board')
+      .doc(boardType)
+      .collection('Post');
+
+  QuerySnapshot postQuery =
+      await postsCollection.orderBy('postNo', descending: true).limit(1).get();
+
+  if (postQuery.docs.isNotEmpty) {
+    return postQuery.docs.first;
+  } else {
+    // Handle the case where there are no posts
+    return Future.value(null);
   }
 }

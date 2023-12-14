@@ -7,11 +7,11 @@ import 'package:flutter/material.dart';
 
 class TimeTableChartAtAddDirectPage extends StatelessWidget {
   const TimeTableChartAtAddDirectPage({
-    super.key,
+    Key? key,
     required this.userBloc,
     required this.addDirectBloc,
     required this.timeTableScrollController,
-  });
+  }) : super(key: key);
 
   final UserProfileManagementBloc userBloc;
   final LectureScheduleBloc addDirectBloc;

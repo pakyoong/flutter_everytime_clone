@@ -8,9 +8,9 @@ import 'package:flutter/material.dart';
 
 class GradeCalculatorAtTimeTablePage extends StatelessWidget {
   const GradeCalculatorAtTimeTablePage({
-    super.key,
+    Key? key,
     required this.userBloc,
-  });
+  }) : super(key: key);
 
   final UserProfileManagementBloc userBloc;
 

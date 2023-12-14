@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class CustomTextField extends StatelessWidget {
   // 생성자에서 다양한 매개변수를 받아 커스텀 텍스트 필드를 설정
   const CustomTextField({
-    super.key,
+    Key? key,
     this.controller, // 텍스트 필드의 컨트롤러
     this.maxLines, // 최대 줄 수
     this.autofocus = false, // 자동 포커스 여부
@@ -15,7 +15,7 @@ class CustomTextField extends StatelessWidget {
     this.onTap, // 탭 이벤트 핸들러
     this.onChanged, // 텍스트 변경 이벤트 핸들러
     this.onSubmitted, // 제출 이벤트 핸들러
-  });
+  }) : super(key: key);
 
   final TextEditingController? controller;
   final int? maxLines;

@@ -1,19 +1,19 @@
-import 'package:flutter/material.dart';
 import 'package:everytime/bloc/user_profile_management_bloc.dart';
 import 'package:everytime/bloc/time_table_page/time_table_list_manager_bloc.dart';
 import 'package:everytime/component/custom_container.dart';
 import 'package:everytime/component/custom_container_title.dart';
 import 'package:everytime/global_variable.dart';
-import 'package:everytime/model/time_table_page/time_tables_page/term_time_tables.dart';
+import 'package:everytime/model/time_table_page/time_tables_page/term_time_table.dart';
+import 'package:flutter/material.dart';
 
 class TimeTablesAtTimeTableListPage extends StatelessWidget {
   TimeTablesAtTimeTableListPage({
-    super.key,
+    Key? key,
     required this.userBloc,
     required this.timeTableListBloc,
     required this.pageScrollController,
     required this.pageContext,
-  });
+  }) : super(key: key);
 
   final UserProfileManagementBloc userBloc;
   final TimeTableListManagerBloc timeTableListBloc;
@@ -31,44 +31,42 @@ class TimeTablesAtTimeTableListPage extends StatelessWidget {
           if (sortedTimeTableSnapshot.hasData) {
             return ListView(
               controller: pageScrollController,
-              children: _buildTimeTablesList(sortedTimeTableSnapshot.data!),
+              children: List.generate(
+                sortedTimeTableSnapshot.data!.length,
+                (sortedTimeTableIndex) {
+                  return CustomContainer(
+                    child: Column(
+                      children: [
+                        CustomContainerTitle(
+                          title: sortedTimeTableSnapshot
+                              .data![sortedTimeTableIndex].termName,
+                          type: CustomContainerTitleType.none,
+                        ),
+                        _buildContents(
+                          sortedTimeTableSnapshot.data!,
+                          sortedTimeTableIndex,
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             );
           }
-          return const Center(child: CircularProgressIndicator());
+
+          return const SizedBox.shrink();
         },
       ),
     );
   }
 
-  List<Widget> _buildTimeTablesList(List<TermTimetables> sortedTimeTables) {
-    return List.generate(
-      sortedTimeTables.length,
-          (sortedTimeTableIndex) {
-        return CustomContainer(
-          child: Column(
-            children: [
-              CustomContainerTitle(
-                title: sortedTimeTables[sortedTimeTableIndex].termName,
-                type: CustomContainerTitleType.none,
-              ),
-              _buildContents(
-                sortedTimeTables,
-                sortedTimeTableIndex,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildContents(
-      List<TermTimetables> sortedTimeTable,
-      int sortedTimeTableIndex,
-      ) {
+    List<TermTimetables> sortedTimeTable,
+    int sortedTimeTableIndex,
+  ) {
     return Container(
       height: sortedTimeTable[sortedTimeTableIndex].timeTables.length *
-          (_buttonHeight + appHeight * 0.03) -
+              (_buttonHeight + appHeight * 0.03) -
           appHeight * 0.03,
       margin: EdgeInsets.only(
         top: appHeight * 0.01,
@@ -78,7 +76,7 @@ class TimeTablesAtTimeTableListPage extends StatelessWidget {
       child: Column(
         children: List.generate(
           sortedTimeTable[sortedTimeTableIndex].timeTables.length,
-              (timeTableIndex) {
+          (timeTableIndex) {
             return Container(
               margin: EdgeInsets.only(
                 top: timeTableIndex != 0 ? appHeight * 0.03 : 0,

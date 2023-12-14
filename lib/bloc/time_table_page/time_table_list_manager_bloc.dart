@@ -1,62 +1,22 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:everytime/model/time_table_page/time_table.dart';
-import 'package:everytime/model/time_table_page/time_tables_page/term_time_tables.dart';
+import 'package:everytime/model/time_table_page/time_tables_page/term_time_table.dart';
 import 'package:rxdart/subjects.dart';
 
 class TimeTableListManagerBloc {
+  // BehaviorSubject를 사용하여 정렬된 시간표 목록을 관리하는 변수
   final _sortedTimeTables = BehaviorSubject<List<TermTimetables>>.seeded([]);
-  final _termList = BehaviorSubject<List<String>>.seeded([]);
-  final _pickerIndex = BehaviorSubject<int>.seeded(0);
 
-  TimeTableListManagerBloc() {
-    _loadTermTimetables();
-    createTermList(DateTime.now().subtract(Duration(days: 365 * 4)), DateTime.now());
-  }
-
+  // 정렬된 시간표 스트림을 가져오는 getter
   Stream<List<TermTimetables>> get sortedClassTimetable => _sortedTimeTables.stream;
-  Stream<List<String>> get termList => _termList.stream;
-  Stream<int> get pickerIndex => _pickerIndex.stream;
+
+  // 정렬된 시간표를 업데이트하는 함수
+  Function(List<TermTimetables>) get updateSortedTimeTable =>
+      _sortedTimeTables.sink.add;
 
   // 현재 정렬된 시간표 목록을 가져오는 getter
   List<TermTimetables> get currentSortedTimeTable => _sortedTimeTables.value;
 
-
-  // Getter for the current term list
-  List<String> get currentTermList => _termList.value;
-
-  // 현재 선택된 인덱스를 가져오는 getter
-  int get currentPickerIndex => _pickerIndex.value;
-
-  void _loadTermTimetables() async {
-    var collection = FirebaseFirestore.instance.collection('termTimetables');
-    var snapshot = await collection.get();
-    var termTimetables = await Future.wait(snapshot.docs.map((doc) async {
-      return TermTimetables.fromFirestore(doc);
-    }));
-    _sortedTimeTables.sink.add(termTimetables);
-  }
-  // 정렬된 시간표를 업데이트하는 함수
-  void updateSortedTimeTable(List<TermTimetables> termTimetables) {
-    _sortedTimeTables.sink.add(termTimetables);
-  }
-
-  void addTimeTable(TimeTable timeTable) async {
-    await timeTable.createInFirestore();
-    _loadTermTimetables();
-  }
-
-  void updateTimeTable(TimeTable timeTable) async {
-    await timeTable.updateFirestoreData();
-    _loadTermTimetables();
-  }
-
-  void removeTimeTable(String timeTableId) async {
-    await FirebaseFirestore.instance.collection('timetables').doc(timeTableId).delete();
-    _loadTermTimetables();
-  }
-
-
-// 입력된 시간표 목록을 정렬하고 정렬된 목록을 업데이트하는 함수
+  // 입력된 시간표 목록을 정렬하고 정렬된 목록을 업데이트하는 함수
   void sortTimeTables(List<TimeTable> classTimeTableList) {
     List<TermTimetables> tempSortedClassTimetable = currentSortedTimeTable;
 
@@ -96,6 +56,19 @@ class TimeTableListManagerBloc {
     updateSortedTimeTable(tempSortedClassTimetable);
   }
 
+  // 학기 목록을 관리하는 BehaviorSubject 변수
+  final _termList = BehaviorSubject<List<String>>.seeded([]);
+
+  // 학기 목록 스트림을 가져오는 getter
+  Stream<List<String>> get termList => _termList.stream;
+
+  // 학기 목록을 업데이트하는 함수
+  Function(List<String>) get _updateTermList => _termList.sink.add;
+
+  // 현재 학기 목록을 가져오는 getter
+  List<String> get currentTermList => _termList.value;
+
+  // 시작 시간과 끝 시간을 기반으로 학기 목록을 생성하는 함수
   void createTermList(DateTime startDate, DateTime endDate) {
     List<String> result = [];
 
@@ -110,10 +83,20 @@ class TimeTableListManagerBloc {
     _updateTermList(result);
   }
 
-  Function(List<String>) get _updateTermList => _termList.sink.add;
+  // 사용자가 선택한 인덱스를 관리하는 BehaviorSubject 변수
+  final _pickerIndex = BehaviorSubject<int>.seeded(0);
+
+  // 선택된 인덱스 스트림을 가져오는 getter
+  Stream<int> get pickerIndex => _pickerIndex.stream;
+
+  // 선택된 인덱스를 업데이트하는 함수
   Function(int) get updatePickerIndex => _pickerIndex.sink.add;
 
-  void dispose() {
+  // 현재 선택된 인덱스를 가져오는 getter
+  int get currentPickerIndex => _pickerIndex.value;
+
+  // Bloc의 리소스를 해제하는 함수
+  dispose() {
     _sortedTimeTables.close();
     _termList.close();
     _pickerIndex.close();

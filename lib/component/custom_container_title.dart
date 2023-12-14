@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 
 class CustomContainerTitle extends StatelessWidget {
   const CustomContainerTitle({
-    super.key,
+    Key? key,
     required this.title,
     required this.type,
     this.buttonIcon,
     this.onPressed,
-  });
+  }) : super(key: key);
 
   final String title;
   final CustomContainerTitleType type;
