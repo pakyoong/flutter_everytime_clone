@@ -1,16 +1,3 @@
 # everytime
 
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+<img src="https://github.com/pakyoong/flutter_everytime_clone/blob/master/%E1%84%8B%E1%85%A6%E1%84%87%E1%85%B3%E1%84%85%E1%85%B5%E1%84%90%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%B7_%E1%84%8F%E1%85%B3%E1%86%AF%E1%84%85%E1%85%A9%E1%86%AB.jpeg">
